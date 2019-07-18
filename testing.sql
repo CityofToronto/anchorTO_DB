@@ -372,3 +372,5 @@ select t.*, row_number() over (partition by t.source_id order by t.source_id) id
 	) t 
 	where idx > 1;
 
+select version()
+SELECT PostGIS_Version();
