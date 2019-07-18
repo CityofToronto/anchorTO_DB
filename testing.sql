@@ -203,10 +203,10 @@ select * from imaint_oracle.ige_transaction where task_id = 1000000059;
 
 SELECT set_current_version('TRANS1234');
 SELECT sde.sde_edit_version('TRANS000', 1);
-select update_source('{"object_id": null,"source_id":null,"control_task_type": "STREET/ADDRESS","class":"PLAN","type":"BOUNDARIES ACT PLAN","status":"APPROVED","int_id":"test","int_date":"2019-07-08","ext_id":"test ext302","ext_date":"2019-07-26","plan_name":"ry-plan-no","source_status":null,"comment":"Source comments","task":[{"task_assigned_to":"SITE_AREA_MAINT","task_type":"SITEAREA","task_type_desc":"Site Area","control_task_type":"STREET/ADDRESS","control_task_comments":"Create/adjust Site Area","task_sequence":10,"assign_to":"rli4","task_status":null },{"task_assigned_to":"LINEARNAME_MAINT","task_type":"LINEARNAME","task_type_desc":"Linear Name","control_task_type":"STREET/ADDRESS","control_task_comments":"Add/adjust/delete Linear Name","task_sequence":20,"assign_to":"slee5","task_status":null },{"task_assigned_to":"SITE_AREA_MAINT","task_type":"SITEAREA","task_type_desc":"Site Area","control_task_type":"STREET/ADDRESS","control_task_comments":"Close Site Area","task_sequence":70,"assign_to":"rli4","task_status":"HOLD" }],"attachment":null,"user_id":"rli4"}'
+select update_source('{"object_id": null,"source_id":null,"control_task_type": "STREET/ADDRESS","class":"PLAN","type":"BOUNDARIES ACT PLAN","status":"APPROVED","int_id":"test","int_date":"2019-07-08","ext_id":"test ext505","ext_date":"2019-07-26","plan_name":"ry-plan-no","source_status":null,"comment":"Source comments","task":[{"task_assigned_to":"SITE_AREA_MAINT","task_type":"SITEAREA","task_type_desc":"Site Area","control_task_type":"STREET/ADDRESS","control_task_comments":"Create/adjust Site Area","task_sequence":10,"assign_to":"rli4","task_status":null },{"task_assigned_to":"LINEARNAME_MAINT","task_type":"LINEARNAME","task_type_desc":"Linear Name","control_task_type":"STREET/ADDRESS","control_task_comments":"Add/adjust/delete Linear Name","task_sequence":20,"assign_to":"slee5","task_status":null },{"task_assigned_to":"SITE_AREA_MAINT","task_type":"SITEAREA","task_type_desc":"Site Area","control_task_type":"STREET/ADDRESS","control_task_comments":"Close Site Area","task_sequence":70,"assign_to":"rli4","task_status":"HOLD" }],"attachment":null,"user_id":"rli4"}'
 					 , 10000
 					 ,-1
-					 ,'TRANS1234');
+					 ,'TRANS81');
 select update_source2('{"object_id": null,"source_id":null,"control_task_type": "STREET/ADDRESS","class":"PLAN","type":"BOUNDARIES ACT PLAN","status":"APPROVED","int_id":"test","int_date":"2019-07-08","ext_id":"test ext302","ext_date":"2019-07-26","plan_name":"ry-plan-no","source_status":null,"comment":"Source comments","task":[{"task_assigned_to":"SITE_AREA_MAINT","task_type":"SITEAREA","task_type_desc":"Site Area","control_task_type":"STREET/ADDRESS","control_task_comments":"Create/adjust Site Area","task_sequence":10,"assign_to":"rli4","task_status":null },{"task_assigned_to":"LINEARNAME_MAINT","task_type":"LINEARNAME","task_type_desc":"Linear Name","control_task_type":"STREET/ADDRESS","control_task_comments":"Add/adjust/delete Linear Name","task_sequence":20,"assign_to":"slee5","task_status":null },{"task_assigned_to":"SITE_AREA_MAINT","task_type":"SITEAREA","task_type_desc":"Site Area","control_task_type":"STREET/ADDRESS","control_task_comments":"Close Site Area","task_sequence":70,"assign_to":"rli4","task_status":"HOLD" }],"attachment":null,"user_id":"rli4"}'
 					 , 10000
 					 ,-1
@@ -219,6 +219,11 @@ select update_source2('{"source_id":1000000120,"class":"REPORT","type":"MUNICIPA
 					 , 1000000252
 					 ,-1
 					 );					 
+select update_source('{"source_id":null,"class":"REPORT","type":"INHOUSE MAINTENANCE","control_task_type":"STREET/ADDRESS","status":"APPROVED","int_id":"Test Internal6","int_date":"2019-07-18","ext_id":"","ext_date":null,"plan_name":null,"maint_status":null,"comment":null,"closed":null,"task":[{"task_id":null,"task_type":"SITEAREA","task_sequence":10,"assigned_to":"emachyni","task_comments":"Create/adjust Site Area","task_status":"READY","deleted":false,"disabled":false},{"task_id":null,"task_type":"LINEARNAME","task_sequence":20,"assigned_to":"rli4","task_comments":"Add/adjust/delete Linear Name","task_status":"READY","deleted":false,"disabled":false},{"task_id":null,"task_type":"AMA","task_sequence":30,"assigned_to":"rli4","task_comments":"Add/adjust/delete AMA","task_status":"READY","deleted":false,"disabled":false},{"task_id":null,"task_type":"INTERSECTION","task_sequence":40,"assigned_to":"INTERSECTION_MAINT","task_comments":"Add/edit/delete Intersections","task_status":"READY","deleted":true,"disabled":false},{"task_id":null,"task_type":"CENTRELINE","task_sequence":50,"assigned_to":"SEGMENT_MAINT","task_comments":"Add/edit/delete Segments","task_status":"READY","deleted":true,"disabled":false},{"task_id":null,"task_type":"ADDRESSPOINT","task_sequence":60,"assigned_to":"ADDRESS_MAINT","task_comments":"Add/edit/delete Reserved Address Points","task_status":"READY","deleted":true,"disabled":false},{"task_id":null,"task_type":"SITEAREA","task_sequence":70,"assigned_to":"slee6111","task_comments":"Close Site Area - hold for now","task_status":"HOLD","deleted":false,"disabled":false}],"attachment":null,"user_id":"rli4"}'
+					 , 10000
+					 ,-1
+					 ,'sde.DEFAULT');
+select is_blank_string('');					 
 select * from ige_source_evw order by 1 desc limit 10 where 					 
 select get_source_by_id(1000000113, 'network.TRANS1234');
 select get_source_by_id(1000000113, 'network.TRANS81');
@@ -295,12 +300,28 @@ SELECT update_source_task_info
 );
 
 SELECT update_source_task_info
-('{"source_id":null,"control_task_type": "STREET/ADDRESS","class":"PLAN","type":"INHOUSE MAINTENANCE","status":"APPROVED","int_id":"Test Internal","int_date":"2019-07-16","ext_id":"Test External","ext_date":"2019-07-23","plan_name":"Test plan name","maint_status":null,"comment":"source comments - testing post","closed":null,"task":[{"task_id":null,"task_type":"SITEAREA","task_sequence":10,"assigned_to":"emachyni","task_comments":"Create/adjust Site Area","task_status":"READY","deleted":false,"disabled":false},{"task_id":null,"task_type":"LINEARNAME","task_sequence":20,"assigned_to":"slee5","task_comments":"Add/adjust/delete Linear Name","task_status":"READY","deleted":false,"disabled":false}],"attachment":null,"user_id":"rli4"}',
+('{"source_id":1000000128,"class":"PLAN","type":"BYLAW","control_task_type":"STREET/ADDRESS","status":"APPROVED","int_id":"Test Internal10","int_date":"2019-07-17","ext_id":"Test External12","ext_date":"2019-07-17","plan_name":"Test plan name1","maint_status":"READY","comment":"add source comments","closed":false,"task":[{"task_id":1000000507,"task_type":"SITEAREA","task_sequence":10,"assigned_to":"jfligg","task_comments":"Create/adjust Site Area","task_status":"READY","deleted":false,"disabled":false},{"task_id":1000000508,"task_type":"LINEARNAME","task_sequence":20,"assigned_to":"slee5","task_comments":"Add/adjust/delete Linear Name","task_status":"READY","deleted":false,"disabled":false},{"task_id":1000000513,"task_type":"SITEAREA","task_sequence":70,"assigned_to":"rli4","task_comments":"Close Site Area","task_status":"HOLD","deleted":false,"disabled":false}],"attachment":null,"user_id":"rli4"}',
+ 1000000128, 
+ 1000000526, 
+ -1
+);
+
+select * from ige_source where source_id = 1000000128
+select * from ige_task where source_id = 1000000128 
+select * from ige_control_task where source_id = 1000000128
+order by 1;
+and trans_id_expire = -1;
+
+SELECT update_tasks('[{"task_id":1000000507,"task_type":"SITEAREA","task_sequence":10,"assigned_to":"jfligg","task_comments":"Create/adjust Site Area","task_status":"READY","deleted":false,"disabled":false},{"task_id":1000000508,"task_type":"LINEARNAME","task_sequence":20,"assigned_to":"slee5","task_comments":"Add/adjust/delete Linear Name","task_status":"READY","deleted":false,"disabled":false},{"task_id":1000000513,"task_type":"SITEAREA","task_sequence":70,"assigned_to":"rli4","task_comments":"Close Site Area","task_status":"HOLD","deleted":false,"disabled":false}]'::json, 
+					1000000128, 1000000070, 'SUPERVISOR DEFINED', 1000000526, -1) 
+
+
+SELECT update_source_task_info
+('{"object_id": null,"source_id":null,"control_task_type": "STREET/ADDRESS","class":"PLAN","type":"BOUNDARIES ACT PLAN","status":"APPROVED","int_id":"test","int_date":"2019-07-08","ext_id":"test ext2","ext_date":"2019-07-26","plan_name":"ry-plan-no","maint_status":null,"comment":"Source comments","task":[{"task_assigned_to":"SITE_AREA_MAINT","task_type":"SITEAREA","task_type_desc":"Site Area","control_task_type":"STREET/ADDRESS","control_task_comments":"Create/adjust Site Area","task_sequence":10,"assign_to":"rli4","task_status":null },{"task_assigned_to":"LINEARNAME_MAINT","task_type":"LINEARNAME","task_type_desc":"Linear Name","control_task_type":"STREET/ADDRESS","control_task_comments":"Add/adjust/delete Linear Name","task_sequence":20,"assign_to":"slee5","task_status":null },{"task_assigned_to":"SITE_AREA_MAINT","task_type":"SITEAREA","task_type_desc":"Site Area","control_task_type":"STREET/ADDRESS","control_task_comments":"Close Site Area","task_sequence":70,"assign_to":"rli4","task_status":"HOLD" }],"attachment":null,"user_id":"rli4"}',
  1000000062, --10006,
  1000000137, --20008,
  -1
 );
-
 
 	  SELECT t.*,
 			 ct.control_task_id,
@@ -374,3 +395,32 @@ select t.*, row_number() over (partition by t.source_id order by t.source_id) id
 
 select version()
 SELECT PostGIS_Version();
+---------------------------------------
+import foreign schema "IGE"
+limit to (slee_test)
+from server imaint_oracle into imaint_oracle;
+select * from imaint_oracle.slee_test;
+create table network.slee_test (idx integer);
+select * from slee_test;
+
+CREATE OR REPLACE FUNCTION network.func_foreign_table_a_after_insert()
+RETURNS TRIGGER
+AS $$
+BEGIN
+    INSERT INTO slee_test
+        (idx)
+    VALUES
+        (NEW.id + 100)
+    ;
+    RETURN NEW;
+END;
+$$  LANGUAGE PLPGSQL
+;
+
+CREATE TRIGGER trig_foreign_table_a_after_insert
+AFTER INSERT OR UPDATE ON imaint_oracle.slee_test
+FOR EACH ROW EXECUTE PROCEDURE func_foreign_table_a_after_insert();
+
+insert into imaint_oracle.slee_test values (1);
+select * from imaint_oracle.slee_test;
+select * from slee_test;

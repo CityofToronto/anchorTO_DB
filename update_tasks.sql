@@ -143,12 +143,14 @@ BEGIN
 		  WHERE UPPER(deleted) = 'TRUE';
 		  raise notice 'IDs: %', v_sql;
 	      -- Expire the deleted tasks	  
-		  v_sql = 'UPDATE imaint_oracle.ige_task 
+		  IF v_sql IS NOT NULL THEN
+		    v_sql = 'UPDATE imaint_oracle.ige_task 
 		               SET trans_id_expire = trans_id_create
 			       WHERE task_id IN 
 			      ( ' || v_sql || ')';
-		  raise notice 'Update SQL: %', v_sql;
-		  EXECUTE v_sql;
+		    raise notice 'Update SQL: %', v_sql;		  
+		    EXECUTE v_sql;
+		  END IF;
 		  raise notice 'Expired tasks in Oracle';
 		  -- Update existing tasks
 		  UPDATE imaint_oracle.ige_task 

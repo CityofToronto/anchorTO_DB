@@ -44,15 +44,140 @@ BEGIN
 	isnew = false;	
 	retval = 0;
 	retval1 = 0;
-    SELECT sde.sde_set_current_version(v_version_name) INTO retval;
+    --SELECT sde.sde_set_current_version(v_version_name) INTO retval;
 	--SELECT sde.sde_set_default() INTO retval;
 	--raise notice 'set to default: %', retval;
 	--SELECT set_current_version(v_version_name) INTO retval;
-	SELECT sde.sde_edit_version(v_version_name, 1) INTO retval1;
+	--SELECT sde.sde_edit_version(v_version_name, 1) INTO retval1;
 	raise notice 'set version:%', retval;
-	IF retval = 0 and retval1 = 0 THEN 	 
-	  SELECT update_source_core(v_info, v_trans_id_create, v_trans_id_expire) INTO o_json;
-	  RETURN o_json;
+	IF retval = 0 AND retval1 = 0 THEN 
+	  SELECT $1::json->>'source_id',
+             $1::json->>'class',
+		     $1::json->>'type',
+		     $1::json->>'status',
+		     $1::json->>'int_id',
+		     $1::json->>'int_date',
+		     $1::json->>'ext_id',
+			 $1::json->>'ext_date',
+			 $1::json->>'plan_name',
+			 $1::json->>'parent_source_id',
+			 $1::json->>'maint_status',
+			 $1::json->>'comment',
+			 $1::json->>'user_id'
+		INTO sourceid,
+			 v_source_class,			
+			 v_source_type,
+			 v_source_status,
+			 v_inter_id,
+			 v_inter_date,
+			 v_exter_id,
+			 v_exter_date,
+			 v_plan_name,
+			 v_parent_source_id,
+			 v_maint_status,
+			 v_comment,
+			 v_user_id;
+	  SELECT is_blank_id(sourceid::text) INTO isnew; 
+	  raise notice 'Is New? %', isnew;
+	  raise notice 'source id: %', sourceid;
+	  raise notice 'Source Class: %', v_source_class;
+	  raise notice 'Comment: %', v_comment;
+	  raise notice 'Source Type: %', v_source_type;
+	  raise notice 'Source Status: %', v_source_status;
+	  raise notice 'Inter ID: %', v_inter_id;
+	  raise notice 'Inter Date: %', v_inter_date;
+	  raise notice 'Exter ID: %', v_exter_id;
+	  raise notice 'Exter Date: %', v_exter_date;
+	  raise notice 'Plan Name: %', v_plan_name;
+	  raise notice 'Parent ID: %', v_parent_source_id;
+	  raise notice 'Maint Status: %', v_maint_status;
+	  raise notice 'User ID: %', v_user_id;	 
+	  IF NOT is_blank_string(v_exter_id) THEN
+		SELECT count(*) INTO retval FROM ige_source_evw WHERE external_source_no = v_exter_id;		
+	  END IF;
+	    IF isnew AND retval > 0 THEN		 
+		  o_status = 'Failed';
+		  o_message = get_message(50667,'ERR','SURCTSK', '0', v_exter_id);			  
+		ELSE
+		  the_inter_id = replace(v_inter_id, '`','''');
+		  the_exter_id = replace(v_exter_id, '`','''');
+		  IF is_blank_id(v_parent_source_id::text) THEN
+		    v_parent_source_id = 0;
+		  END IF;
+		  IF is_blank_string(v_inter_date) THEN
+		    dt_inter = NULL;
+		  ELSE 
+		    SELECT to_timestamp(v_inter_date, 'YYYY-MM-DD') INTO dt_inter; 
+			--SELECT v_inter_date::timestamp INTO dt_inter;
+		  END IF;
+		  raise notice 'InterDate: %', dt_inter;
+		  IF is_blank_string(v_exter_date) THEN
+		    dt_exter = NULL;
+		  ELSE 
+		    SELECT to_timestamp(v_exter_date, 'YYYY-MM-DD') INTO dt_exter; 
+			--SELECT v_exter_date::timestamp INTO dt_exter;
+		  END IF;
+		  
+		  raise notice 'ExterDate: %', dt_exter;
+		  raise notice 'New?: %', isnew;
+		  IF (isnew) THEN
+		    SELECT nextval('ige_source_id_seq')::numeric(12,0) INTO sourceid; 
+			raise notice 'source_id: %', sourceid;
+			INSERT INTO ige_source_evw
+		          (
+					  objectid,
+					  globalid,
+					  source_id, 
+					  source_class, 
+					  source_type, 
+					  internal_source_no, 
+					  internal_source_date, 
+					  external_source_no, 
+					  external_source_date, 
+					  plan_name, 
+					  source_comments, 
+					  source_status, 
+					  parent_source_id, 
+					  trans_id_create, 
+					  trans_id_expire					  
+				  )
+		      VALUES 
+			      (
+					  sde.next_rowid(current_schema()::text, 'IGE_SOURCE'),
+					  sde.next_globalid(),
+					  sourceid,
+					  v_source_class,
+					  v_source_type,
+					  the_inter_id,
+					  dt_inter,
+				      the_exter_id,
+					  dt_exter,
+					  v_plan_name,
+					  v_comment,
+					  v_source_status,
+					  v_parent_source_id,
+					  v_trans_id_create,
+					  v_trans_id_expire
+				  );
+			  --RETURNING source_id INTO sourceid;
+			  raise notice 'source_id #2: %', sourceid;
+		  ELSE -- Update source info
+		    UPDATE ige_source_evw 
+			    SET  source_class = v_source_class, 
+					 source_type = v_source_type, 
+					 internal_source_no = the_inter_id, 
+					 internal_source_date = dt_inter, 
+					 external_source_no = the_exter_id, 
+					 external_source_date = dt_exter, 
+					 plan_name = v_plan_name, 
+					 source_comments = v_comment, 
+					 source_status = v_source_status, 
+					 parent_source_id = v_parent_source_id, 
+					 trans_id_create = v_trans_id_create, 
+					 trans_id_expire = v_trans_id_expire 
+				WHERE source_id = sourceid;
+		  END IF;
+		END IF;	  
 	ELSE
 	  o_status = 'Failed';
       o_message = 'Failed to set the version to ' || v_version_name;
@@ -65,8 +190,7 @@ BEGIN
 		   sourceid 
 	) c;
 	--raise notice 'Output json: %', o_json;
-	SELECT sde.sde_edit_version(v_version_name, 2) INTO retval;
-	SELECT sde.sde_set_default() INTO retval;
+	--SELECT sde.sde_edit_version(v_version_name, 2) INTO retval;
 	RETURN o_json;
 EXCEPTION
   WHEN OTHERS THEN 
@@ -80,7 +204,6 @@ EXCEPTION
 		   sourceid 
 	) c;	
 	SELECT sde.sde_edit_version(v_version_name, 2);
-	SELECT sde.sde_set_default() INTO retval;
 	RETURN o_json;
 END;  
 $BODY$;
