@@ -395,32 +395,6 @@ select t.*, row_number() over (partition by t.source_id order by t.source_id) id
 
 select version()
 SELECT PostGIS_Version();
----------------------------------------
-import foreign schema "IGE"
-limit to (slee_test)
-from server imaint_oracle into imaint_oracle;
-select * from imaint_oracle.slee_test;
-create table network.slee_test (idx integer);
-select * from slee_test;
 
-CREATE OR REPLACE FUNCTION network.func_foreign_table_a_after_insert()
-RETURNS TRIGGER
-AS $$
-BEGIN
-    INSERT INTO slee_test
-        (idx)
-    VALUES
-        (NEW.id + 100)
-    ;
-    RETURN NEW;
-END;
-$$  LANGUAGE PLPGSQL
-;
 
-CREATE TRIGGER trig_foreign_table_a_after_insert
-AFTER INSERT OR UPDATE ON imaint_oracle.slee_test
-FOR EACH ROW EXECUTE PROCEDURE func_foreign_table_a_after_insert();
 
-insert into imaint_oracle.slee_test values (1);
-select * from imaint_oracle.slee_test;
-select * from slee_test;
