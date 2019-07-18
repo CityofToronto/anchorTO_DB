@@ -35,6 +35,7 @@ BEGIN
 				  SELECT *
 				  FROM ige_task ts
 				  WHERE ts.control_task_id = ct.control_task_id 
+				    AND ts.trans_id_expire = -1
 				  ORDER BY task_sequence --task_id
 			  ) c
 			) AS tasks,
