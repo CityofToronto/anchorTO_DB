@@ -40,6 +40,11 @@ BEGIN
 					( 
 					  SELECT json_agg(row_to_json(r))
 					  FROM (
+					      (SELECT 0 AS user_id,
+						         s.assigned_to username,
+								 s.assigned_to full_name)
+						  UNION ALL
+						  (
 					      SELECT u.user_id,
 						         u.username,
 						  	     u.full_name
@@ -48,6 +53,7 @@ BEGIN
 						  WHERE u.status = ''ACTIVE''
 						    AND ss.steward_group = s.assigned_to
 						  ORDER BY full_name
+						  )
 						  ) r
 					) AS task_assigned_to_user_list
 	                 FROM ige_task_default s
