@@ -200,10 +200,12 @@ select * from ige_task where task_id = 1000000059;
 select * from ige_transaction where task_id = 1000000059;
 select * from imaint_oracle.ige_task where task_id = 1000000059;
 select * from imaint_oracle.ige_transaction where task_id = 1000000059;
-
+select * from ige_messages where message_number between 50650 and 50700
 SELECT set_current_version('TRANS1234');
 SELECT sde.sde_edit_version('TRANS000', 1);
-select update_source('{"object_id": null,"source_id":null,"control_task_type": "STREET/ADDRESS","class":"PLAN","type":"BOUNDARIES ACT PLAN","status":"APPROVED","int_id":"test","int_date":"2019-07-08","ext_id":"test ext505","ext_date":"2019-07-26","plan_name":"ry-plan-no","source_status":null,"comment":"Source comments","task":[{"task_assigned_to":"SITE_AREA_MAINT","task_type":"SITEAREA","task_type_desc":"Site Area","control_task_type":"STREET/ADDRESS","control_task_comments":"Create/adjust Site Area","task_sequence":10,"assign_to":"rli4","task_status":null },{"task_assigned_to":"LINEARNAME_MAINT","task_type":"LINEARNAME","task_type_desc":"Linear Name","control_task_type":"STREET/ADDRESS","control_task_comments":"Add/adjust/delete Linear Name","task_sequence":20,"assign_to":"slee5","task_status":null },{"task_assigned_to":"SITE_AREA_MAINT","task_type":"SITEAREA","task_type_desc":"Site Area","control_task_type":"STREET/ADDRESS","control_task_comments":"Close Site Area","task_sequence":70,"assign_to":"rli4","task_status":"HOLD" }],"attachment":null,"user_id":"rli4"}'
+select * from ige_task where source_id = 1000000136
+select count(*) from ige_source_evw where source_id <> 1000000138 and internal_source_no = 'test101'
+select update_source('{"object_id": null,"source_id":1000000137,"control_task_type": "STREET/ADDRESS","class":"PLAN","type":"BOUNDARIES ACT PLAN","status":"APPROVED","int_id":"test101","int_date":"2019-07-08","ext_id":"test ext101","ext_date":"2019-07-26","plan_name":"ry-plan-no101","source_status":null,"comment":"Source comments","task":[{"task_assigned_to":"SITE_AREA_MAINT","task_type":"SITEAREA","task_type_desc":"Site Area","control_task_type":"STREET/ADDRESS","control_task_comments":"Create/adjust Site Area","task_sequence":10,"assign_to":"rli4","task_status":null },{"task_assigned_to":"LINEARNAME_MAINT","task_type":"LINEARNAME","task_type_desc":"Linear Name","control_task_type":"STREET/ADDRESS","control_task_comments":"Add/adjust/delete Linear Name","task_sequence":20,"assign_to":"slee5","task_status":null },{"task_assigned_to":"SITE_AREA_MAINT","task_type":"SITEAREA","task_type_desc":"Site Area","control_task_type":"STREET/ADDRESS","control_task_comments":"Close Site Area","task_sequence":70,"assign_to":"rli4","task_status":"HOLD" }],"attachment":null,"user_id":"rli4"}'
 					 , 10000
 					 ,-1
 					 ,'TRANS81');
@@ -306,11 +308,11 @@ SELECT update_source_task_info
  -1
 );
 
-select * from ige_source where source_id = 1000000128
+
 select * from ige_task where source_id = 1000000128 
 select * from ige_control_task where source_id = 1000000128
 order by 1;
-and trans_id_expire = -1;
+and trans_id_expire = -1; 
 
 SELECT update_tasks('[{"task_id":1000000507,"task_type":"SITEAREA","task_sequence":10,"assigned_to":"jfligg","task_comments":"Create/adjust Site Area","task_status":"READY","deleted":false,"disabled":false},{"task_id":1000000508,"task_type":"LINEARNAME","task_sequence":20,"assigned_to":"slee5","task_comments":"Add/adjust/delete Linear Name","task_status":"READY","deleted":false,"disabled":false},{"task_id":1000000513,"task_type":"SITEAREA","task_sequence":70,"assigned_to":"rli4","task_comments":"Close Site Area","task_status":"HOLD","deleted":false,"disabled":false}]'::json, 
 					1000000128, 1000000070, 'SUPERVISOR DEFINED', 1000000526, -1) 

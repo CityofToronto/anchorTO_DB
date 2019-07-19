@@ -1154,6 +1154,11 @@ CREATE TABLE network.ige_messages
 GRANT ALL ON TABLE network.ige_messages TO network;
 GRANT INSERT, SELECT, UPDATE, DELETE ON TABLE network.ige_messages TO sde;
 CREATE INDEX ige_messages_number_category_type_idx ON ige_messages (message_number, message_category, message_type);
+
+INSERT INTO ige_messages (message_number, message_category, message_type, message)
+       VALUES (50680, 'SURCTSK', 'ERR', 'Source Id <srcId>  new internal_source_id <interallNo> is not unique');
+INSERT INTO ige_messages (message_number, message_category, message_type, message)
+       VALUES (50681, 'SURCTSK', 'ERR', 'Source Id <srcId>  new plan name <planName> is not unique');
 ---------------------------------------------------------------------------------------------------------------------------
 CREATE TABLE network.configuration
 (
