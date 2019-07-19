@@ -36,7 +36,7 @@ FROM
 	       u.full_name
 	    FROM ige_task_default t 
 		JOIN ige_user_steward s ON t.assigned_to = s.steward_group
-		JOIN ige_user u ON u.user_id = s.user_id
+		JOIN ige_user u ON u.user_id = s.user_id AND u.status = 'ACTIVE'
 	    WHERE t.task_type = $1
 		ORDER BY u.full_name
 		)
