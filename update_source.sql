@@ -15,6 +15,7 @@ CREATE OR REPLACE FUNCTION network.update_source(
 AS $BODY$
 DECLARE 
   sourceid numeric(12,0);
+  v_object_id numeric(12,0) = -1;
   o_status text;  
   o_message text;
   o_json text; 
@@ -160,6 +161,7 @@ BEGIN
 		  IF (isnew) THEN
 		    SELECT nextval('ige_source_id_seq')::numeric(12,0) INTO sourceid; 
 			raise notice 'source_id: %', sourceid;
+			SELECT sde.next_rowid(current_schema()::text, 'IGE_SOURCE') INTO v_object_id;
 			INSERT INTO ige_source_evw
 		          (
 					  objectid,
@@ -180,7 +182,7 @@ BEGIN
 				  )
 		      VALUES 
 			      (
-					  sde.next_rowid(current_schema()::text, 'IGE_SOURCE'),
+					  v_object_id, --sde.next_rowid(current_schema()::text, 'IGE_SOURCE'),
 					  sde.next_globalid(),
 					  sourceid,
 					  v_source_class,
@@ -213,6 +215,7 @@ BEGIN
 					 trans_id_create = v_trans_id_create, 
 					 trans_id_expire = v_trans_id_expire 
 				WHERE source_id = sourceid;
+			SELECT objectid INTO v_object_id FROM ige_source_evw WHERE source_id = sourceid;	
 		  END IF;
 		END IF;	  
 	ELSE
@@ -224,7 +227,8 @@ BEGIN
 	(
 	  SELECT o_status status, 
 	       o_message message,
-		   sourceid 
+		   sourceid,
+		   v_object_id objectid
 	) c;
 	--raise notice 'Output json: %', o_json;
 	--SELECT sde.sde_edit_version(v_version_name, 2) INTO retval;
@@ -238,7 +242,8 @@ EXCEPTION
 	(
 	  SELECT o_status status, 
 	       o_message message,
-		   sourceid 
+		   sourceid,
+		   v_object_id objectid
 	) c;	
 	SELECT sde.sde_edit_version(v_version_name, 2);
 	RETURN o_json;
