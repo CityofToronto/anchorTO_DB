@@ -2,6 +2,9 @@
 
 -- DROP FUNCTION network.create_task(text, text, text);
 
+/*
+  Create a task
+*/
 CREATE OR REPLACE FUNCTION network.create_task(
 	uname text,
 	ucomment text,

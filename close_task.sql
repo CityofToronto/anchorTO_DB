@@ -1,7 +1,9 @@
 -- FUNCTION: network.close_task(text, text, text, text)
 
 -- DROP FUNCTION network.close_task(text, text, text, text);
-
+/*
+  Close a task
+*/
 CREATE OR REPLACE FUNCTION network.close_task(
 	uname text,
 	editversion text,
