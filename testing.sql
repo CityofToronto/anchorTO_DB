@@ -33,11 +33,14 @@ delete from ige_user_steward where user_id = 100009;
 	FROM ige_user_steward   
     WHERE user_id =100009; 
 select * from sde.sde_version;
-select create_task('slee33', 'some comments', 'anchorTO');
+select create_task('slee330', 'some comments', 'anchorTO');
 select create_transaction(1,'slee33', 'some comments', 'anchorTO');
 select network.close_task('slee333', '3', 'uapp1', 'COMPLETED') 
 select create_source_task('slee5', 'comments32010');
 select create_source_task('slee5', '');
+
+select * from ige_task order by 1 desc
+select * from imaint_oracle.ige_task order by 1 desc limit 10;
 select case when length('') = 0 THEN 'CREATE SOURCE' else 'a' end;
 select delete_task(1000000036)
 select * from ige_task order by task_id desc;
@@ -205,7 +208,7 @@ SELECT set_current_version('TRANS1234');
 SELECT sde.sde_edit_version('TRANS000', 1);
 select * from ige_task where source_id = 1000000136
 select count(*) from ige_source_evw where source_id <> 1000000138 and internal_source_no = 'test101'
-select update_source('{"object_id": null,"source_id":1000000137,"control_task_type": "STREET/ADDRESS","class":"PLAN","type":"BOUNDARIES ACT PLAN","status":"APPROVED","int_id":"test101","int_date":"2019-07-08","ext_id":"test ext101","ext_date":"2019-07-26","plan_name":"ry-plan-no101","source_status":null,"comment":"Source comments","task":[{"task_assigned_to":"SITE_AREA_MAINT","task_type":"SITEAREA","task_type_desc":"Site Area","control_task_type":"STREET/ADDRESS","control_task_comments":"Create/adjust Site Area","task_sequence":10,"assign_to":"rli4","task_status":null },{"task_assigned_to":"LINEARNAME_MAINT","task_type":"LINEARNAME","task_type_desc":"Linear Name","control_task_type":"STREET/ADDRESS","control_task_comments":"Add/adjust/delete Linear Name","task_sequence":20,"assign_to":"slee5","task_status":null },{"task_assigned_to":"SITE_AREA_MAINT","task_type":"SITEAREA","task_type_desc":"Site Area","control_task_type":"STREET/ADDRESS","control_task_comments":"Close Site Area","task_sequence":70,"assign_to":"rli4","task_status":"HOLD" }],"attachment":null,"user_id":"rli4"}'
+select update_source('{"object_id": null,"source_id":1000000137,"control_task_type": "STREET/ADDRESS","class":"PLAN","type":"BOUNDARIES ACT PLAN","status":"APPROVED","int_id":"test102","int_date":"2019-07-08","ext_id":"test ext102","ext_date":"2019-07-26","plan_name":"ry-plan-no102","source_status":null,"comment":"Source comments","task":[{"task_assigned_to":"SITE_AREA_MAINT","task_type":"SITEAREA","task_type_desc":"Site Area","control_task_type":"STREET/ADDRESS","control_task_comments":"Create/adjust Site Area","task_sequence":10,"assign_to":"rli4","task_status":null },{"task_assigned_to":"LINEARNAME_MAINT","task_type":"LINEARNAME","task_type_desc":"Linear Name","control_task_type":"STREET/ADDRESS","control_task_comments":"Add/adjust/delete Linear Name","task_sequence":20,"assign_to":"slee5","task_status":null },{"task_assigned_to":"SITE_AREA_MAINT","task_type":"SITEAREA","task_type_desc":"Site Area","control_task_type":"STREET/ADDRESS","control_task_comments":"Close Site Area","task_sequence":70,"assign_to":"rli4","task_status":"HOLD" }],"attachment":null,"user_id":"rli4"}'
 					 , 10000
 					 ,-1
 					 ,'TRANS81');
@@ -396,7 +399,40 @@ select t.*, row_number() over (partition by t.source_id order by t.source_id) id
 	where idx > 1;
 
 select version()
-SELECT PostGIS_Version();
+SELECT PostGIs_version();
+
+select * from ige_source_evw order by 1 desc limit 10;
+select  * from ige_messages where message like '%complete%';
+
+SELECT min(task_sequence)  
+			FROM ige_task 
+	        WHERE control_task_id = 1000000059
+	          AND trans_id_expire = -1
+			  AND task_status <> 'COMPLETED';
+select * from ige_control_task where control_task_id = 1000000016;
+select * from ige_task where control_task_id = 1000000016;
+select * from ige_task where task_status <> 'READY' AND control_task_id > 1000000000
+SELECT update_control_task_status_by_tasks(1000000016);
+select * from ige_task where task_id > 10000000 and source_id > 0;
+
+select validate_task_status('COMPLETED')
+select * from ige_task where task_id = 1;
+select * from imaint_oracle.ige_task where task_id = 1;
+SELECT update_task_status(1,'work started')
+SELECT update_task_status(1,'completed')
+select * from dmn_task_status
+select distinct task_status from ige_task;
+select * from ige_user_steward;
+
+SELECT tt.control_task_id, min(tt.task_sequence) min_seq
+			 FROM ige_task tt
+			 WHERE tt.task_status <> 'COMPLETED' 
+			   AND tt.taken_by is null
+		       AND tt.trans_id_expire = -1
+			 GROUP BY tt.control_task_id
+			 order by control_task_id
+select get_task_by_user_name('sdale');
+
 
 
 
