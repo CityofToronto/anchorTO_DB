@@ -81,7 +81,7 @@ BEGIN
 	  raise notice 'Generated new task id(s)';
 	  -- Expire the deleted tasks	  
 	  UPDATE ige_task
-	    SET trans_id_expire = trans_id_create
+	    SET trans_id_expire = v_trans_id_create
 		WHERE task_id IN 
 		  (
 			  SELECT task_id
@@ -145,11 +145,11 @@ BEGIN
 	      -- Expire the deleted tasks	  
 		  IF v_sql IS NOT NULL THEN
 		    v_sql = 'UPDATE imaint_oracle.ige_task 
-		               SET trans_id_expire = trans_id_create
+		               SET trans_id_expire = $1
 			       WHERE task_id IN 
 			      ( ' || v_sql || ')';
 		    raise notice 'Update SQL: %', v_sql;		  
-		    EXECUTE v_sql;
+		    EXECUTE v_sql USING v_trans_id_create;
 		  END IF;
 		  raise notice 'Expired tasks in Oracle';
 		  -- Update existing tasks
