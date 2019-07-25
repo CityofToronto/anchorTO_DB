@@ -10,6 +10,7 @@ CREATE TABLE  network.ige_control_task
 );
 CREATE UNIQUE INDEX ige_control_task_pk ON ige_control_task (control_task_id);
 CREATE INDEX ige_control_task_source_id_trans_expire_idx ON ige_control_task (source_id, trans_id_expire);
+CREATE INDEX ige_control_task_status_expire_idx ON ige_control_task(control_task_status, trans_id_expire);
 GRANT ALL ON TABLE network.ige_control_task TO network;
 GRANT INSERT, SELECT, UPDATE, DELETE ON TABLE network.ige_control_task TO sde;
 ---------------------------------------------------------------------------------------------------------------------------
@@ -31,6 +32,7 @@ CREATE TABLE network.ige_task
 GRANT ALL ON TABLE network.ige_task TO network;
 CREATE INDEX ige_task_control_task_id_trans_expire_idx ON ige_task (control_task_id, trans_id_expire);
 CREATE INDEX ige_task_task_type_idx ON ige_task (task_type);
+CREATE INDEX ige_task_task_status_expire__taken_by_assigned_idx ON ige_task (task_status, trans_id_expire, taken_by, assigned_to);
 GRANT INSERT, SELECT, UPDATE, DELETE ON TABLE network.ige_task TO sde;
 ---------------------------------------------------------------------------------------------------------------------------
 CREATE TABLE network.ige_transaction
