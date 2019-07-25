@@ -57,7 +57,7 @@ BEGIN
 		     taken_by,
 		     task_sequence,
 		     task_status,
-		     task_comments,
+		     format_string(task_comments),
 		     control_task_id,
 		     task_category,
 		     trans_id_create,

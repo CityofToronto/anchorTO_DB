@@ -47,7 +47,7 @@ BEGIN
 		         theid, 
 			     v_source_id, 
 			     v_status, 
-				 v_control_task_comment, 
+				 format_string(v_control_task_comment), 
 				 v_control_task_type, 
 				 v_trans_id_create, 
 				 -1
@@ -68,7 +68,7 @@ BEGIN
 					 theid, 
 					 v_source_id, 
 					 v_status, 
-					 v_control_task_comment, 
+					 format_string(v_control_task_comment), 
 					 v_control_task_type, 
 					 v_trans_id_create, 
 					 -1
@@ -78,7 +78,7 @@ BEGIN
   ELSE -- Update	
     UPDATE ige_control_task        
 	  SET control_task_status = v_status, 
-		  control_task_comments = v_control_task_comment, 
+		  control_task_comments = format_string(v_control_task_comment), 
 		  control_task_type = v_control_task_type, 				
 		  trans_id_expire = v_trans_id_expire
 	WHERE control_task_id = theid;
@@ -86,7 +86,7 @@ BEGIN
 	 IF get_configuration_bool('anchorTO', 'ANCHORTO', 'sync_with_oracle') THEN
 	   UPDATE imaint_oracle.ige_control_task        
 	   SET control_task_status = v_status, 
-		   control_task_comments = v_control_task_comment, 
+		   control_task_comments = format_string(v_control_task_comment), 
 		   control_task_type = v_control_task_type, 				
 		   trans_id_expire = v_trans_id_expire
 	   WHERE control_task_id = theid;

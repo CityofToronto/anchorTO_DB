@@ -23,13 +23,13 @@ FROM
 	       t.source_class AS class,
 	       t.source_type AS type,
 	       t.source_status AS status,
-	       t.plan_name,
-	       t.internal_source_no AS int_id,
+	       format_string(t.plan_name) AS plan_name,
+	       format_string(t.internal_source_no) AS int_id,
 	       to_char(t.internal_source_date, 'YYYY-MM-DD') AS int_date,
-	       t.external_source_no AS ext_id,
+	       format_string(t.external_source_no) AS ext_id,
 	       to_char(t.external_source_date, 'YYYY-MM-DD') AS ext_date,
 	       k.control_task_status AS maint_status,
-	       t.source_comments AS comment,
+	       format_string(t.source_comments) AS comment,
 	       t.objectid
     FROM ige_source_evw t
     JOIN ige_control_task k ON t.source_id = k.source_id

@@ -28,11 +28,22 @@ BEGIN
 			 ct.control_task_id,
 			 ct.control_task_status,
 			 ct.control_task_type,
-			 ct.control_task_comments,
+			 format_string(ct.control_task_comments) AS control_task_comments,
 			(
 			  SELECT json_agg(row_to_json(c))
 			  FROM (	
-				  SELECT *
+				  SELECT task_id, 
+				         task_type, 
+				         source_id, 
+				         assigned_to, 
+				         taken_by, 
+				         task_sequence, 
+				         task_status, 
+				         format_string(task_comments) AS task_comments, 
+						 control_task_id, 
+						 task_category, 
+						 trans_id_create, 
+						 trans_id_expire
 				  FROM ige_task ts
 				  WHERE ts.control_task_id = ct.control_task_id 
 				    AND ts.trans_id_expire = -1

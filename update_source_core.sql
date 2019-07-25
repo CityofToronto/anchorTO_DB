@@ -27,8 +27,8 @@ DECLARE
   v_plan_name text;
   v_comment text;
   v_parent_source_id numeric;
-  retval integer = 0;
-  retval1 integer = 0;
+  retval integer;
+  retval1 integer;
   isnew boolean;
   v_user_id text;
   v_maint_status text;
@@ -36,14 +36,13 @@ DECLARE
   the_exter_id text;
   dt_inter timestamp;
   dt_exter timestamp;
-  cnt_ext_id integer = 0;
-  cnt_int_id integer = 0;
-  cnt_plan_name integer = 0;
 BEGIN
     o_status = 'OK';
     o_message = '';
     sourceid = -1;
-	isnew = false;		   
+	isnew = false;	
+	retval = 0;
+	retval1 = 0;    
 	
 	  SELECT $1::json->>'source_id',
              $1::json->>'class',
@@ -86,50 +85,14 @@ BEGIN
 	  raise notice 'Parent ID: %', v_parent_source_id;
 	  raise notice 'Maint Status: %', v_maint_status;
 	  raise notice 'User ID: %', v_user_id;	 
-	    the_inter_id = replace(v_inter_id, '`','''');
-		the_exter_id = replace(v_exter_id, '`','''');
-	    -- Check unique external id
-	    IF NOT is_blank_string(the_exter_id) THEN
-		  IF isnew THEN 
-		    SELECT count(*) INTO cnt_ext_id FROM ige_source_evw WHERE external_source_no = the_exter_id;		
-		  ELSE 
-		    SELECT count(*) INTO cnt_ext_id FROM ige_source_evw WHERE external_source_no = the_exter_id and source_id <> sourceid;
-		  END IF;
-	    END IF;
-		-- Check unique internal id
-		IF NOT is_blank_string(the_inter_id) THEN
-		  IF isnew THEN 
-		    SELECT count(*) INTO cnt_int_id FROM ige_source_evw WHERE internal_source_no = the_inter_id;		
-		  ELSE 
-		    SELECT count(*) INTO cnt_int_id FROM ige_source_evw WHERE internal_source_no = the_inter_id and source_id <> sourceid;
-		  END IF;
-	    END IF;
-		-- Check unique plan name
-		IF NOT is_blank_string(v_plan_name) THEN
-		  IF isnew THEN 
-		    SELECT count(*) INTO cnt_plan_name FROM ige_source_evw WHERE plan_name = v_plan_name;		
-		  ELSE 
-		    SELECT count(*) INTO cnt_plan_name FROM ige_source_evw WHERE plan_name = v_plan_name and source_id <> sourceid;
-		  END IF;
-	    END IF;
-	    IF cnt_int_id + cnt_ext_id + cnt_plan_name > 0 THEN		 
+	  IF NOT is_blank_string(v_exter_id) THEN
+	    SELECT count(*) INTO retval FROM ige_source_evw WHERE external_source_no = v_exter_id;		
+		IF isnew AND retval > 0 THEN
 		  o_status = 'Failed';
-		  IF cnt_int_id > 0 THEN 
-		    o_message = get_message(50680,'ERR','SURCTSK', '0', v_inter_id);
-		  END IF;
-		  IF cnt_plan_name > 0 THEN 
-		    IF length(o_message) > 0 THEN 
-			  o_message = o_message || '; ';
-			END IF;
-		    o_message = o_message || get_message(50681,'ERR','SURCTSK', '0', v_plan_name);
-		  END IF;
-		  IF cnt_ext_id > 0 THEN 
-		    IF length(o_message) > 0 THEN 
-			  o_message = o_message || '; ';
-			END IF;
-		    o_message = o_message || get_message(50667,'ERR','SURCTSK', '0', v_exter_id);
-		  END IF;		  	  
+		  o_message = get_message(50667,'ERR','SURCTSK', '0', v_exter_id);			  
 		ELSE
+		  the_inter_id = format_string(replace(v_inter_id, '`',''''));
+		  the_exter_id = format_string(replace(v_exter_id, '`',''''));
 		  IF is_blank_id(v_parent_source_id::text) THEN
 		    v_parent_source_id = 0;
 		  END IF;
@@ -178,8 +141,8 @@ BEGIN
 					  dt_inter,
 				      the_exter_id,
 					  dt_exter,
-					  v_plan_name,
-					  v_comment,
+					  format_string(v_plan_name),
+					  format_string(v_comment),
 					  v_source_status,
 					  v_parent_source_id,
 					  v_trans_id_create,
@@ -195,8 +158,8 @@ BEGIN
 					 internal_source_date = dt_inter, 
 					 external_source_no = the_exter_id, 
 					 external_source_date = dt_exter, 
-					 plan_name = v_plan_name, 
-					 source_comments = v_comment, 
+					 plan_name = format_string(v_plan_name), 
+					 source_comments = format_string(v_comment), 
 					 source_status = v_source_status, 
 					 parent_source_id = v_parent_source_id, 
 					 trans_id_create = v_trans_id_create, 

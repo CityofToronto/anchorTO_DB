@@ -53,11 +53,12 @@ select * from sde.sde_versions;
 select get_predefined_source_info();
 select get_new_task_type('PARCEL');
 select get_new_task_type('STREET/ADDRESS');
+select get_predefined_task_info('REPORT')
 select get_predefined_task_info_details('REPORT')
 select get_predefined_task_info_details('Plan')
 select get_predefined_task_info_details('CADAST_DOCUMENt')
 
-
+select format_string('Look at "new story and ""me."')
 SELECT source_class, description AS desc, CONTROL_TASK_TYPE, sort_sequence
 	  FROM dmn_source_class
 	  WHERE trans_id_expire = -1
@@ -184,7 +185,18 @@ SELECT sde.set_default;
 SELECT sde.sde_set_current_version('TRANS78')
 SELECT set_current_version('network.TRANS000')
 select get_sources();
+select get_user_by_task_type('PLANPARCEL')
+select get_user_by_task_type('MUNICIPALPARCEL')
+select get_user_by_task_type('EASEMENT')
+select get_user_by_task_type('PRIVATEROAD')
+select get_user_by_task_type('ADJUSTMENT')
+select get_user_by_task_type('SITEAREA')
+select get_user_by_task_type('LINEARNAME')
 select get_user_by_task_type('AMA')
+select get_user_by_task_type('CENTRELINE')
+select get_user_by_task_type('INTERSECTION')
+select get_user_by_task_type('ADDRESSPOINT')
+SELECT * FROM ige_task_default t
 select * from dmn_steward_group;
 select is_null_string(null)
 select is_null_string('null')
@@ -252,7 +264,7 @@ SELECT sde.sde_set_default();
 select * from ige_source_evw order by 1 desc limit 10;
 
 
-SELECT update_control_task(0,10001,null,'some comments','STREET/ADDRESS',20000,-1);
+SELECT update_control_task(0,10001,null,'some "comments','STREET/ADDRESS',20000,-1);
 select * from ige_control_task order by 1 desc limit 2;
 select * from imaint_oracle.ige_control_task order by 1 desc ;
 select json_agg(row_to_json(c)) from (select * from ige_task limit 2) c;
@@ -431,8 +443,8 @@ SELECT tt.control_task_id, min(tt.task_sequence) min_seq
 		       AND tt.trans_id_expire = -1
 			 GROUP BY tt.control_task_id
 			 order by control_task_id
-select get_task_by_user_name('sdale');
-select get_task_by_user_name('slee5');
+select get_next_task_by_user_name('sarzand');
+select get_next_task_by_user_name('slee5');
 select * from ige_source_evw
 
-
+select * from ige_user

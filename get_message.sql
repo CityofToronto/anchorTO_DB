@@ -14,10 +14,10 @@ CREATE OR REPLACE FUNCTION network.get_message(
 	custom_val6 text DEFAULT NULL::text,
 	custom_val7 text DEFAULT NULL::text,
 	custom_val8 text DEFAULT NULL::text,
-	custom_val9 text DEFAULT NULL::text
-    )
+	custom_val9 text DEFAULT NULL::text)
     RETURNS text
     LANGUAGE 'plpgsql'
+
     COST 100
     VOLATILE 
 AS $BODY$
@@ -42,7 +42,7 @@ BEGIN
   IF msg_type <> 'INFO' THEN 
      msg := msg_cat||'-'||msg_no||': '||msg;
   END IF; 
-  RETURN msg;
+  RETURN format_string(msg);
 EXCEPTION 
   WHEN NO_DATA_FOUND THEN
     msg = 'Internal error: Invalid ' || message_type || ' message #: '|| message_cat||'-'||message_no||'.  ';

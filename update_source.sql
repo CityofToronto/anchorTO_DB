@@ -95,8 +95,8 @@ BEGIN
 	  raise notice 'Parent ID: %', v_parent_source_id;
 	  raise notice 'Maint Status: %', v_maint_status;
 	  raise notice 'User ID: %', v_user_id;
-	    the_inter_id = replace(v_inter_id, '`','''');
-		the_exter_id = replace(v_exter_id, '`','''');
+	    the_inter_id = format_string(replace(v_inter_id, '`',''''));
+		the_exter_id = format_string(replace(v_exter_id, '`',''''));
 	    -- Check unique external id
 	    IF NOT is_blank_string(the_exter_id) THEN
 		  IF isnew THEN 
@@ -191,8 +191,8 @@ BEGIN
 					  dt_inter,
 				      the_exter_id,
 					  dt_exter,
-					  v_plan_name,
-					  v_comment,
+					  format_string(v_plan_name),
+					  format_string(v_comment),
 					  v_source_status,
 					  v_parent_source_id,
 					  v_trans_id_create,
@@ -208,8 +208,8 @@ BEGIN
 					 internal_source_date = dt_inter, 
 					 external_source_no = the_exter_id, 
 					 external_source_date = dt_exter, 
-					 plan_name = v_plan_name, 
-					 source_comments = v_comment, 
+					 plan_name = format_string(v_plan_name), 
+					 source_comments = format_string(v_comment), 
 					 source_status = v_source_status, 
 					 parent_source_id = v_parent_source_id, 
 					 trans_id_create = v_trans_id_create, 

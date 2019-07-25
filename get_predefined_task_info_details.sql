@@ -34,7 +34,7 @@ BEGIN
 	                (SELECT s.control_task_type,
 		            s.task_type,
 		            t.description AS task_type_desc,
-		            s.control_task_comments,
+		            format_string(s.control_task_comments) AS control_task_comments,
 		            s.assigned_to AS task_assigned_to,
 					s.task_sequence,
 					( 

@@ -52,7 +52,7 @@ BEGIN
 			 v_control_task_type,
 			 v_control_task_comment,
 			 v_user_id;
-	  
+	v_control_task_comment = format_string(v_control_task_comment);  
 	raise notice 'Is New? %', isnew;	  
 	raise notice 'Maint Status: %', v_maint_status;
 	raise notice 'control_task_type: %', v_control_task_type;	
