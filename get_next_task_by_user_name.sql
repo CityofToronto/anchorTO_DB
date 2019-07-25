@@ -2,7 +2,8 @@
 
 -- DROP FUNCTION network.get_next_task_by_user_name(text);
 
-CREATE OR REPLACE FUNCTION network.get_next_task_by_user_name(v_user_name text)
+CREATE OR REPLACE FUNCTION network.get_next_task_by_user_name(
+	v_user_name text)
     RETURNS json
     LANGUAGE 'sql'
 
@@ -55,7 +56,7 @@ FROM
 			   AND 
 				 (
 					 UPPER(t.assigned_to) = UPPER(v_user_name)
-				 OR t.assigned_to IN 
+				   OR t.assigned_to IN 
 					 (
 						 SELECT s.steward_group 
 						 FROM ige_user_steward s 
