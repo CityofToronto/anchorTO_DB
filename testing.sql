@@ -8,7 +8,7 @@ select update_user_info('{"business_unit": "IT - SDS - GCC","email": "slee33@tor
 select update_user_info('{"business_unit": "IT - SDS - GCC","email": "slee33@toronto.ca", "fullemail":"slee2300@toronto.ca", "fullname": "Steve lee230","status": "ACTIVE","steward_group": ["SITE_AREA_MAINT","AMA_MAINT","LINEARNAME_MAINT","STEWARD_MAINT","SOURCE_MAINT","CENTRELINE_ADDRESS_MAINT"],"user_id": 100033,"username": "Slee3300"
 }');
 select * from ige_user where user_id = 100033
-
+  
 select get_configuration_bool('anchorTO', 'ANCHORTO', 'sync_with_oracle') 
 select updateuserinfo('{"business_unit": "IT - SDS - GCC","email": "slee88@toronto.ca","fullname": "Steve lee88","status": "ACTIVE","steward_group": ["SITE_AREA_MAINT","AMA_MAINT","LINEARNAME_MAINT","STEWARD_MAINT","SOURCE_MAINT","CENTRELINE_ADDRESS_MAINT"],"user_id": null,"username": "slee88"
 }');
