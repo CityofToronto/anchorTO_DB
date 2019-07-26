@@ -3,23 +3,17 @@ select get_user_by_id(55);
 select get_users();
 select get_user_by_name('sarzand');
 select get_predefined_user_info();
-select update_user_info('{"business_unit": "IT - SDS - GCC","email": "slee3@toronto.ca","fullname": "Steve lee","status": "ACTIVE","steward_group": ["SITE_AREA_MAINT","AMA_MAINT","LINEARNAME_MAINT","STEWARD_MAINT","SOURCE_MAINT","CENTRELINE_ADDRESS_MAINT"],"user_id": null,"username": "slee33"
+select update_user_info('{"business_unit": "IT - SDS - GCC","email": "slee33@toronto.ca","fullname": "Steve lee230","status": "ACTIVE","steward_group": ["SITE_AREA_MAINT","AMA_MAINT","LINEARNAME_MAINT","STEWARD_MAINT","SOURCE_MAINT","CENTRELINE_ADDRESS_MAINT"],"user_id": null,"username": "Slee3300"
 }');
-select update_user_info('{"business_unit": "IT - SDS - GCC","email": "slee3@toronto.ca","fullname": "Steve lee","status": "ACTIVE","steward_group": ["SITE_AREA_MAINT","AMA_MAINT","LINEARNAME_MAINT","STEWARD_MAINT","SOURCE_MAINT","CENTRELINE_ADDRESS_MAINT"],"user_id": 161,"username": "slee33"
+select update_user_info('{"business_unit": "IT - SDS - GCC","email": "slee33@toronto.ca", "fullemail":"slee2300@toronto.ca", "fullname": "Steve lee230","status": "ACTIVE","steward_group": ["SITE_AREA_MAINT","AMA_MAINT","LINEARNAME_MAINT","STEWARD_MAINT","SOURCE_MAINT","CENTRELINE_ADDRESS_MAINT"],"user_id": 100033,"username": "Slee3300"
 }');
-select update_user_info('{"business_unit": "IT - SDS - GCC","email": "slee3@toronto.ca","fullname": "Steve lee","status": "ACTIVE","steward_group": ["SITE_AREA_MAINT","AMA_MAINT","LINEARNAME_MAINT","STEWARD_MAINT","SOURCE_MAINT","CENTRELINE_ADDRESS_MAINT"],"user_id": 99,"username": "slee3"
-}');
-select update_user_info('{"business_unit": "IT - SDS - GCC","email": "slee33@toronto.ca","fullname": "Steve lee3","status": "ACTIVE","steward_group": ["SITE_AREA_MAINT","LINEARNAME_MAINT","STEWARD_MAINT","SOURCE_MAINT","CENTRELINE_ADDRESS_MAINT"],"user_id": 99,"username": "slee3"
-}');
-select update_user_info('{"business_unit": "IT - SDS - GCC","email": "slee330@toronto.ca","fullname": "Steve lee330","status": "ACTIVE","steward_group": ["SITE_AREA_MAINT","AMA_MAINT","LINEARNAME_MAINT","STEWARD_MAINT","SOURCE_MAINT","CENTRELINE_ADDRESS_MAINT"],"user_id": null,"username": "slee330"
-}');
-select update_user_info('{"business_unit": "IT - SDS - GCC","email": "slee3300@toronto.ca","fullname": "Steve lee3300","status": "ACTIVE","steward_group": ["SITE_AREA_MAINT","AMA_MAINT","LINEARNAME_MAINT","STEWARD_MAINT"],"user_id": 100011,"username": "slee330"
-}');
+select * from ige_user where user_id = 100033
 
+select get_configuration_bool('anchorTO', 'ANCHORTO', 'sync_with_oracle') 
 select updateuserinfo('{"business_unit": "IT - SDS - GCC","email": "slee88@toronto.ca","fullname": "Steve lee88","status": "ACTIVE","steward_group": ["SITE_AREA_MAINT","AMA_MAINT","LINEARNAME_MAINT","STEWARD_MAINT","SOURCE_MAINT","CENTRELINE_ADDRESS_MAINT"],"user_id": null,"username": "slee88"
 }');
-select updateuserinfo('{"business_unit": "IT - SDS - GCC","email": "slee880@toronto.ca","fullname": "Steve lee880","status": "ACTIVE","steward_group": ["SITE_AREA_MAINT","AMA_MAINT","LINEARNAME_MAINT","STEWARD_MAINT"],"user_id": 100013,"username": "slee880"
-}');
+select updateuserinfo('{"username":"Test","status":"ACTIVE","user_id":160,"steward_group":["LINEARNAME_MAINT","AMA_MAINT","SITE_AREA_MAINT"],"status_date":"2019-06-28T09:12:05.504665","business_unit":"IT - SDS - GCC","fullname":"Test","email":"test.test@toronto.ca","user_privilege":"LINEARNAME_MAINT, AMA_MAINT","last_updated":"2019-06-28 09:12:05.504665"}');
+select * from ige_user;
 select * from ige_source;
 select to_timestamp('2019-01-21', 'YYYY-MM-DD')
 select '2019-01-21'::timestamp
