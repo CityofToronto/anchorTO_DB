@@ -42,6 +42,7 @@ BEGIN
 		 i_status,
 		 i_steward_group,
 		 i_user_name;
+  i_user_name = UPPER(i_user_name);
   IF o_userid IS null 
     OR o_userid = '0'
 	OR o_userid = ''
