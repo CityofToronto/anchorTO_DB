@@ -3,19 +3,26 @@ select get_user_by_id(55);
 select get_users();
 select get_user_by_name('sarzand');
 select get_predefined_user_info();
-select update_user_info('{"business_unit": "IT - SDS - GCC","email": "slee3300@toronto.ca","fullname": "Steve lee3300","status": "ACTIVE","steward_group": ["SITE_AREA_MAINT","AMA_MAINT","CENTRELINE_ADDRESS_MAINT"],"user_id": null,"username": "Slee33000"
+select * from imaint_oracle.ige_control_task;
+select network.update_user_info('{"business_unit": "IT - SDS - GCC","email": "slee3300@toronto.ca","fullname": "Steve lee3300","status": "ACTIVE","steward_group": ["SITE_AREA_MAINT","AMA_MAINT","CENTRELINE_ADDRESS_MAINT"],"user_id": null,"username": "Slee33000"
 }');
 select * from ige_user order by 1 desc;
 select * from imaint_oracle.ige_user order by 1 desc;
-select update_user_info('{"business_unit": "IT - SDS - GCC","email": "slee33@toronto.ca", "fullemail":"slee2300@toronto.ca", "fullname": "Steve lee230","status": "ACTIVE","steward_group": ["SITE_AREA_MAINT","AMA_MAINT","LINEARNAME_MAINT","STEWARD_MAINT","SOURCE_MAINT","CENTRELINE_ADDRESS_MAINT"],"user_id": 100033,"username": "Slee3300"
+select update_user_info('{"business_unit": "IT - SDS - GCC","email": "slee3@toronto.ca","fullname": "Steve lee","status": "ACTIVE","steward_group": ["SITE_AREA_MAINT","AMA_MAINT","LINEARNAME_MAINT","STEWARD_MAINT","SOURCE_MAINT","CENTRELINE_ADDRESS_MAINT"],"user_id": 161,"username": "slee33"
 }');
-select * from ige_user where user_id = 100033
-  
-select get_configuration_bool('anchorTO', 'ANCHORTO', 'sync_with_oracle') 
+select update_user_info('{"business_unit": "IT - SDS - GCC","email": "slee3@toronto.ca","fullname": "Steve lee","status": "ACTIVE","steward_group": ["SITE_AREA_MAINT","AMA_MAINT","LINEARNAME_MAINT","STEWARD_MAINT","SOURCE_MAINT","CENTRELINE_ADDRESS_MAINT"],"user_id": 99,"username": "slee3"
+}');
+select update_user_info('{"business_unit": "IT - SDS - GCC","email": "slee33@toronto.ca","fullname": "Steve lee3","status": "ACTIVE","steward_group": ["SITE_AREA_MAINT","LINEARNAME_MAINT","STEWARD_MAINT","SOURCE_MAINT","CENTRELINE_ADDRESS_MAINT"],"user_id": 99,"username": "slee3"
+}');
+select update_user_info('{"business_unit": "IT - SDS - GCC","email": "slee330@toronto.ca","fullname": "Steve lee330","status": "ACTIVE","steward_group": ["SITE_AREA_MAINT","AMA_MAINT","LINEARNAME_MAINT","STEWARD_MAINT","SOURCE_MAINT","CENTRELINE_ADDRESS_MAINT"],"user_id": null,"username": "slee330"
+}');
+select update_user_info('{"business_unit": "IT - SDS - GCC","email": "slee3300@toronto.ca","fullname": "Steve lee3300","status": "ACTIVE","steward_group": ["SITE_AREA_MAINT","AMA_MAINT","LINEARNAME_MAINT","STEWARD_MAINT"],"user_id": 100011,"username": "slee330"
+}');
+
 select updateuserinfo('{"business_unit": "IT - SDS - GCC","email": "slee88@toronto.ca","fullname": "Steve lee88","status": "ACTIVE","steward_group": ["SITE_AREA_MAINT","AMA_MAINT","LINEARNAME_MAINT","STEWARD_MAINT","SOURCE_MAINT","CENTRELINE_ADDRESS_MAINT"],"user_id": null,"username": "slee88"
 }');
-select updateuserinfo('{"username":"Test","status":"ACTIVE","user_id":160,"steward_group":["LINEARNAME_MAINT","AMA_MAINT","SITE_AREA_MAINT"],"status_date":"2019-06-28T09:12:05.504665","business_unit":"IT - SDS - GCC","fullname":"Test","email":"test.test@toronto.ca","user_privilege":"LINEARNAME_MAINT, AMA_MAINT","last_updated":"2019-06-28 09:12:05.504665"}');
-select * from ige_user;
+select updateuserinfo('{"business_unit": "IT - SDS - GCC","email": "slee880@toronto.ca","fullname": "Steve lee880","status": "ACTIVE","steward_group": ["SITE_AREA_MAINT","AMA_MAINT","LINEARNAME_MAINT","STEWARD_MAINT"],"user_id": 100013,"username": "slee880"
+}');
 select * from ige_source;
 select to_timestamp('2019-01-21', 'YYYY-MM-DD')
 select '2019-01-21'::timestamp
@@ -29,14 +36,11 @@ delete from ige_user_steward where user_id = 100009;
 	FROM ige_user_steward   
     WHERE user_id =100009; 
 select * from sde.sde_version;
-select create_task('slee330', 'some comments', 'anchorTO');
+select create_task('slee33', 'some comments', 'anchorTO');
 select create_transaction(1,'slee33', 'some comments', 'anchorTO');
 select network.close_task('slee333', '3', 'uapp1', 'COMPLETED') 
 select create_source_task('slee5', 'comments32010');
 select create_source_task('slee5', '');
-
-select * from ige_task order by 1 desc
-select * from imaint_oracle.ige_task order by 1 desc limit 10;
 select case when length('') = 0 THEN 'CREATE SOURCE' else 'a' end;
 select delete_task(1000000036)
 select * from ige_task order by task_id desc;
@@ -49,12 +53,11 @@ select * from sde.sde_versions;
 select get_predefined_source_info();
 select get_new_task_type('PARCEL');
 select get_new_task_type('STREET/ADDRESS');
-select get_predefined_task_info('REPORT')
 select get_predefined_task_info_details('REPORT')
 select get_predefined_task_info_details('Plan')
 select get_predefined_task_info_details('CADAST_DOCUMENt')
 
-select format_string('Look at "new story and ""me."')
+
 SELECT source_class, description AS desc, CONTROL_TASK_TYPE, sort_sequence
 	  FROM dmn_source_class
 	  WHERE trans_id_expire = -1
@@ -104,7 +107,7 @@ SELECT 55, value#>>'{}' FROM json_array_elements('["SITE_AREA_MAINT", "ABC_BBB"]
 
 SELECT 55, value#>>'{}' FROM json_array_elements('["SITE_AREA_MAINT","AMA_MAINT"]'); --i_steward_group);
 
-select * from ige_source_evw where source_id > 1000000; 
+select * from ige_source_evw;
 select * from sde.sde_table_registry;
 select get_registration_id('network', 'ige_source')
 SELECT current_schema();
@@ -181,18 +184,7 @@ SELECT sde.set_default;
 SELECT sde.sde_set_current_version('TRANS78')
 SELECT set_current_version('network.TRANS000')
 select get_sources();
-select get_user_by_task_type('PLANPARCEL')
-select get_user_by_task_type('MUNICIPALPARCEL')
-select get_user_by_task_type('EASEMENT')
-select get_user_by_task_type('PRIVATEROAD')
-select get_user_by_task_type('ADJUSTMENT')
-select get_user_by_task_type('SITEAREA')
-select get_user_by_task_type('LINEARNAME')
 select get_user_by_task_type('AMA')
-select get_user_by_task_type('CENTRELINE')
-select get_user_by_task_type('INTERSECTION')
-select get_user_by_task_type('ADDRESSPOINT')
-SELECT * FROM ige_task_default t
 select * from dmn_steward_group;
 select is_null_string(null)
 select is_null_string('null')
@@ -211,15 +203,13 @@ select * from ige_task where task_id = 1000000059;
 select * from ige_transaction where task_id = 1000000059;
 select * from imaint_oracle.ige_task where task_id = 1000000059;
 select * from imaint_oracle.ige_transaction where task_id = 1000000059;
-select * from ige_messages where message_number between 50650 and 50700
+
 SELECT set_current_version('TRANS1234');
 SELECT sde.sde_edit_version('TRANS000', 1);
-select * from ige_task where source_id = 1000000136
-select count(*) from ige_source_evw where source_id <> 1000000138 and internal_source_no = 'test101'
-select update_source('{"object_id": null,"source_id":1000000137,"control_task_type": "STREET/ADDRESS","class":"PLAN","type":"BOUNDARIES ACT PLAN","status":"APPROVED","int_id":"test102","int_date":"2019-07-08","ext_id":"test ext102","ext_date":"2019-07-26","plan_name":"ry-plan-no102","source_status":null,"comment":"Source comments","task":[{"task_assigned_to":"SITE_AREA_MAINT","task_type":"SITEAREA","task_type_desc":"Site Area","control_task_type":"STREET/ADDRESS","control_task_comments":"Create/adjust Site Area","task_sequence":10,"assign_to":"rli4","task_status":null },{"task_assigned_to":"LINEARNAME_MAINT","task_type":"LINEARNAME","task_type_desc":"Linear Name","control_task_type":"STREET/ADDRESS","control_task_comments":"Add/adjust/delete Linear Name","task_sequence":20,"assign_to":"slee5","task_status":null },{"task_assigned_to":"SITE_AREA_MAINT","task_type":"SITEAREA","task_type_desc":"Site Area","control_task_type":"STREET/ADDRESS","control_task_comments":"Close Site Area","task_sequence":70,"assign_to":"rli4","task_status":"HOLD" }],"attachment":null,"user_id":"rli4"}'
+select update_source('{"object_id": null,"source_id":null,"control_task_type": "STREET/ADDRESS","class":"PLAN","type":"BOUNDARIES ACT PLAN","status":"APPROVED","int_id":"test","int_date":"2019-07-08","ext_id":"test ext302","ext_date":"2019-07-26","plan_name":"ry-plan-no","source_status":null,"comment":"Source comments","task":[{"task_assigned_to":"SITE_AREA_MAINT","task_type":"SITEAREA","task_type_desc":"Site Area","control_task_type":"STREET/ADDRESS","control_task_comments":"Create/adjust Site Area","task_sequence":10,"assign_to":"rli4","task_status":null },{"task_assigned_to":"LINEARNAME_MAINT","task_type":"LINEARNAME","task_type_desc":"Linear Name","control_task_type":"STREET/ADDRESS","control_task_comments":"Add/adjust/delete Linear Name","task_sequence":20,"assign_to":"slee5","task_status":null },{"task_assigned_to":"SITE_AREA_MAINT","task_type":"SITEAREA","task_type_desc":"Site Area","control_task_type":"STREET/ADDRESS","control_task_comments":"Close Site Area","task_sequence":70,"assign_to":"rli4","task_status":"HOLD" }],"attachment":null,"user_id":"rli4"}'
 					 , 10000
 					 ,-1
-					 ,'TRANS81');
+					 ,'TRANS1234');
 select update_source2('{"object_id": null,"source_id":null,"control_task_type": "STREET/ADDRESS","class":"PLAN","type":"BOUNDARIES ACT PLAN","status":"APPROVED","int_id":"test","int_date":"2019-07-08","ext_id":"test ext302","ext_date":"2019-07-26","plan_name":"ry-plan-no","source_status":null,"comment":"Source comments","task":[{"task_assigned_to":"SITE_AREA_MAINT","task_type":"SITEAREA","task_type_desc":"Site Area","control_task_type":"STREET/ADDRESS","control_task_comments":"Create/adjust Site Area","task_sequence":10,"assign_to":"rli4","task_status":null },{"task_assigned_to":"LINEARNAME_MAINT","task_type":"LINEARNAME","task_type_desc":"Linear Name","control_task_type":"STREET/ADDRESS","control_task_comments":"Add/adjust/delete Linear Name","task_sequence":20,"assign_to":"slee5","task_status":null },{"task_assigned_to":"SITE_AREA_MAINT","task_type":"SITEAREA","task_type_desc":"Site Area","control_task_type":"STREET/ADDRESS","control_task_comments":"Close Site Area","task_sequence":70,"assign_to":"rli4","task_status":"HOLD" }],"attachment":null,"user_id":"rli4"}'
 					 , 10000
 					 ,-1
@@ -232,11 +222,6 @@ select update_source2('{"source_id":1000000120,"class":"REPORT","type":"MUNICIPA
 					 , 1000000252
 					 ,-1
 					 );					 
-select update_source('{"source_id":null,"class":"REPORT","type":"INHOUSE MAINTENANCE","control_task_type":"STREET/ADDRESS","status":"APPROVED","int_id":"Test Internal6","int_date":"2019-07-18","ext_id":"","ext_date":null,"plan_name":null,"maint_status":null,"comment":null,"closed":null,"task":[{"task_id":null,"task_type":"SITEAREA","task_sequence":10,"assigned_to":"emachyni","task_comments":"Create/adjust Site Area","task_status":"READY","deleted":false,"disabled":false},{"task_id":null,"task_type":"LINEARNAME","task_sequence":20,"assigned_to":"rli4","task_comments":"Add/adjust/delete Linear Name","task_status":"READY","deleted":false,"disabled":false},{"task_id":null,"task_type":"AMA","task_sequence":30,"assigned_to":"rli4","task_comments":"Add/adjust/delete AMA","task_status":"READY","deleted":false,"disabled":false},{"task_id":null,"task_type":"INTERSECTION","task_sequence":40,"assigned_to":"INTERSECTION_MAINT","task_comments":"Add/edit/delete Intersections","task_status":"READY","deleted":true,"disabled":false},{"task_id":null,"task_type":"CENTRELINE","task_sequence":50,"assigned_to":"SEGMENT_MAINT","task_comments":"Add/edit/delete Segments","task_status":"READY","deleted":true,"disabled":false},{"task_id":null,"task_type":"ADDRESSPOINT","task_sequence":60,"assigned_to":"ADDRESS_MAINT","task_comments":"Add/edit/delete Reserved Address Points","task_status":"READY","deleted":true,"disabled":false},{"task_id":null,"task_type":"SITEAREA","task_sequence":70,"assigned_to":"slee6111","task_comments":"Close Site Area - hold for now","task_status":"HOLD","deleted":false,"disabled":false}],"attachment":null,"user_id":"rli4"}'
-					 , 10000
-					 ,-1
-					 ,'sde.DEFAULT');
-select is_blank_string('');					 
 select * from ige_source_evw order by 1 desc limit 10 where 					 
 select get_source_by_id(1000000113, 'network.TRANS1234');
 select get_source_by_id(1000000113, 'network.TRANS81');
@@ -260,7 +245,7 @@ SELECT sde.sde_set_default();
 select * from ige_source_evw order by 1 desc limit 10;
 
 
-SELECT update_control_task(0,10001,null,'some "comments','STREET/ADDRESS',20000,-1);
+SELECT update_control_task(0,10001,null,'some comments','STREET/ADDRESS',20000,-1);
 select * from ige_control_task order by 1 desc limit 2;
 select * from imaint_oracle.ige_control_task order by 1 desc ;
 select json_agg(row_to_json(c)) from (select * from ige_task limit 2) c;
@@ -313,28 +298,12 @@ SELECT update_source_task_info
 );
 
 SELECT update_source_task_info
-('{"source_id":1000000128,"class":"PLAN","type":"BYLAW","control_task_type":"STREET/ADDRESS","status":"APPROVED","int_id":"Test Internal10","int_date":"2019-07-17","ext_id":"Test External12","ext_date":"2019-07-17","plan_name":"Test plan name1","maint_status":"READY","comment":"add source comments","closed":false,"task":[{"task_id":1000000507,"task_type":"SITEAREA","task_sequence":10,"assigned_to":"jfligg","task_comments":"Create/adjust Site Area","task_status":"READY","deleted":false,"disabled":false},{"task_id":1000000508,"task_type":"LINEARNAME","task_sequence":20,"assigned_to":"slee5","task_comments":"Add/adjust/delete Linear Name","task_status":"READY","deleted":false,"disabled":false},{"task_id":1000000513,"task_type":"SITEAREA","task_sequence":70,"assigned_to":"rli4","task_comments":"Close Site Area","task_status":"HOLD","deleted":false,"disabled":false}],"attachment":null,"user_id":"rli4"}',
- 1000000128, 
- 1000000526, 
- -1
-);
-
-
-select * from ige_task where source_id = 1000000128 
-select * from ige_control_task where source_id = 1000000128
-order by 1;
-and trans_id_expire = -1; 
-
-SELECT update_tasks('[{"task_id":1000000507,"task_type":"SITEAREA","task_sequence":10,"assigned_to":"jfligg","task_comments":"Create/adjust Site Area","task_status":"READY","deleted":false,"disabled":false},{"task_id":1000000508,"task_type":"LINEARNAME","task_sequence":20,"assigned_to":"slee5","task_comments":"Add/adjust/delete Linear Name","task_status":"READY","deleted":false,"disabled":false},{"task_id":1000000513,"task_type":"SITEAREA","task_sequence":70,"assigned_to":"rli4","task_comments":"Close Site Area","task_status":"HOLD","deleted":false,"disabled":false}]'::json, 
-					1000000128, 1000000070, 'SUPERVISOR DEFINED', 1000000526, -1) 
-
-
-SELECT update_source_task_info
-('{"object_id": null,"source_id":null,"control_task_type": "STREET/ADDRESS","class":"PLAN","type":"BOUNDARIES ACT PLAN","status":"APPROVED","int_id":"test","int_date":"2019-07-08","ext_id":"test ext2","ext_date":"2019-07-26","plan_name":"ry-plan-no","maint_status":null,"comment":"Source comments","task":[{"task_assigned_to":"SITE_AREA_MAINT","task_type":"SITEAREA","task_type_desc":"Site Area","control_task_type":"STREET/ADDRESS","control_task_comments":"Create/adjust Site Area","task_sequence":10,"assign_to":"rli4","task_status":null },{"task_assigned_to":"LINEARNAME_MAINT","task_type":"LINEARNAME","task_type_desc":"Linear Name","control_task_type":"STREET/ADDRESS","control_task_comments":"Add/adjust/delete Linear Name","task_sequence":20,"assign_to":"slee5","task_status":null },{"task_assigned_to":"SITE_AREA_MAINT","task_type":"SITEAREA","task_type_desc":"Site Area","control_task_type":"STREET/ADDRESS","control_task_comments":"Close Site Area","task_sequence":70,"assign_to":"rli4","task_status":"HOLD" }],"attachment":null,"user_id":"rli4"}',
+('{"source_id":null,"control_task_type": "STREET/ADDRESS","class":"PLAN","type":"INHOUSE MAINTENANCE","status":"APPROVED","int_id":"Test Internal","int_date":"2019-07-16","ext_id":"Test External","ext_date":"2019-07-23","plan_name":"Test plan name","maint_status":null,"comment":"source comments - testing post","closed":null,"task":[{"task_id":null,"task_type":"SITEAREA","task_sequence":10,"assigned_to":"emachyni","task_comments":"Create/adjust Site Area","task_status":"READY","deleted":false,"disabled":false},{"task_id":null,"task_type":"LINEARNAME","task_sequence":20,"assigned_to":"slee5","task_comments":"Add/adjust/delete Linear Name","task_status":"READY","deleted":false,"disabled":false}],"attachment":null,"user_id":"rli4"}',
  1000000062, --10006,
  1000000137, --20008,
  -1
 );
+
 
 	  SELECT t.*,
 			 ct.control_task_id,
@@ -406,48 +375,3 @@ select t.*, row_number() over (partition by t.source_id order by t.source_id) id
 	) t 
 	where idx > 1;
 
-select version()
-SELECT PostGIs_version();
-
-select * from ige_source_evw order by 1 desc limit 10;
-select  * from ige_messages where message like '%complete%';
-
-SELECT min(task_sequence)  
-			FROM ige_task 
-	        WHERE control_task_id = 1000000059
-	          AND trans_id_expire = -1
-			  AND task_status <> 'COMPLETED';
-select * from ige_control_task where control_task_id = 1000000016;
-select * from ige_task where control_task_id = 1000000016;
-select * from ige_task where task_status <> 'READY' AND control_task_id > 1000000000
-SELECT update_control_task_status_by_tasks(1000000016);
-select * from ige_task where task_id > 10000000 and source_id > 0;
-
-select validate_task_status('COMPLETED')
-select * from ige_task where task_id = 1; 
-select * from imaint_oracle.ige_task where task_id = 1;
-SELECT update_task_status(1,'work started')
-SELECT update_task_status(1,'completed')
-select * from dmn_task_status
-select distinct task_status from ige_task;
-select * from ige_user_steward;
-
-SELECT tt.control_task_id, min(tt.task_sequence) min_seq
-			 FROM ige_task tt
-			 WHERE tt.task_status <> 'COMPLETED' 
-			   AND tt.taken_by is null
-		       AND tt.trans_id_expire = -1
-			 GROUP BY tt.control_task_id
-			 order by control_task_id
-select get_next_task_by_user_name('sarzand');
-select get_next_task_by_user_name('slee5');
-select * from ige_source_evw
-
-select * from ige_task where source_id = 1000000228 order by task_sequence;
---select * from ige_control_task where source_id = 1000000227
-select * from ige_control_task WHERE control_task_id = 1000000161
-select * from ige_source_evw where source_id = 1000000228
-select update_control_task_status_by_tasks(1000000161)
-"1000001050"
-select update_source_task_info('{"objectid":122138,"source_id":1000000228,"class":"PLAN","type":"SKETCH","control_task_type":"STREET/ADDRESS","status":"APPROVED","int_id":"RY-TEST-0730-1","int_date":"2019-07-30","ext_id":null,"ext_date":null,"plan_name":"RY-TEST-0730-1","maint_status":"HOLD","comment":"Delete default tasks when creating sourcen; more comment added on July 30, 2019","closed":false,"task":[{"task_id":1000001051,"task_type":"SITEAREA","task_sequence":10,"assigned_to":"SARZAND","task_assigned_to_user_list":[{"username":"SITE_AREA_MAINT","user_id":0,"full_name":"SITE_AREA_MAINT"},{"username":"anchorto","user_id":100014,"full_name":"anchorTO Test"},{"username":"emachyni","user_id":22,"full_name":"Elizabeth Machynia"},{"username":"jfligg","user_id":14,"full_name":"John Fligg"},{"username":"slee5","user_id":56,"full_name":"Kegang Li"},{"username":"NEWTEST","user_id":100034,"full_name":"new test"},{"username":"SARZAND","user_id":7,"full_name":"Sepideh Arzandeh"},{"username":"slee33","user_id":161,"full_name":"Steve lee"},{"username":"SLEE3300","user_id":100033,"full_name":"Steve lee230"},{"username":"slee330","user_id":100011,"full_name":"Steve lee330"},{"username":"SLEE33000","user_id":100046,"full_name":"Steve lee3300"},{"username":"slee6","user_id":99,"full_name":"Steve lee6"},{"username":"slee68","user_id":139,"full_name":"Steve lee6"},{"username":"slee880","user_id":100013,"full_name":"Steve lee880"},{"username":"slee6111","user_id":157,"full_name":"Test"},{"username":"TEST","user_id":160,"full_name":"Test"}],"task_comments":"Create/adjust Site Area","task_status":"READY","deleted":false,"disabled":false},{"task_id":1000001099,"task_type":"AMA","task_sequence":50,"assigned_to":"AMA_MAINT","task_assigned_to_user_list":[{"username":"AMA_MAINT","user_id":0,"full_name":"AMA_MAINT"},{"username":"anchorto","user_id":100014,"full_name":"anchorTO Test"},{"username":"emachyni","user_id":22,"full_name":"Elizabeth Machynia"},{"username":"jfligg","user_id":14,"full_name":"John Fligg"},{"username":"slee5","user_id":56,"full_name":"Kegang Li"},{"username":"RLI4","user_id":55,"full_name":"Ruiyang Li111"},{"username":"SARZAND","user_id":7,"full_name":"Sepideh Arzandeh"},{"username":"slee33","user_id":161,"full_name":"Steve lee"},{"username":"SLEE3300","user_id":100033,"full_name":"Steve lee230"},{"username":"slee330","user_id":100011,"full_name":"Steve lee330"},{"username":"SLEE33000","user_id":100046,"full_name":"Steve lee3300"},{"username":"slee880","user_id":100013,"full_name":"Steve lee880"},{"username":"TEST","user_id":160,"full_name":"Test"},{"username":"slee6111","user_id":157,"full_name":"Test"},{"username":"TestJuly2","user_id":100026,"full_name":"Test July2"}],"task_comments":null,"task_status":"READY","deleted":false,"disabled":false},{"task_id":1000001052,"task_type":"CENTRELINE","task_sequence":50,"assigned_to":"SEGMENT_MAINT","task_assigned_to_user_list":[{"username":"SEGMENT_MAINT","user_id":0,"full_name":"SEGMENT_MAINT"}],"task_comments":"Add/edit/delete Segments","task_status":"READY","deleted":false,"disabled":false},{"task_id":1000001053,"task_type":"SITEAREA","task_sequence":70,"assigned_to":"SARZAND","task_assigned_to_user_list":[{"username":"SITE_AREA_MAINT","user_id":0,"full_name":"SITE_AREA_MAINT"},{"username":"anchorto","user_id":100014,"full_name":"anchorTO Test"},{"username":"emachyni","user_id":22,"full_name":"Elizabeth Machynia"},{"username":"jfligg","user_id":14,"full_name":"John Fligg"},{"username":"slee5","user_id":56,"full_name":"Kegang Li"},{"username":"NEWTEST","user_id":100034,"full_name":"new test"},{"username":"SARZAND","user_id":7,"full_name":"Sepideh Arzandeh"},{"username":"slee33","user_id":161,"full_name":"Steve lee"},{"username":"SLEE3300","user_id":100033,"full_name":"Steve lee230"},{"username":"slee330","user_id":100011,"full_name":"Steve lee330"},{"username":"SLEE33000","user_id":100046,"full_name":"Steve lee3300"},{"username":"slee6","user_id":99,"full_name":"Steve lee6"},{"username":"slee68","user_id":139,"full_name":"Steve lee6"},{"username":"slee880","user_id":100013,"full_name":"Steve lee880"},{"username":"slee6111","user_id":157,"full_name":"Test"},{"username":"TEST","user_id":160,"full_name":"Test"}],"task_comments":"Close Site Area","task_status":"READY","deleted":false,"disabled":false}],"attachment":[],"user_id":"rli4"}',
-							   1000000228, 1000001050, -1)
