@@ -87,11 +87,9 @@ BEGIN
 	SELECT update_tasks(v_task, v_source_id, v_control_task_id, 'SUPERVISOR DEFINED', v_trans_id_create, t_expire_id) INTO ret_json;
 	raise notice 'Update tasks message: %', ret_json;
 	SELECT ret_json::json->>'status',
-	       ret_json::json->>'message',
-		   ret_json::json->>'control_task_id'
+	       ret_json::json->>'message'		  
     INTO  ret_status,
-	      ret_msg,
-		  v_control_task_id;
+	      ret_msg;
 	IF ret_status <> 'OK' THEN
 	  RAISE EXCEPTION USING
             errcode= ret_status,
