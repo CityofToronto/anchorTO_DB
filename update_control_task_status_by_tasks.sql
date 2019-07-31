@@ -2,7 +2,8 @@
 
 -- DROP FUNCTION network.update_control_task_status_by_tasks(numeric);
 
-CREATE OR REPLACE FUNCTION network.update_control_task_status_by_tasks(v_control_task_id numeric)
+CREATE OR REPLACE FUNCTION network.update_control_task_status_by_tasks(
+	v_control_task_id numeric)
     RETURNS text
     LANGUAGE 'plpgsql'
 
@@ -31,6 +32,7 @@ DECLARE
   v_control_task_status text;
   v_current_status text = '';
   v_task_seq integer = -1;
+  v_min_task_seq numeric(4,1) ; 
 BEGIN 
     o_status = 'OK';
     o_message = ''; 
@@ -72,10 +74,25 @@ BEGIN
 	    FROM ige_task 
 	    WHERE control_task_id = v_control_task_id
 	      AND trans_id_expire = -1
-	      AND task_status = STATUS_HOLD;		 
-		IF cnt_incompleted = cnt_hold THEN  -- IF #3
-	      v_control_task_status = STATUS_HOLD;
-	    ELSE  -- ELSE #3
+	      AND task_status = STATUS_HOLD;
+		SELECT MIN(task_sequence) INTO v_min_task_seq
+		  FROM ige_task 
+		  WHERE control_task_id = v_control_task_id
+	        AND trans_id_expire = -1
+			AND task_status <> STATUS_COMPLETED;	  
+		IF cnt_hold > 0 THEN  -- IF #3		  		 
+	      -- Check if the 1st task is HOLD?		  	  
+		  IF EXISTS (
+			  SELECT 1
+			  FROM ige_task 
+	          WHERE control_task_id = v_control_task_id
+	            AND trans_id_expire = -1
+	            AND task_status = STATUS_HOLD
+			    AND task_sequence = v_min_task_seq
+			  ) THEN 
+		      v_control_task_status = STATUS_HOLD;
+		  END IF;
+	    ELSE  -- ELSE #3		  
 		  -- Check one of tasks is STARTED?
 		  SELECT count(*) INTO cnt_started  
 	      FROM ige_task 
@@ -83,22 +100,19 @@ BEGIN
 	        AND trans_id_expire = -1
 	        AND (task_status = STATUS_STARTED OR task_status = STATUS_COMPLETED);
 		  IF cnt_started > 0 THEN -- IF #4
-		    v_control_task_status = STATUS_IN_PROGRESS;
-		  /*ELSE -- ELSE #4
-		    -- Check one of the next task(s) is READY?
-			-- Get the next sequence
-			SELECT min(task_sequence) INTO v_task_seq
-			FROM ige_task 
-	        WHERE control_task_id = v_control_task_id
-	          AND trans_id_expire = -1
-			  AND task_status <> STATUS_COMPLETED;
-			  
-			SELECT count(*) INTO cnt_ready  
-	        FROM ige_task 
-	        WHERE control_task_id = v_control_task_id
-	          AND trans_id_expire = -1
-	          AND task_status = STATUS_STARTED;
-			  */
+		    v_control_task_status = STATUS_IN_PROGRESS;		  
+		  ELSE -- ELSE #4		    
+			-- Check if the 1st task is READY?		  	  
+		    IF EXISTS (
+			    SELECT 1
+			    FROM ige_task 
+	            WHERE control_task_id = v_control_task_id
+	              AND trans_id_expire = -1
+	              AND task_status = STATUS_READY
+			      AND task_sequence = v_min_task_seq
+			    ) THEN 
+		      v_control_task_status = STATUS_READY;
+		    END IF; 			  
 		  END IF; -- END IF #4
 		  
 		END IF; -- END IF #3 
@@ -118,8 +132,8 @@ BEGIN
 	    -- End of updating Oracle  		
 	  END IF; -- END IF #5			  
 	END IF; -- END IF #1
-  raise notice 'Control_task_id: %; Total tasks #:%; Total COMPLETED #:%; Total HOLD #:%; Current Status:%; New Status: %;', 
-                v_control_task_id, cnt_tasks, cnt_completed, cnt_hold, v_current_status, v_control_task_status;
+  raise notice 'Control_task_id: %; Total tasks #:%; Total COMPLETED #:%; Total HOLD #:%; Total Started: %; 1st Incompleted task SEQ: %; Current Status:%; New Status: %;', 
+                v_control_task_id, cnt_tasks, cnt_completed, cnt_hold, cnt_started, v_min_task_seq,v_current_status, v_control_task_status;
   SELECT row_to_json(c) INTO o_json
 	FROM
 	(
