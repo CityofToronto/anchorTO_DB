@@ -42,10 +42,10 @@ BEGIN
 	WHERE control_task_id = v_control_task_id;	
 	v_control_task_status = v_current_status;
 	
-	IF v_current_status = STATUS_CLOSED THEN -- IF #1
-	  o_status = 'Failed';
-      o_message = 'Source was closed'; 
-	ELSE  -- ELSE #1
+--	IF v_current_status = STATUS_CLOSED THEN -- IF #1
+--	  o_status = 'Failed';
+--      o_message = 'Source was closed'; 
+--	ELSE  -- ELSE #1
 	  -- Check all COMPLETED?
 	  -- Get count of all active tasks for the source/control task
 	  SELECT count(*) INTO cnt_tasks  
@@ -80,8 +80,9 @@ BEGIN
 		  WHERE control_task_id = v_control_task_id
 	        AND trans_id_expire = -1
 			AND task_status <> STATUS_COMPLETED;	  
-		IF cnt_hold > 0 THEN  -- IF #3		  		 
-	      -- Check if the 1st task is HOLD?		  	  
+	--	IF cnt_hold > 0 THEN  -- IF #3		  		 
+	      -- Check if the 1st task is HOLD?		
+		  Raise notice 'Checking if the 1st task is HOLD? Current status:%',v_control_task_status;
 		  IF EXISTS (
 			  SELECT 1
 			  FROM ige_task 
@@ -90,9 +91,11 @@ BEGIN
 	            AND task_status = STATUS_HOLD
 			    AND task_sequence = v_min_task_seq
 			  ) THEN 
+			  Raise notice 'To be hold due to 1st HOLD task. Current status:%', v_control_task_status;
 		      v_control_task_status = STATUS_HOLD;
+			  Raise notice 'Set to HOLD: Current status:%',v_control_task_status;
 		  END IF;
-	    ELSE  -- ELSE #3		  
+--      ELSE  -- ELSE #3		  
 		  -- Check one of tasks is STARTED?
 		  SELECT count(*) INTO cnt_started  
 	      FROM ige_task 
@@ -115,7 +118,7 @@ BEGIN
 		    END IF; 			  
 		  END IF; -- END IF #4
 		  
-		END IF; -- END IF #3 
+--		END IF; -- END IF #3 
 	  END IF;  -- END IF #2
 	  
 	  -- Need to change status?
@@ -131,7 +134,7 @@ BEGIN
 		END IF;  -- END IF #6
 	    -- End of updating Oracle  		
 	  END IF; -- END IF #5			  
-	END IF; -- END IF #1
+--	END IF; -- END IF #1
   raise notice 'Control_task_id: %; Total tasks #:%; Total COMPLETED #:%; Total HOLD #:%; Total Started: %; 1st Incompleted task SEQ: %; Current Status:%; New Status: %;', 
                 v_control_task_id, cnt_tasks, cnt_completed, cnt_hold, cnt_started, v_min_task_seq,v_current_status, v_control_task_status;
   SELECT row_to_json(c) INTO o_json
