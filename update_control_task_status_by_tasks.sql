@@ -1,9 +1,10 @@
--- FUNCTION: network.update_control_task_status_by_tasks(numeric)
+-- FUNCTION: network.update_control_task_status_by_tasks(numeric, boolean)
 
--- DROP FUNCTION network.update_control_task_status_by_tasks(numeric);
+-- DROP FUNCTION network.update_control_task_status_by_tasks(numeric, boolean);
 
 CREATE OR REPLACE FUNCTION network.update_control_task_status_by_tasks(
-	v_control_task_id numeric)
+	v_control_task_id numeric,
+	v_close_source boolean)
     RETURNS text
     LANGUAGE 'plpgsql'
 
@@ -101,7 +102,7 @@ BEGIN
 	      FROM ige_task 
 	      WHERE control_task_id = v_control_task_id
 	        AND trans_id_expire = -1
-	        AND (task_status = STATUS_STARTED OR task_status = STATUS_COMPLETED);
+	        AND (task_status = STATUS_STARTED); -- OR task_status = STATUS_COMPLETED);
 		  IF cnt_started > 0 THEN -- IF #4
 		    v_control_task_status = STATUS_IN_PROGRESS;		  
 		  ELSE -- ELSE #4		    
@@ -121,6 +122,16 @@ BEGIN
 --		END IF; -- END IF #3 
 	  END IF;  -- END IF #2
 	  
+	  -- Need to close?
+	  raise notice 'To close source? %', v_close_source;
+	  IF v_close_source IS NOT NULL 
+	    AND v_control_task_status = STATUS_COMPLETED THEN 
+	    IF v_close_source THEN 
+		  v_control_task_status = STATUS_CLOSED;
+		ELSE 
+		  v_control_task_status = STATUS_COMPLETED;
+		END IF;
+	  END IF;
 	  -- Need to change status?
 	  IF v_current_status <> v_control_task_status THEN -- IF #5
 	    UPDATE ige_control_task 
@@ -160,5 +171,5 @@ EXCEPTION
 END;  
 $BODY$;
 
-ALTER FUNCTION network.update_control_task_status_by_tasks(numeric)
+ALTER FUNCTION network.update_control_task_status_by_tasks(numeric, boolean)
     OWNER TO network;
