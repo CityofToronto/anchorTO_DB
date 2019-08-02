@@ -30,6 +30,7 @@ DECLARE
   ret_status text;
   ret_id text;
   t_expire_id numeric;
+  v_to_close boolean;
 BEGIN
     o_status = 'OK';
     o_message = '';    
@@ -95,7 +96,12 @@ BEGIN
             errcode= ret_status,
             message= ret_msg;
 	END IF;
-	SELECT update_control_task_status_by_tasks(v_control_task_id) INTO ret_json;
+	IF v_maint_status = 'CLOSED' THEN 
+	  v_to_close = TRUE;
+	ELSE
+	  v_to_close = FALSE;
+	END IF;
+	SELECT update_control_task_status_by_tasks(v_control_task_id, v_to_close) INTO ret_json;
 	raise notice 'Update update_control_task_status_by_tasks message: %', ret_json;
 	SELECT ret_json::json->>'status',
 	       ret_json::json->>'message'
