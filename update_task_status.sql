@@ -43,7 +43,7 @@ BEGIN
 	SELECT control_task_id INTO v_control_task_id
 	FROM ige_task	    
 	WHERE task_id = v_task_id;
-	SELECT update_control_task_status_by_tasks(v_control_task_id) INTO ret_json;
+	SELECT update_control_task_status_by_tasks(v_control_task_id, null) INTO ret_json;
 	raise notice 'Update update_control_task_status_by_tasks message: %', ret_json;
 	SELECT ret_json::json->>'status',
 	       ret_json::json->>'message'
