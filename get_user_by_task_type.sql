@@ -21,9 +21,10 @@ FROM
    (
 		(
 	     SELECT
-	      t.assigned_to AS username,
+	      distinct  t.assigned_to AS username,
 	      0 AS user_id,
-	      t.assigned_to AS full_name
+	      t.assigned_to AS full_name,
+		  'ACTIVE' AS status
 	    FROM ige_task_default t 
 	    WHERE t.task_type = $1 
 		)
@@ -31,12 +32,13 @@ FROM
 	    (SELECT 
 	       --t.task_type, 
 	       --t.assigned_to, 
-	       u.username, 
+	       distinct u.username, 
 	       u.user_id, 
-	       u.full_name
+	       u.full_name,
+		   u.status
 	    FROM ige_task_default t 
 		JOIN ige_user_steward s ON t.assigned_to = s.steward_group
-		JOIN ige_user u ON u.user_id = s.user_id AND u.status = 'ACTIVE'
+		JOIN ige_user u ON u.user_id = s.user_id --AND u.status = 'ACTIVE'
 	    WHERE t.task_type = $1
 		ORDER BY u.full_name
 		)
