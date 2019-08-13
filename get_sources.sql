@@ -33,7 +33,8 @@ FROM
 	       t.objectid
     FROM ige_source_evw t
     JOIN ige_control_task k ON t.source_id = k.source_id
-	ORDER BY t.source_id
+	WHERE t.source_id > 99   
+	ORDER BY t.source_id DESC
     ) c	
   ) AS source
 ) r	
