@@ -12,8 +12,7 @@ CREATE OR REPLACE FUNCTION network.update_source(
 
     COST 100
     VOLATILE 
-AS $BODY$
-DECLARE 
+AS $BODY$DECLARE 
   sourceid numeric(12,0);
   v_object_id numeric(12,0) = -1;
   o_status text;  
@@ -50,6 +49,7 @@ BEGIN
     --SELECT sde.sde_set_current_version(v_version_name) INTO retval;
 	--SELECT sde.sde_set_default() INTO retval;
 	--raise notice 'set to default: %', retval;
+	--SELECT sde.sde_set_current_version(v_version_name) INTO retval;
 	--SELECT set_current_version(v_version_name) INTO retval;
 	--SELECT sde.sde_edit_version(v_version_name, 1) INTO retval1;
 	raise notice 'set version:%', retval;
@@ -200,7 +200,7 @@ BEGIN
 				  );
 			  --RETURNING source_id INTO sourceid;
 			  raise notice 'source_id #2: %', sourceid;
-		  ELSE -- Update source info
+		  ELSE -- Update source info		    
 		    UPDATE ige_source_evw 
 			    SET  source_class = v_source_class, 
 					 source_type = v_source_type, 
@@ -215,7 +215,9 @@ BEGIN
 					 trans_id_create = v_trans_id_create, 
 					 trans_id_expire = v_trans_id_expire 
 				WHERE source_id = sourceid;
+			raise notice 'Updated...1';
 			SELECT objectid INTO v_object_id FROM ige_source_evw WHERE source_id = sourceid;	
+			raise notice 'Updating...2';
 		  END IF;
 		END IF;	  
 	ELSE

@@ -1481,7 +1481,7 @@ from server imaint_oracle into imaint_oracle;
 ALTER FOREIGN TABLE imaint_oracle.ige_control_task ALTER COLUMN control_task_id OPTIONS (KEY 'true');
 
 import foreign schema "IGE"
-limit to (ige_mesages)
+limit to (ige_messages)
 from server imaint_oracle into imaint_oracle;
 
 insert into ige_task (
