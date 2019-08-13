@@ -45,13 +45,13 @@ FROM
 			 (
 				 SELECT tt.control_task_id, min(tt.task_sequence) min_seq
 				 FROM ige_task tt
-				 WHERE tt.task_status <> 'COMPLETED' 
-				   AND tt.taken_by is null
+				 WHERE tt.task_status <> 'COMPLETED' 				   
+				   AND (tt.taken_by is null OR upper(tt.taken_by) = upper(v_user_name))
 				   AND tt.trans_id_expire = -1
 				 GROUP BY tt.control_task_id
 			 ) mc ON mc.control_task_id = c.control_task_id
 			 WHERE t.task_status = 'READY'
-			   AND t.taken_by is null
+			   AND (t.taken_by is null OR upper(t.taken_by) = upper(v_user_name))
 			   AND t.trans_id_expire = -1
 			   AND 
 				 (
