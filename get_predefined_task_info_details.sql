@@ -42,16 +42,19 @@ BEGIN
 					  FROM (
 					      (SELECT 0 AS user_id,
 						         s.assigned_to username,
-								 s.assigned_to full_name)
+								 s.assigned_to full_name,
+								 ''ACTIVE'' AS status)
 						  UNION ALL
 						  (
 					      SELECT u.user_id,
 						         u.username,
-						  	     u.full_name
+						  	     u.full_name,
+								 u.status
 					      FROM ige_user u
 						  JOIN ige_user_steward ss ON u.user_id = ss.user_id
-						  WHERE u.status = ''ACTIVE''
-						    AND ss.steward_group = s.assigned_to
+						  WHERE 
+						     --u.status = ''ACTIVE'' AND
+						     ss.steward_group = s.assigned_to
 						  ORDER BY full_name
 						  )
 						  ) r
