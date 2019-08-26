@@ -3,8 +3,7 @@
 -- DROP FUNCTION network.format_string(text);
 
 CREATE OR REPLACE FUNCTION network.format_string(
-	v_string text
-	)
+	v_string text)
     RETURNS text
     LANGUAGE 'plpgsql'
 
@@ -14,7 +13,7 @@ AS $BODY$
 DECLARE 
   retval text;   
 BEGIN  
-  retval = REPLACE(v_string, '"', '');
+  retval = REPLACE(v_string, '"', '''');
   RETURN retval;
 EXCEPTION 
   WHEN OTHERS THEN

@@ -524,6 +524,15 @@ INSERT INTO ige_source__attach_evw (attachmentid, rel_globalid, content_type, at
 	sde.sde_get_current_state() 
  )
  
+select * from ige_task k2 
+where k2.task_id in
+(
+  select min(task_id) from ige_task k 
+	where k.trans_id_expire = -1 and k.source_id in
+      (select c.source_id from ige_control_task c where c.source_id > 99 and c.control_task_status = 'READY')
+       group by k.source_id
+)  
+order by k2.task_status;
 
 ------------------------------
 
