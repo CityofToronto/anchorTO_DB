@@ -34,10 +34,14 @@ delete from ige_user_steward where user_id = 100009;
 	FROM ige_user_steward   
     WHERE user_id =100009; 
 select * from sde.sde_version;
-select create_task('slee330', 'some comments', 'anchorTO');
+select create_task('slee330', 'some comments', 'anchorTO', 'SOURCE');
+select * from ige_task where task_id = 2000002
+select * from ige_transaction where trans_id = 2000002
 select create_transaction(1,'slee33', 'some comments', 'anchorTO');
 select network.close_task('slee333', '3', 'uapp1', 'COMPLETED') 
 select create_source_task('slee5', 'comments32010');
+select * from ige_task where task_id = 2000003
+select * from ige_transaction where trans_id = 2000003
 select create_source_task('slee5', '');
 
 select * from ige_task order by 1 desc

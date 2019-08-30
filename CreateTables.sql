@@ -1354,21 +1354,21 @@ CREATE SEQUENCE network.ige_source_id_seq;
 ALTER TABLE network.ige_source      
   ALTER COLUMN source_id SET DEFAULT nextval('ige_source_id_seq')::numeric(12,0);
 --SELECT setval('network.ige_source_id_seq', MAX(t.source_id)::bigint, true) FROM network.ige_source t;
-SELECT setval('network.ige_source_id_seq', 1000000000, true);
+SELECT setval('network.ige_source_id_seq', 2000000, true);
 ALTER SEQUENCE network.ige_source_id_seq OWNED BY network.ige_source.source_id;
 
 CREATE SEQUENCE network.ige_task_id_seq;
 ALTER TABLE network.ige_task
   ALTER COLUMN task_id SET DEFAULT nextval('ige_task_id_seq')::numeric(12,0);
 --SELECT setval('network.ige_task_id_seq', MAX(t.task_id), true) FROM network.ige_task t;
-SELECT setval('network.ige_task_id_seq', 1000000000, true);
+SELECT setval('network.ige_task_id_seq', 2000000, true);
 ALTER SEQUENCE network.ige_task_id_seq OWNED BY network.ige_task.task_id;
 
 CREATE SEQUENCE network.ige_transaction_id_seq;
 ALTER TABLE network.ige_transaction   
   ALTER COLUMN trans_id SET DEFAULT nextval('ige_transaction_id_seq')::numeric(12,0);
 --SELECT setval('network.ige_transaction_id_seq', MAX(t.trans_id), true) FROM network.ige_transaction t;
-SELECT setval('network.ige_transaction_id_seq', 1000000000, true);
+SELECT setval('network.ige_transaction_id_seq', 2000000, true);
 ALTER SEQUENCE network.ige_transaction_id_seq OWNED BY network.ige_transaction.trans_id;
 
 ALTER TABLE ige_source_dm
@@ -1388,7 +1388,7 @@ CREATE SEQUENCE network.ige_control_task_id_seq;
 ALTER TABLE network.ige_control_task
   ALTER COLUMN control_task_id SET DEFAULT nextval('ige_control_task_id_seq')::numeric(12,0);
 --SELECT setval('network.ige_control_task_id_seq', MAX(t.control_task_id)::bigint, true) FROM network.ige_control_task t;
-SELECT setval('network.ige_control_task_id_seq', 1000000000, true);
+SELECT setval('network.ige_control_task_id_seq', 2000000, true);
 ALTER SEQUENCE network.ige_control_task_id_seq OWNED BY network.ige_control_task.control_task_id;
 
 -- For table dmn_source_class
