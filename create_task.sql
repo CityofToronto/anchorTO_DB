@@ -1,14 +1,13 @@
--- FUNCTION: network.create_task(text, text, text)
+-- FUNCTION: network.create_task(text, text, text,text)
 
--- DROP FUNCTION network.create_task(text, text, text);
+-- DROP FUNCTION network.create_task(text, text, text,text);
 
-/*
-  Create a task
-*/
 CREATE OR REPLACE FUNCTION network.create_task(
 	uname text,
 	ucomment text,
-	uapplication text)
+	uapplication text,
+	utasktype text
+	)
     RETURNS text
     LANGUAGE 'plpgsql'
 
@@ -21,13 +20,13 @@ DECLARE
   o_status text;
   o_message text;  
   o_json text;  
-BEGIN
+BEGIN /**/
     o_status = 'OK';
     o_message = '';
 	transid = -1;
 	taskid = -1;
 	SELECT nextval('ige_task_id_seq')::numeric(12,0) INTO taskid;
-	SELECT create_transaction(taskid, $1, $2, 'anchorTO') INTO transid;
+	SELECT create_transaction(taskid, $1, $2, $3) INTO transid;
 	IF transid = -1 THEN
 	  RAISE 'Failed to create transaction' USING ERRCODE = '20001';
 	END IF;
@@ -45,7 +44,7 @@ BEGIN
                           ,trans_id_create
                           ,trans_id_expire)
               VALUES (taskid
-                     ,$3
+                     ,$4
                      ,null
                      ,$1
                      ,$1
@@ -73,7 +72,7 @@ BEGIN
                           ,trans_id_create
                           ,trans_id_expire)
               VALUES (taskid
-                     ,$3
+                     ,$4
                      ,null
                      ,$1
                      ,$1
@@ -111,5 +110,5 @@ EXCEPTION
 END;  
 $BODY$;
 
-ALTER FUNCTION network.create_task(text, text, text)
+ALTER FUNCTION network.create_task(text, text, text,text)
     OWNER TO network;
