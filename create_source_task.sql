@@ -2,9 +2,6 @@
 
 -- DROP FUNCTION network.create_source_task(text, text);
 
-/*
-  Create a task for source
-*/
 CREATE OR REPLACE FUNCTION network.create_source_task(
 	uname text,
 	ucomment text)
@@ -20,15 +17,13 @@ DECLARE
   transname text;
   o_status text;
   o_message text;  
-  o_json text;  
-  uapplication text;
+  o_json text;   
 BEGIN
     o_status = 'OK';
     o_message = '';
 	transid = -1;
-	taskid = -1;
-	uapplication = 'SOURCE';	
-	SELECT create_task($1, $2, uapplication) INTO o_json;
+	taskid = -1;	
+	SELECT create_task($1, $2, 'anchorTO','SOURCE') INTO o_json;
 	SELECT o_json::json->>'status',
            o_json::json->>'message',
 		   o_json::json->>'taskid',
