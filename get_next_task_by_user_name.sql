@@ -65,8 +65,8 @@ FROM
 					 ) 
 				 )
 			   AND c.trans_id_expire = -1 
-			   AND c.control_task_status IN 
-			         (SELECT control_task_status FROM dmn_control_task_status WHERE control_task_status NOT IN ('COMPLETED','CLOSED'))
+			   AND c.control_task_status IN ('READY', 'IN PROGRESS')
+			    --     (SELECT control_task_status FROM dmn_control_task_status WHERE control_task_status NOT IN ('COMPLETED','CLOSED'))
 			   AND t.task_sequence = mc.min_seq
 		  ) g1
 		  JOIN ige_source_evw sc ON sc.source_id = g1.source_id
