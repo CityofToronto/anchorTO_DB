@@ -1,13 +1,12 @@
--- FUNCTION: network.create_task(text, text, text,text)
+-- FUNCTION: network.create_task(text, text, text, text)
 
--- DROP FUNCTION network.create_task(text, text, text,text);
+-- DROP FUNCTION network.create_task(text, text, text, text);
 
 CREATE OR REPLACE FUNCTION network.create_task(
 	uname text,
 	ucomment text,
 	uapplication text,
-	utasktype text
-	)
+	utasktype text)
     RETURNS text
     LANGUAGE 'plpgsql'
 
@@ -49,7 +48,7 @@ BEGIN /**/
                      ,$1
                      ,$1
                      ,10
-                     ,'CREATED'
+                     ,'WORK STARTED'
                      ,$2
                      ,null --controlTaskId
                      ,'STEWARD DEFINED' --'SUPERVISOR DEFINED'
@@ -77,7 +76,7 @@ BEGIN /**/
                      ,$1
                      ,$1
                      ,10
-                     ,'CREATED'
+                     ,'WORK STARTED'
                      ,$2
                      ,null --controlTaskId
                      ,'STEWARD DEFINED' --'SUPERVISOR DEFINED'
@@ -110,5 +109,5 @@ EXCEPTION
 END;  
 $BODY$;
 
-ALTER FUNCTION network.create_task(text, text, text,text)
+ALTER FUNCTION network.create_task(text, text, text, text)
     OWNER TO network;
