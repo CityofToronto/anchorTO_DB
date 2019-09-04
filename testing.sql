@@ -1,12 +1,13 @@
 select * from configuration;
 UPDATE configuration
-  SET value = 1 --1
+  SET value = 0 --1
   WHERE id = 1
   
 select * from ige_user;
 select get_user_by_id(55);
 select get_users();
 select get_user_by_name('sarzand');
+select get_user_by_name('rli4');
 select get_predefined_user_info();
 select update_user_info('{"business_unit": "IT - SDS - GCC","email": "slee3300@toronto.ca","fullname": "Steve lee3300","status": "ACTIVE","steward_group": ["SITE_AREA_MAINT","AMA_MAINT","CENTRELINE_ADDRESS_MAINT"],"user_id": null,"username": "Slee33000"
 }');
@@ -461,7 +462,12 @@ SELECT tt.control_task_id, min(tt.task_sequence) min_seq
 select get_next_task_by_user_name('sarzand');
 select get_next_task_by_user_name('slee5');
 select * from ige_source_evw
-
+select * from dmn_task_status
+select * from ige_task where task_id = 1000001331 limit 10
+select * from ige_source_evw where source_id = 1000000253
+select * from ige_control_task where source_id = 1000000253
+select * from ige_transaction where task_id = 1000001331; -- source_id = 1000000253 ;
+select * from dmn_control_task_status
 select * from ige_task where source_id = 1000000228 order by task_sequence;
 --select * from ige_control_task where source_id = 1000000227
 select * from ige_control_task WHERE control_task_id = 1000000161
@@ -538,6 +544,36 @@ where k2.task_id in
 )  
 order by k2.task_status;
 
+select * from ige_source_evw
+select * from dmn_task_status
+select * from dmn_task_type
+select * from ige_task where task_id = 1000001331 limit 10
+select * from ige_source_evw where source_id = 1000000253
+select * from ige_control_task where source_id = 1000000253
+select * from ige_transaction where task_id = 1000001331; -- source_id = 1000000253 ;
+SELECT start_user_task(1000001331, 'sarzand')
+SELECT start_user_task(1000001331, 'rli4')
+select * from ige_task_active
+delete from ige_task_active where task_id = 1000001331
+select * from ige_task where task_id  = 1000001331
+SELECT get_predefined_lfn();
+SELECT * FROM network.base_centreline
+select * from linear_name_evw where duplication_status is not null;
+SELECT * FROM network.dmn_ln_usage_status
+select * from authorized_municipal_address
+--SELECT search_lfn('{"activation_status": "Active",  "duplication_status":"D",  "authorized": "Y",  "used_by": "Centreline Only",  "usage_status":"Current",  "logic": "and"}')
+--SELECT search_lfn('{"activation_status": "Active",  "authorized": "",  "used_by": "Centreline Only",  "usage_status":"",  "logic": "and"}')
+SELECT search_lfn('{"activation_status": "A",  "authorized": "",  "used_by": "L",  "usage_status":"",  "logic": "and"}')
+SELECT search_lfn('{"activation_status": null,  "authorized": "",  "used_by": "",  "usage_status":"",  "logic": "and"}')
+SELECT * FROM linear_name_evw
+SELECT * FROM base_centreline_evw
+select * from ige_task where task_status LIKE 'START%';
+select * from DMN_CL_ONEWAY t
+select * from dmn_ln_use_by
+select * from dmn_ln_activation_status
+select * from DMN_CL_ADDRESS_PARITY t
+select * from DMN_LN_USAGE_STATUS
+SELECT get_lfn_by_id(1570)
 ------------------------------
 
 					 

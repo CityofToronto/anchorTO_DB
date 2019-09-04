@@ -1177,12 +1177,18 @@ CREATE UNIQUE INDEX configuration_category_type_name_lo_uk ON configuration (low
 INSERT INTO configuration VALUES (1, 'anchorTO', 'anchorTO', 'SYNC_WITH_ORACLE', '1');
 select * from configuration;
 ---------------------------------------------------------------------------------------------------------------------------
-CREATE TABLE network.
-(
-	
-);
-GRANT ALL ON TABLE network. TO network;
-GRANT INSERT, SELECT, UPDATE, DELETE ON TABLE network. TO sde;
+CREATE TABLE NETWORK.DMN_CL_ADDRESS_PARITY 
+   (	
+    ADDRESS_PARITY VARCHAR(2) PRIMARY KEY, 
+	DESCRIPTION VARCHAR(500), 
+	SORT_SEQUENCE numeric(12,2), 
+	date_effective timestamp, 
+	date_expiry timestamp, 
+	TRANS_ID_CREATE numeric(12,0), 
+	TRANS_ID_EXPIRE numeric(12,0)
+   );
+GRANT ALL ON TABLE network.DMN_CL_ADDRESS_PARITY TO network;
+GRANT INSERT, SELECT, UPDATE, DELETE ON TABLE network.DMN_CL_ADDRESS_PARITY TO sde;
 ---------------------------------------------------------------------------------------------------------------------------
 CREATE TABLE network.
 (
@@ -1274,7 +1280,67 @@ ALTER TABLE network.linear_name
   ALTER COLUMN linear_name_id SET DEFAULT nextval('linear_name_id_seq')::numeric(12,0);
 SELECT setval('network.linear_name_id_seq', 1000000000, true);
 ALTER SEQUENCE network.linear_name_id_seq OWNED BY network.linear_name.linear_name_id;
-
+ALTER TABLE network.linear_name 
+  DROP COLUMN IF EXISTS RECORD_ID,
+  DROP COLUMN IF EXISTS LANGUAGE_CODE,
+  ADD COLUMN IF NOT EXISTS AUTHORIZED VARCHAR(1),
+  ADD COLUMN IF NOT EXISTS USAGE_STATUS VARCHAR(1)
+  ;
+CREATE INDEX i_linear_name ON linear_name(activation_status, use_by, usage_status, authorized, duplication_status);
+CREATE INDEX i_linear_name_name_type_dir ON linear_name(UPPER(name_part || coalesce(type_part,'') || coalesce(dir_part,'')));
+--drop INDEX i_linear_name_name_type_dir
+-- Initially, need to  get data from LINEAR_NAME_USAGE view from NETWORK@...
+1. In Oracle, generate the table and export data: 
+	--DROP TABLE SLEE_linear_name_usage
+	CREATE TABLE SLEE_linear_name_usage AS
+	SELECT
+	LINEAR_NAME_ID
+	,CASE WHEN EXISTS
+	   ( select * from cityprj.corridor n
+		where trim(n.CORRIDOR_NAME) = upper(trim(replace(name_part||' '||type_part||' '||DIR_part,'  ',' ')))
+		) THEN 1 ELSE 0 END AS  PARCEL_USAGE_STATUS
+	,CASE WHEN EXISTS
+	   ( select * from cadast.corridor_wh n
+		where trim(n.CORRIDOR_NAME) = upper(trim(replace(name_part||' '||type_part||' '||DIR_part,'  ',' ')))
+		) THEN 1 ELSE 0 END AS  PARCEL_H_USAGE_STATUS
+	,CASE WHEN EXISTS 
+	   ( select * from network.base_centreline_gv n
+		 where l.linear_name_id = n.linear_name_id
+	   ) THEN 1 ELSE 0 END AS CENTRELINE_USAGE_STATUS 
+	,CASE WHEN EXISTS 
+	   (select * from network.base_centreline_h n
+		where l.linear_name_id = n.linear_name_id
+		) THEN 1 ELSE 0 END AS CENTRELINE_H_USAGE_STATUS 
+	,CASE WHEN EXISTS
+	   (select * 
+		from ama_gv am
+		where am.linear_name_id = l.LINEAR_NAME_ID
+	   ) THEN 1 ELSE 0 END AS AMA_USAGE_STATUS
+	,CASE WHEN EXISTS
+	   (select * 
+		from ama_h ah
+		where ah.linear_name_id = l.LINEAR_NAME_ID
+	   ) THEN 1 ELSE 0 END AS AMA_H_USAGE_STATUS
+	,USE_BY
+	,NAME_PART
+	,TYPE_PART
+	,DIR_PART
+	from linear_name_gv l
+	;
+2. Import data from slee_linear_name_usage.sql
+3. Update usage_status field in linear_name_evw
+  UPDATE linear_name_evw v
+  SET usage_status = 
+      CASE WHEN t.parcel_usage_status = 1 OR t.centreline_usage_status = 1 OR t.ama_usage_status = 1 THEN 'C'
+	       WHEN t.parcel_h_usage_status = 1 OR t.centreline_h_usage_status = 1 OR t.ama_h_usage_status = 1 THEN 'H'
+		   ELSE 'N'
+	  END 
+FROM  SLEE_LINEAR_NAME_USAGE t
+WHERE v.linear_name_id = t.linear_name_id;
+-- Testing
+select * from SLEE_LINEAR_NAME_USAGE where linear_name_id = 12468;
+select * from linear_name_evw where linear_name_id = 12468;
+  
 -- for table linear_name_direction
 CREATE SEQUENCE network.linear_name_direction_id_seq;
 ALTER TABLE network.linear_name_direction      
@@ -1296,6 +1362,10 @@ ALTER TABLE network.linear_name_type
 SELECT setval('network.linear_name_type_id_seq', 1000000000, true);
 ALTER SEQUENCE network.linear_name_type_id_seq OWNED BY network.linear_name_type.linear_name_type_id;
 
+ALTER TABLE network.linear_name_type 
+  DROP COLUMN IF EXISTS RECORD_ID,
+  DROP COLUMN IF EXISTS RECORD_TYPE;
+  
 -- for table linear_name_xref
 CREATE SEQUENCE network.linear_name_xref_id_seq;
 ALTER TABLE network.linear_name_xref      
@@ -1403,6 +1473,15 @@ UPDATE dmn_source_class
 SELECT * from dmn_source_class;  
 */
 
+-- Create new anchorTo tables
+CREATE TABLE network.ige_task_active
+(	
+	USERNAME character varying(15) PRIMARY KEY, 
+	TASK_ID numeric(12,0), 
+	DATE_MODIFIED TIMESTAMP
+);
+GRANT ALL ON TABLE network.ige_task_active TO network;
+CREATE INDEX ige_task_active_task_id_idx ON network.ige_task_active (task_id);
 -- CREATE VIEWS
 CREATE OR REPLACE VIEW v_dmn_plan_status AS
   SELECT plan_status AS source_status,

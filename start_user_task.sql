@@ -44,6 +44,9 @@ BEGIN
 			 )
 	  ) THEN
 	  -- Update task status
+	  UPDATE ige_task
+	    SET taken_by = v_user_name
+	  WHERE task_id = v_task_id;
 	  SELECT update_task_status(v_task_id, STATUS_STARTED) INTO ret_json;
 	  SELECT ret_json::json->>'status',
 	       ret_json::json->>'message'
@@ -64,7 +67,7 @@ BEGIN
 	FROM
 	(
 	  SELECT 
-		   v_version_num version_num,
+		   --v_version_num version_num,
 		   v_active_task_type active_task_type,
 		   o_status status, 
 	       o_message message		     
@@ -79,7 +82,7 @@ EXCEPTION
 	FROM
 	(
 	  SELECT 
-		   null version_num,
+		   --null version_num,
 		   null active_task_type,
 		   o_status status, 
 	       o_message message		     

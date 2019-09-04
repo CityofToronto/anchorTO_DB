@@ -19,6 +19,7 @@ DECLARE
   ret_msg text;
   ret_status text;
   v_control_task_id numeric;
+  v_username text;
 BEGIN
     o_status = 'OK';
     o_message = '';
@@ -27,6 +28,29 @@ BEGIN
 	  UPDATE ige_task
 	    SET task_status = UPPER(v_status)
 	  WHERE task_id = v_task_id;
+	  IF UPPER(v_status) = 'COMPLETED' THEN
+	    UPDATE ige_task_active 
+		  SET task_id = null,
+		      date_modified = current_timestamp
+	    WHERE task_id = v_task_id;
+	  ELSE 
+	    IF EXISTS (SELECT * FROM ige_task_active WHERE task_id = v_task_id) THEN
+		  -- Remove flag from old user
+		  UPDATE ige_task_active 
+		  SET task_id = null,
+		      date_modified = current_timestamp
+	      WHERE task_id = v_task_id;
+		END IF; 
+		SELECT taken_by INTO v_username FROM ige_task WHERE task_id = v_task_id;
+		IF EXISTS (SELECT * FROM ige_task_active WHERE username = v_username) THEN
+		  UPDATE ige_task_active 
+		    SET task_id = v_task_id
+			WHERE username = v_username;
+		ELSE
+	      INSERT INTO ige_task_active (username, task_id, date_modified)
+		    VALUES (v_username, v_task_id, current_timestamp);	
+		END IF;	
+	  END IF;	
 	  -- Beginning of updating Oracle
 	  IF get_configuration_bool('anchorTO', 'ANCHORTO', 'sync_with_oracle') THEN
 	    UPDATE imaint_oracle.ige_task
