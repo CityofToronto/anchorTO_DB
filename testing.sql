@@ -561,8 +561,6 @@ SELECT * FROM network.base_centreline
 select * from linear_name_evw where duplication_status is not null;
 SELECT * FROM network.dmn_ln_usage_status
 select * from authorized_municipal_address
---SELECT search_lfn('{"activation_status": "Active",  "duplication_status":"D",  "authorized": "Y",  "used_by": "Centreline Only",  "usage_status":"Current",  "logic": "and"}')
---SELECT search_lfn('{"activation_status": "Active",  "authorized": "",  "used_by": "Centreline Only",  "usage_status":"",  "logic": "and"}')
 SELECT search_lfn('{"activation_status": "A",  "authorized": "",  "used_by": "L",  "usage_status":"",  "logic": "and"}')
 SELECT search_lfn('{"activation_status": null,  "authorized": "",  "used_by": "",  "usage_status":"",  "logic": "and"}')
 SELECT * FROM linear_name_evw
@@ -574,7 +572,55 @@ select * from dmn_ln_activation_status
 select * from DMN_CL_ADDRESS_PARITY t
 select * from DMN_LN_USAGE_STATUS
 SELECT get_lfn_by_id(1570)
-------------------------------
+SELECT * FROM ige_source_dm;
+SELECT * FROM ige_source_h;
+------------------------------------------------------------------------------------------------------------------------
+SELECT sde.sde_create_version('sde.DEFAULT', 'myedits12111', 1, 1, 'version for edits');
+SELECT sde.sde_set_current_version('myedits12111');
+SELECT sde.sde_edit_version('myedits12111',1);
+INSERT INTO linear_name_evw
+				   (
+					   objectid, 
+					   linear_name_id, 
+					   trans_id_create, 
+					   trans_id_expire, 
+					   record_type, 
+					   use_by, 
+					   name_part, 
+					   type_part, 
+					   dir_part, 
+					   description, 
+					   activation_status, 
+					   approval_status, 
+					   duplication_status, 
+					   duplication_desc, 						   
+					   authorized, 
+					   usage_status
+				   )
+		   VALUES (	
+					sde.next_rowid(current_schema()::text, 'linear_name'),
+					nextval('linear_name_id_seq')::numeric(12,0),
+					888,
+					-1,
+					'P',
+					'L',
+					'NamePart',
+					'Street',
+					null,				        
+					'Testing',
+					'A',
+					'A',
+					null,
+					null,
+					'N',
+					null
+			  );
+			  SELECT sde.sde_edit_version('myedits12111',2);
+SELECT * from linear_name_evw order by 1 desc;
+SELECT sde_set_default();
+SELECT * from linear_name_evw order by 1 desc;
+SELECT sde.sde_delete_version('myedits12111');
+------------------------------------------------------------------------------------------------------------------------------------------------------
 
 					 
 					 

@@ -1,9 +1,7 @@
 -- FUNCTION: network.close_task(text, text, text, text)
 
 -- DROP FUNCTION network.close_task(text, text, text, text);
-/*
-  Close a task
-*/
+
 CREATE OR REPLACE FUNCTION network.close_task(
 	uname text,
 	editversion text,
@@ -16,6 +14,12 @@ CREATE OR REPLACE FUNCTION network.close_task(
     VOLATILE 
 AS $BODY$
 DECLARE    
+/*
+    Summary:
+	  Close a task
+    Testing:
+	  select network.close_task('slee333', '3', 'uapp1', 'COMPLETED') 
+  */
   userstatus text[] = '{"ABORTED","COMPLETED"}';
   vfound boolean;
   taskid ige_task.task_id%TYPE;
@@ -60,7 +64,7 @@ BEGIN
       SET task_status = $4
       where task_id = taskid
       and trans_id_expire = -1;
-	-- Beginning of updating Oracle
+	/*-- Beginning of updating Oracle
 	IF get_configuration_bool('anchorTO', 'ANCHORTO', 'sync_with_oracle') THEN
 		UPDATE imaint_oracle.ige_transaction
 		  SET trans_status = $4,
@@ -72,7 +76,7 @@ BEGIN
 		  where task_id = taskid
 		  and trans_id_expire = -1;
 	END IF;	  
-	-- End of updating Oracle  
+	-- End of updating Oracle  */
     SELECT row_to_json(c) INTO o_json
 	FROM
 	(

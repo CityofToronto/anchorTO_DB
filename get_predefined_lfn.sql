@@ -2,13 +2,21 @@
 
 -- DROP FUNCTION network.get_predefined_lfn();
 
-CREATE OR REPLACE FUNCTION network.get_predefined_lfn()
+CREATE OR REPLACE FUNCTION network.get_predefined_lfn(
+	)
     RETURNS json
     LANGUAGE 'sql'
 
     COST 100
     VOLATILE 
 AS $BODY$
+
+/*
+  Summary:
+    Get pre-defined LFN information lists
+  Testing:
+    SELECT get_predefined_lfn();
+*/
 SELECT to_json(row)
 FROM
 (

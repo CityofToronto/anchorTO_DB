@@ -19,6 +19,12 @@ DECLARE
   o_message text;  
   o_json text;   
 BEGIN
+/*
+  Summary: 
+    Create a task for source.
+  Testing:
+    SELECT create_source_task('slee5', 'comments32010');
+*/
     o_status = 'OK';
     o_message = '';
 	transid = -1;

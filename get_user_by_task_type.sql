@@ -11,6 +11,12 @@ CREATE OR REPLACE FUNCTION network.get_user_by_task_type(
     VOLATILE 
     ROWS 1000
 AS $BODY$
+  /*
+    Summary:
+	  Get eligible users by task type
+    Testing:
+	  select get_user_by_task_type('PLANPARCEL')
+  */
 SELECT to_json(r)
 FROM 
 (

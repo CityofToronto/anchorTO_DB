@@ -19,7 +19,13 @@ DECLARE
   o_status text;
   o_message text;  
   o_json text;  
-BEGIN /**/
+BEGIN 
+/*
+  Summary: 
+    Create a task.
+  Testing:
+    SELECT create_task('slee330', 'some comments', 'anchorTO', 'SOURCE');
+*/
     o_status = 'OK';
     o_message = '';
 	transid = -1;
@@ -55,7 +61,7 @@ BEGIN /**/
                      ,transid
                      ,-1) 
 	RETURNING task_id INTO taskid;
-	-- Beginning of updating Oracle
+	/*-- Beginning of updating Oracle
 	IF get_configuration_bool('anchorTO', 'ANCHORTO', 'sync_with_oracle') THEN
       INSERT INTO imaint_oracle.ige_task 
 	                      (task_id
@@ -83,7 +89,7 @@ BEGIN /**/
                      ,transid
                      ,-1);
     END IF;
-	-- End of updating Oracle	
+	-- End of updating Oracle	*/
     SELECT row_to_json(c) INTO o_json
 	FROM
 	(

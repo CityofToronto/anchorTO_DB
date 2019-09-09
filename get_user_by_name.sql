@@ -11,6 +11,12 @@ CREATE OR REPLACE FUNCTION network.get_user_by_name(
     VOLATILE 
     ROWS 1000
 AS $BODY$
+ /*
+    Summary:
+	  Get user information by user name
+    Testing:
+	  SELECT get_user_by_name('rli4')
+  */
 select to_json(row) 
 from 
 (
@@ -27,6 +33,11 @@ from
 			   JOIN ige_task t ON ta.task_id = t.task_id
 			   WHERE ta.username = a
 		   ) AS active_task_type,
+	       (
+			   SELECT ta.task_id 
+			   FROM ige_task_active ta			   
+			   WHERE ta.username = a
+		   ) AS active_task_id,
           (
 		    select json_agg(row_to_json(c)) 
 		    from 

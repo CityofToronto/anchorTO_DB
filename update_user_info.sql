@@ -11,6 +11,12 @@ CREATE OR REPLACE FUNCTION network.update_user_info(
     VOLATILE 
 AS $BODY$
 DECLARE 
+/*
+    Summary:
+	  Update user information
+    Testing:
+	  select update_user_info('{"business_unit": "IT - SDS - GCC","email": "slee3300@toronto.ca","fullname": "Steve lee3300","status": "ACTIVE","steward_group": ["SITE_AREA_MAINT","AMA_MAINT","CENTRELINE_ADDRESS_MAINT"],"user_id": null,"username": "Slee33000"}');
+  */
   o_status text;
   o_userid text;
   v_user_id bigint;
@@ -76,7 +82,7 @@ BEGIN
 		  i_full_name
 	  )
 	  RETURNING user_id::text INTO o_userid;
-	  -- Beginning of updating Oracle to sync
+	 /* -- Beginning of updating Oracle to sync
 	  IF get_configuration_bool('anchorTO', 'ANCHORTO', 'sync_with_oracle') THEN
 	    INSERT INTO imaint_oracle.ige_user(user_id, username, email, business_unit, status, status_date, first_name, last_name)
 	    VALUES 	  
@@ -92,7 +98,7 @@ BEGIN
 	    );
 		RAISE NOTICE 'Updated Oracle ige_user table: %', o_userid;
 	  END IF;
-	  -- End of updating Oracle to sync	  
+	  -- End of updating Oracle to sync	  */
   ELSE    
     UPDATE ige_user
 	  SET username = i_user_name,
@@ -105,7 +111,7 @@ BEGIN
 	-- Remove old user stewards
 	DELETE FROM ige_user_steward 
 	WHERE user_id = o_userid::bigint;
-	-- Beginning of updating Oracle to sync
+	/*-- Beginning of updating Oracle to sync
 	IF get_configuration_bool('anchorTO', 'ANCHORTO', 'sync_with_oracle') THEN
 	  UPDATE imaint_oracle.ige_user
 	    SET username = i_user_name,
@@ -120,7 +126,7 @@ BEGIN
 	  DELETE FROM imaint_oracle.ige_user_steward 
 	  WHERE user_id = o_userid::bigint;
 	END IF;  
-	-- End of updating Oracle to sync
+	-- End of updating Oracle to sync*/
   END IF;
   
   INSERT INTO ige_user_steward
@@ -130,7 +136,7 @@ BEGIN
 	--FROM json_array_elements('["SITE_AREA_MAINT","AMA_MAINT"]');
 	--FROM json_array_elements_text(i_steward_group);
 	
-  -- Beginning of updating Oracle to sync
+  /*-- Beginning of updating Oracle to sync
   IF get_configuration_bool('anchorTO', 'ANCHORTO', 'sync_with_oracle') THEN
     INSERT INTO imaint_oracle.ige_user_steward
     SELECT user_id,
@@ -142,7 +148,7 @@ BEGIN
 --	       json_array_elements_text(i_steward_group);   
     RAISE NOTICE 'Updated Oracle ige_user_steward table: %', o_userid; 
   END IF;
-  -- End of updating Oracle to sync
+  -- End of updating Oracle to sync*/
   SELECT row_to_json(c) INTO o_json
 	FROM
 	(

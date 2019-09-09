@@ -3,11 +3,10 @@
 -- DROP FUNCTION network.get_configuration_int(text, text, text, integer);
 
 CREATE OR REPLACE FUNCTION network.get_configuration_int(
-	                                             v_category text,
-	                                             v_type text,
-	                                             v_name text,
-	                                             v_default_value integer default null
-	                                            )
+	v_category text,
+	v_type text,
+	v_name text,
+	v_default_value integer DEFAULT NULL::integer)
     RETURNS integer
     LANGUAGE 'plpgsql'
 
@@ -17,7 +16,13 @@ AS $BODY$
 DECLARE 
   retval integer;
   thevalue text;
-BEGIN    
+BEGIN  
+/*
+    Summary:
+	  Get integer settings from configuration table
+    Testing:
+	  select get_configuration_int('anchorTO', 'ANCHORTO', 'sync_with_oracle') 
+  */
   SELECT get_configuration($1, $2, $3) INTO thevalue;  
   RAISE NOTICE '%', thevalue;
   IF thevalue IS NULL AND $4 IS NOT NULL THEN 

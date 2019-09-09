@@ -3,11 +3,10 @@
 -- DROP FUNCTION network.get_configuration_bool(text, text, text, boolean);
 
 CREATE OR REPLACE FUNCTION network.get_configuration_bool(
-	                                             v_category text,
-	                                             v_type text,
-	                                             v_name text,
-	                                             v_default_value boolean default false
-	                                            )
+	v_category text,
+	v_type text,
+	v_name text,
+	v_default_value boolean DEFAULT false)
     RETURNS boolean
     LANGUAGE 'plpgsql'
 
@@ -18,6 +17,12 @@ DECLARE
   retval boolean;
   thevalue text;
 BEGIN  
+/*
+    Summary:
+	  Get boolean setting from configuration table
+    Testing:
+	  select get_configuration_bool('anchorTO', 'ANCHORTO', 'sync_with_oracle') 
+  */
   retval = false;
   SELECT get_configuration($1, $2, $3) INTO thevalue;  
   RAISE NOTICE '%', thevalue;

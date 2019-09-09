@@ -2,7 +2,8 @@
 
 -- DROP FUNCTION network.delete_source_task(numeric);
 
-CREATE OR REPLACE FUNCTION network.delete_source_task(taskid numeric)
+CREATE OR REPLACE FUNCTION network.delete_source_task(
+	taskid numeric)
     RETURNS text
     LANGUAGE 'plpgsql'
 
@@ -14,6 +15,12 @@ DECLARE
   o_message text;  
   o_json text;  
 BEGIN
+/*
+  Summary:
+    Delete a task for source.
+  Testing:
+    SELECT delete_source_task(1000000059);
+*/
     o_status = 'OK';
     o_message = '';
 	SELECT delete_task(taskid) INTO o_json; 

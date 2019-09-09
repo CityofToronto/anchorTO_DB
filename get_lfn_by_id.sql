@@ -2,7 +2,8 @@
 
 -- DROP FUNCTION network.get_lfn_by_id(numeric);
 
-CREATE OR REPLACE FUNCTION network.get_lfn_by_id(v_linear_name_id numeric)
+CREATE OR REPLACE FUNCTION network.get_lfn_by_id(
+	v_linear_name_id numeric)
     RETURNS SETOF json 
     LANGUAGE 'sql'
 
@@ -10,7 +11,12 @@ CREATE OR REPLACE FUNCTION network.get_lfn_by_id(v_linear_name_id numeric)
     VOLATILE 
     ROWS 1000
 AS $BODY$
-
+/*
+  Summary:
+    Get LFN by id
+  Testing:
+    SELECT get_lfn_by_id(1570)
+*/
    SELECT row_to_json(c) 
    FROM
    (	 
@@ -21,11 +27,12 @@ AS $BODY$
 			  m.dir_part,
 	          m.description,
 			  m.activation_status,
+	          m.activation_status_desc,
 	          m.use_by,
 			  m.duplication_status,
 			  m.duplication_desc,
-	          --us.description AS usage_status,
 	          m.usage_status,
+	          us.description AS usage_status_desc,	          
 	          --CASE WHEN m.usage_status IN ('C', 'H') THEN 'Y' ELSE 'N' END AS authorized,
 	          m.authorized,
 	          m.segment
@@ -38,7 +45,7 @@ AS $BODY$
 				  l.dir_part,
 		          l.description,
 		          l.activation_status,
-				  --a.description AS activation_status,
+				  a.description AS activation_status_desc,
 				  l.duplication_status,
 				  l.duplication_desc,
 		          l.use_by,
@@ -83,11 +90,11 @@ AS $BODY$
 						) cc
 				  ) AS segment
 		   FROM linear_name_evw l
-		   --JOIN dmn_ln_activation_status a ON l.activation_status = a.activation_status
+		   JOIN dmn_ln_activation_status a ON l.activation_status = a.activation_status
 		   --JOIN dmn_ln_use_by u ON l.use_by = u.use_by	
 		   WHERE l.linear_name_id = v_linear_name_id
 	   ) m
-	   --JOIN dmn_ln_usage_status us ON us.usage_status = m.usage_status	  
+	   JOIN dmn_ln_usage_status us ON us.usage_status = m.usage_status	  
     ) c	
 	;	
    $BODY$;

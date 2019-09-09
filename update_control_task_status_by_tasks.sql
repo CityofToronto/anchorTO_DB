@@ -11,6 +11,12 @@ CREATE OR REPLACE FUNCTION network.update_control_task_status_by_tasks(
     COST 100
     VOLATILE 
 AS $BODY$
+/*
+    Summary:
+	  Update control task status when any task is updated
+    Testing:
+	  SELECT update_control_task_status_by_tasks(1000000016);
+  */
 DECLARE   
   msg text;
   o_json text;
@@ -137,13 +143,13 @@ BEGIN
 	    UPDATE ige_control_task 
 	      SET control_task_status = v_control_task_status
 		  WHERE control_task_id = v_control_task_id;
-		-- Beginning of updating Oracle
+		/*-- Beginning of updating Oracle
 	    IF get_configuration_bool('anchorTO', 'ANCHORTO', 'sync_with_oracle') THEN -- IF #6
 		  UPDATE imaint_oracle.ige_control_task 
 	      SET control_task_status = v_control_task_status
 		  WHERE control_task_id = v_control_task_id;  
 		END IF;  -- END IF #6
-	    -- End of updating Oracle  		
+	    -- End of updating Oracle  */		
 	  END IF; -- END IF #5			  
 --	END IF; -- END IF #1
   raise notice 'Control_task_id: %; Total tasks #:%; Total COMPLETED #:%; Total HOLD #:%; Total Started: %; 1st Incompleted task SEQ: %; Current Status:%; New Status: %;', 

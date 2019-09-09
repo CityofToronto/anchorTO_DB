@@ -24,6 +24,12 @@ AS $BODY$
 DECLARE    
   msg text;
 BEGIN  
+/*
+    Summary:
+	  Get customized message from table
+    Testing:
+	  get_message(50680,'ERR','SURCTSK', '0', 888);
+  */
   msg = '';
   SELECT message INTO msg
   FROM ige_messages t

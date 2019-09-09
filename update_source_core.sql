@@ -13,6 +13,12 @@ CREATE OR REPLACE FUNCTION network.update_source_core(
     VOLATILE 
 AS $BODY$
 DECLARE 
+/*
+  Summary: 
+      Update source 
+  Testing:
+      
+*/
   sourceid numeric(12,0);
   o_status text;  
   o_message text;

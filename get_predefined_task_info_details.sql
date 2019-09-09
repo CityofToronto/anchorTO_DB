@@ -10,12 +10,19 @@ CREATE OR REPLACE FUNCTION network.get_predefined_task_info_details(
 
     COST 100
     VOLATILE 
-AS $BODY$DECLARE
+AS 
+$BODY$
+DECLARE
 
     _temp json;
     _arr  text[];
 BEGIN
- 
+  /*
+    Summary:
+	  Get pre-defined task information details
+    Testing:
+	  select get_predefined_task_info_details('Plan')
+  */ 
         EXECUTE 'SELECT to_json(row) 
                  from 
                 (select 

@@ -10,6 +10,12 @@ CREATE OR REPLACE FUNCTION network.get_predefined_user_info(
     COST 100
     VOLATILE 
 AS $BODY$
+  /*
+    Summary:
+	  Get pre-defined user information
+    Testing:
+	  SELECT get_predefined_user_info()
+  */
 SELECT to_json(row)
 FROM
 (

@@ -16,6 +16,17 @@ CREATE OR REPLACE FUNCTION network.update_tasks(
     VOLATILE 
 AS $BODY$
 DECLARE 
+/*
+    Summary:
+	  Update tasks information
+    Testing:
+	  SELECT update_tasks('[{"task_assigned_to":"SITE_AREA_MAINT","task_type":"SITEAREA","task_type_desc":"Site Area","control_task_type":"STREET/ADDRESS","control_task_comments":"Create/adjust Site Area","task_sequence":10,"assign_to":"rli4","task_status":null },{"task_assigned_to":"LINEARNAME_MAINT","task_type":"LINEARNAME","task_type_desc":"Linear Name","control_task_type":"STREET/ADDRESS","control_task_comments":"Add/adjust/delete Linear Name","task_sequence":20,"assign_to":"slee5","task_status":null },{"task_assigned_to":"SITE_AREA_MAINT","task_type":"SITEAREA","task_type_desc":"Site Area","control_task_type":"STREET/ADDRESS","control_task_comments":"Close Site Area","task_sequence":70,"assign_to":"rli4","task_status":"HOLD","deleted":false }]'::json,
+						     10005,
+						     20005,
+						    'SUPERVISOR DEFINED',
+						    10006,
+						    -1);
+  */
   theid numeric(12,0); 
   v_task_json json;
   msg text;
@@ -77,7 +88,8 @@ BEGIN
 	  UPDATE tmp_ige_task
 	    SET new_task_id = nextval('ige_task_id_seq')::numeric(12,0),
 		    task_status = CASE WHEN task_status IS null THEN 'READY' ELSE task_status END 
-	  WHERE task_id is null;
+	  WHERE task_id is null
+	    AND UPPER(deleted) = 'FALSE';
 	  raise notice 'Generated new task id(s)';
 	  -- Expire the deleted tasks	  
 	  UPDATE ige_task
@@ -136,7 +148,7 @@ BEGIN
 	  WHERE new_task_id is not null;
 	  raise notice 'Inserted new tasks';
 	  
-	 -- Beginning of updating Oracle
+	/* -- Beginning of updating Oracle
 	  IF get_configuration_bool('anchorTO', 'ANCHORTO', 'sync_with_oracle') THEN
 	      SELECT  string_agg(task_id::text, ',') INTO v_sql
 		  FROM tmp_ige_task
@@ -199,7 +211,7 @@ BEGIN
 		  WHERE new_task_id is not null; 
 	  END IF;
 	  raise notice 'Inserted new tasks in Oracle';
-	 -- End of updating Oracle  
+	 -- End of updating Oracle  */
   DROP TABLE IF EXISTS tmp_ige_task;
   SELECT row_to_json(c) INTO o_json
 	FROM
@@ -226,3 +238,8 @@ $BODY$;
 
 ALTER FUNCTION network.update_tasks(json, numeric, numeric, text, numeric, numeric)
     OWNER TO network;
+
+GRANT EXECUTE ON FUNCTION network.update_tasks(json, numeric, numeric, text, numeric, numeric) TO anchorto;
+
+GRANT EXECUTE ON FUNCTION network.update_tasks(json, numeric, numeric, text, numeric, numeric) TO network;
+

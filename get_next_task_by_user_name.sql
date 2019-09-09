@@ -9,7 +9,16 @@ CREATE OR REPLACE FUNCTION network.get_next_task_by_user_name(
 
     COST 100
     VOLATILE 
-AS $BODY$SELECT to_json(row)
+AS 
+$BODY$
+/*
+    Summary:
+	  Get next task(s) by user name
+    Testing:
+	  select get_next_task_by_user_name('sarzand');
+	  select get_next_task_by_user_name('slee5');
+  */
+SELECT to_json(row)
 FROM
 (
  SELECT 

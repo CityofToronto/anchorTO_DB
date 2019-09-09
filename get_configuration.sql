@@ -3,11 +3,10 @@
 -- DROP FUNCTION network.get_configuration(text, text, text, text);
 
 CREATE OR REPLACE FUNCTION network.get_configuration(
-	                                             v_category text,
-	                                             v_type text,
-	                                             v_name text,
-	                                             v_default_value text default null
-	                                            )
+	v_category text,
+	v_type text,
+	v_name text,
+	v_default_value text DEFAULT NULL::text)
     RETURNS text
     LANGUAGE 'plpgsql'
 
@@ -17,6 +16,12 @@ AS $BODY$
 DECLARE 
   retval text;   
 BEGIN  
+/*
+    Summary:
+	  Get settings from configuration table
+    Testing:
+	  SELECT get_configuration('anchorTO', 'ANCHORTO', 'sync_with_oracle') 
+  */
   IF EXISTS (SELECT * FROM configuration WHERE upper(category) = upper($1) AND upper(type) = upper($2) AND upper(name) = upper($3)) THEN
     SELECT value INTO retval FROM configuration WHERE upper(category) = upper($1) AND upper(type) = upper($2) AND upper(name) = upper($3);
 	RAISE NOTICE '%', retval;	

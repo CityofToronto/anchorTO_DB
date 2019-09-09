@@ -12,7 +12,22 @@ CREATE OR REPLACE FUNCTION network.update_source(
 
     COST 100
     VOLATILE 
-AS $BODY$DECLARE 
+AS $BODY$
+DECLARE 
+/*
+    Summary:
+	  Update source information
+    Testing:
+	  SELECT update_source('{"source_id":null,"class":"REPORT","type":"INHOUSE MAINTENANCE","control_task_type":"STREET/ADDRESS","status":"APPROVED","int_id":"Test Internal6","int_date":"2019-07-18","ext_id":"","ext_date":null,"plan_name":null,"maint_status":null,"comment":null,"closed":null,"task":[{"task_id":null,"task_type":"SITEAREA","task_sequence":10,"assigned_to":"emachyni","task_comments":"Create/adjust Site Area","task_status":"READY","deleted":false,"disabled":false},{"task_id":null,"task_type":"LINEARNAME","task_sequence":20,"assigned_to":"rli4","task_comments":"Add/adjust/delete Linear Name","task_status":"READY","deleted":false,"disabled":false},{"task_id":null,"task_type":"AMA","task_sequence":30,"assigned_to":"rli4","task_comments":"Add/adjust/delete AMA","task_status":"READY","deleted":false,"disabled":false},{"task_id":null,"task_type":"INTERSECTION","task_sequence":40,"assigned_to":"INTERSECTION_MAINT","task_comments":"Add/edit/delete Intersections","task_status":"READY","deleted":true,"disabled":false},{"task_id":null,"task_type":"CENTRELINE","task_sequence":50,"assigned_to":"SEGMENT_MAINT","task_comments":"Add/edit/delete Segments","task_status":"READY","deleted":true,"disabled":false},{"task_id":null,"task_type":"ADDRESSPOINT","task_sequence":60,"assigned_to":"ADDRESS_MAINT","task_comments":"Add/edit/delete Reserved Address Points","task_status":"READY","deleted":true,"disabled":false},{"task_id":null,"task_type":"SITEAREA","task_sequence":70,"assigned_to":"slee6111","task_comments":"Close Site Area - hold for now","task_status":"HOLD","deleted":false,"disabled":false}],"attachment":null,"user_id":"rli4"}'
+					 , 10000
+					 ,-1
+					 ,'sde.DEFAULT');
+      SELECT network.update_source(
+                '{"objectid":133059,"source_id":11969,"class":"REPORT","type":"MUNICIPAL NUMBERING LETTER","control_task_type":"STREET/ADDRESS","status":"APPROVED","int_id":"em-13-19 Winchester","int_date":"2019-05-13","ext_id":"18164283STE28SA","ext_date":"2019-05-13","plan_name":null,"maint_status":"HOLD","comment":"amalg, Margaret''s House -test","closed":false,"task":[{"task_id":156824,"task_type":"SITEAREA","task_sequence":10,"assigned_to":"EMACHYNI","task_assigned_to_user_list":[{"username":"SITE_AREA_MAINT","status":"ACTIVE","user_id":0,"full_name":"SITE_AREA_MAINT"},{"username":"EMACHYNI","status":"ACTIVE","user_id":22,"full_name":"Elizabeth Machynia"},{"username":"JFLIGG","status":"ACTIVE","user_id":14,"full_name":"John Fligg"},{"username":"KPORTER","status":"LOCKED","user_id":30,"full_name":"Kevin Porter"},{"username":"PSINGH5","status":"ACTIVE","user_id":66,"full_name":"Pradeep Singh"},{"username":"SARZAND","status":"ACTIVE","user_id":7,"full_name":"Sepideh Arzandeh"},{"username":"SDALE","status":"ACTIVE","user_id":27,"full_name":"Steve Dale"},{"username":"TBURRIDG","status":"ACTIVE","user_id":26,"full_name":"Travis Burridge"}],"task_comments":"<13-May-2019 11:05 EMACHYNI: Complete Task: Submit job successfully, job request id 157971>rn<13-May-2019 11:03 EMACHYNI: Post Work: Submit job successfully, job request id 157968>rn<13-May-2019 11:02 EMACHYNI: Stop Work>rn<13-May-2019 11:01 EMACHYNI: Start Work>rn<13-May-2019 11:01 EMACHYNI: Taken>rn<13-May-2019 10:09 EMACHYNI: Updated>rnCreate/adjust Site Area","task_status":"COMPLETED","deleted":false,"disabled":true},{"task_id":156829,"task_type":"ADDRESSPOINT","task_sequence":60,"assigned_to":"ADDRESS_MAINT","task_assigned_to_user_list":[{"username":"ADDRESS_MAINT","status":"ACTIVE","user_id":0,"full_name":"ADDRESS_MAINT"},{"username":"CWDOWCZ","status":"ACTIVE","user_id":57,"full_name":"Carol Wdowczyk"},{"username":"HMARROW","status":"ACTIVE","user_id":49,"full_name":"Hisham Marrow"},{"username":"JELLIOTT","status":"ACTIVE","user_id":60,"full_name":"James Elliott"},{"username":"JCHONG","status":"ACTIVE","user_id":55,"full_name":"Joyce Chong"},{"username":"KMERREM","status":"ACTIVE","user_id":28,"full_name":"Karl Merrem"},{"username":"BURTON","status":"ACTIVE","user_id":61,"full_name":"Michael Burton"},{"username":"PSINGH5","status":"ACTIVE","user_id":66,"full_name":"Pradeep Singh"},{"username":"RLI4","status":"ACTIVE","user_id":67,"full_name":"Rui Yang Li"},{"username":"SSellia","status":"ACTIVE","user_id":56,"full_name":"Seeva Selliah"},{"username":"SARZAND","status":"ACTIVE","user_id":7,"full_name":"Sepideh Arzandeh"},{"username":"SDALE","status":"ACTIVE","user_id":27,"full_name":"Steve Dale"},{"username":"SHODGINS","status":"ACTIVE","user_id":51,"full_name":"Steve Hodgins"},{"username":"TBURRIDG","status":"ACTIVE","user_id":26,"full_name":"Travis Burridge"},{"username":"DJOKIC","status":"ACTIVE","user_id":54,"full_name":"Zivorad Djokic"}],"task_comments":"<24-May-2019 12:17 HMARROW: Complete Task: Submit job successfully, job request id 158301>rn<24-May-2019 12:16 HMARROW: Post Work: Submit job successfully, job request id 158300>rn<24-May-2019 12:16 HMARROW: Stop Work>rn<24-May-2019 12:15 HMARROW: Start Work>rn<13-May-2019 11:06 HMARROW: Taken>rnAdd/edit/delete Reserved Address Points","task_status":"COMPLETED","deleted":false,"disabled":true},{"task_id":156830,"task_type":"SITEAREA","task_sequence":70,"assigned_to":"EMACHYNI","task_assigned_to_user_list":[{"username":"SITE_AREA_MAINT","status":"ACTIVE","user_id":0,"full_name":"SITE_AREA_MAINT"},{"username":"EMACHYNI","status":"ACTIVE","user_id":22,"full_name":"Elizabeth Machynia"},{"username":"JFLIGG","status":"ACTIVE","user_id":14,"full_name":"John Fligg"},{"username":"KPORTER","status":"LOCKED","user_id":30,"full_name":"Kevin Porter"},{"username":"PSINGH5","status":"ACTIVE","user_id":66,"full_name":"Pradeep Singh"},{"username":"SARZAND","status":"ACTIVE","user_id":7,"full_name":"Sepideh Arzandeh"},{"username":"SDALE","status":"ACTIVE","user_id":27,"full_name":"Steve Dale"},{"username":"TBURRIDG","status":"ACTIVE","user_id":26,"full_name":"Travis Burridge"}],"task_comments":"<28-May-2019 11:55 EMACHYNI: Hold>rn<13-May-2019 10:09 EMACHYNI: Updated>rnClose Site Area","task_status":"HOLD","deleted":false,"disabled":false}],"attachment":[],"user_id":"rli4"}', 
+                1000000619, 
+                -1, 
+                'TRANS1000000619'
+  */
   sourceid numeric(12,0);
   v_object_id numeric(12,0) = -1;
   o_status text;  
@@ -41,6 +56,24 @@ AS $BODY$DECLARE
   cnt_int_id integer = 0;
   cnt_plan_name integer = 0;
 BEGIN
+/*
+  Create source
+  Sample testing case:
+    1. Create: 
+	        SELECT update_source('{"source_id":null,"class":"REPORT","type":"INHOUSE MAINTENANCE","control_task_type":"STREET/ADDRESS","status":"APPROVED","int_id":"Test Internal6","int_date":"2019-07-18","ext_id":"","ext_date":null,"plan_name":null,"maint_status":null,"comment":null,"closed":null,"task":[{"task_id":null,"task_type":"SITEAREA","task_sequence":10,"assigned_to":"emachyni","task_comments":"Create/adjust Site Area","task_status":"READY","deleted":false,"disabled":false},{"task_id":null,"task_type":"LINEARNAME","task_sequence":20,"assigned_to":"rli4","task_comments":"Add/adjust/delete Linear Name","task_status":"READY","deleted":false,"disabled":false},{"task_id":null,"task_type":"AMA","task_sequence":30,"assigned_to":"rli4","task_comments":"Add/adjust/delete AMA","task_status":"READY","deleted":false,"disabled":false},{"task_id":null,"task_type":"INTERSECTION","task_sequence":40,"assigned_to":"INTERSECTION_MAINT","task_comments":"Add/edit/delete Intersections","task_status":"READY","deleted":true,"disabled":false},{"task_id":null,"task_type":"CENTRELINE","task_sequence":50,"assigned_to":"SEGMENT_MAINT","task_comments":"Add/edit/delete Segments","task_status":"READY","deleted":true,"disabled":false},{"task_id":null,"task_type":"ADDRESSPOINT","task_sequence":60,"assigned_to":"ADDRESS_MAINT","task_comments":"Add/edit/delete Reserved Address Points","task_status":"READY","deleted":true,"disabled":false},{"task_id":null,"task_type":"SITEAREA","task_sequence":70,"assigned_to":"slee6111","task_comments":"Close Site Area - hold for now","task_status":"HOLD","deleted":false,"disabled":false}],"attachment":null,"user_id":"rli4"}'
+					 , 10000
+					 ,-1
+					 ,'sde.DEFAULT');
+    --Create source with id 2000003	
+	SELECT * FROM ige_source_evw WHERE source_id = 2000003;
+	SELECT * FROM ige_source_h order by objectid DESC
+    SELECT * FROM ige_source_dm order by 1 DESC, 2 DESC
+	2. Update: 
+	    SELECT update_source('{"source_id":2000003,"class":"REPORT","type":"INHOUSE MAINTENANCE","control_task_type":"STREET/ADDRESS","status":"APPROVED","int_id":"Test Internal7","int_date":"2019-07-18","ext_id":"","ext_date":null,"plan_name":null,"maint_status":null,"comment":null,"closed":null,"task":[{"task_id":null,"task_type":"SITEAREA","task_sequence":10,"assigned_to":"emachyni","task_comments":"Create/adjust Site Area","task_status":"READY","deleted":false,"disabled":false},{"task_id":null,"task_type":"LINEARNAME","task_sequence":20,"assigned_to":"rli4","task_comments":"Add/adjust/delete Linear Name","task_status":"READY","deleted":false,"disabled":false},{"task_id":null,"task_type":"AMA","task_sequence":30,"assigned_to":"rli4","task_comments":"Add/adjust/delete AMA","task_status":"READY","deleted":false,"disabled":false},{"task_id":null,"task_type":"INTERSECTION","task_sequence":40,"assigned_to":"INTERSECTION_MAINT","task_comments":"Add/edit/delete Intersections","task_status":"READY","deleted":true,"disabled":false},{"task_id":null,"task_type":"CENTRELINE","task_sequence":50,"assigned_to":"SEGMENT_MAINT","task_comments":"Add/edit/delete Segments","task_status":"READY","deleted":true,"disabled":false},{"task_id":null,"task_type":"ADDRESSPOINT","task_sequence":60,"assigned_to":"ADDRESS_MAINT","task_comments":"Add/edit/delete Reserved Address Points","task_status":"READY","deleted":true,"disabled":false},{"task_id":null,"task_type":"SITEAREA","task_sequence":70,"assigned_to":"slee6111","task_comments":"Close Site Area - hold for now","task_status":"HOLD","deleted":false,"disabled":false}],"attachment":null,"user_id":"rli4"}'
+					 , 10001
+					 ,-1
+					 ,'sde.DEFAULT');
+*/
     o_status = 'OK';
     o_message = '';
     sourceid = -1;
@@ -200,7 +233,42 @@ BEGIN
 				  );
 			  --RETURNING source_id INTO sourceid;
 			  raise notice 'source_id #2: %', sourceid;
-		  ELSE -- Update source info		    
+		  ELSE -- Update source info 
+		    RAISE NOTICE 'Recording _h ...';
+			INSERT INTO ige_source_h
+				  (
+					  source_id, 
+					  source_class,
+					  source_type,
+					  internal_source_no,
+					  internal_source_date,
+					  external_source_no,
+					  external_source_date,
+					  plan_name,
+					  source_comments,
+					  source_status,
+					  parent_source_id,					  
+					  trans_id_create, 
+					  trans_id_expire, 
+					  objectid)
+			  SELECT  source_id, 
+					  source_class,
+					  source_type,
+					  internal_source_no,
+					  internal_source_date,
+					  external_source_no,
+					  external_source_date,
+					  plan_name,
+					  source_comments,
+					  source_status,
+					  parent_source_id, 
+					  trans_id_create, 
+					  v_trans_id_create, -- make it expired	
+					  sde.next_rowid(current_schema()::text, 'ige_source_h')
+			  FROM ige_source_evw 
+			  WHERE source_id = sourceid
+			  LIMIT 1;
+			RAISE NOTICE 'Updating ...';  
 		    UPDATE ige_source_evw 
 			    SET  source_class = v_source_class, 
 					 source_type = v_source_type, 
@@ -218,8 +286,55 @@ BEGIN
 			raise notice 'Updated...1';
 			SELECT objectid INTO v_object_id FROM ige_source_evw WHERE source_id = sourceid;	
 			raise notice 'Updating...2';
-		  END IF;
-		END IF;	  
+			
+			RAISE NOTICE 'Expire old _dm record ...';
+		    UPDATE ige_source_dm
+		      SET date_expiry = current_timestamp,
+			      trans_id_expire = v_trans_id_create
+		      WHERE source_id = sourceid 
+			    AND date_expiry = TO_TIMESTAMP('3000-01-01 00:00:00','YYYY-MM-DD HH24:MI:SS');				
+		  END IF; -- End of update source
+		  RAISE NOTICE 'Creating new _dm record ...';
+		  INSERT INTO ige_source_dm
+				   (
+					   objectid, 					   
+					   source_id,					   
+					   date_effective,
+					   date_expiry,
+					   source_class,
+					   source_type,
+					   internal_source_no,
+					   internal_source_date,
+					   external_source_no,
+					   external_source_date,
+					   plan_name,
+					   source_comments,
+					   source_status,
+					   parent_source_id,
+					   trans_id_create, 
+					   trans_id_expire
+				   )
+			   SELECT	
+					sde.next_rowid(current_schema()::text, 'ige_source_dm'),
+					source_id,
+					current_timestamp,
+					TO_TIMESTAMP('3000-01-01 00:00:00','YYYY-MM-DD HH24:MI:SS'),
+					source_class,
+					source_type,
+					internal_source_no,
+					internal_source_date,
+					external_source_no,
+					external_source_date,
+					plan_name,
+					source_comments,
+					source_status,
+					parent_source_id,
+					trans_id_create,
+					trans_id_expire
+			    FROM ige_source_evw
+				WHERE source_id = sourceid
+				LIMIT 1;
+		END IF;	 		
 	ELSE
 	  o_status = 'Failed';
       o_message = 'Failed to set the version to ' || v_version_name;
@@ -247,7 +362,7 @@ EXCEPTION
 		   sourceid,
 		   v_object_id objectid
 	) c;	
-	SELECT sde.sde_edit_version(v_version_name, 2);
+	--SELECT sde.sde_edit_version(v_version_name, 2);
 	RETURN o_json;
 END;  
 $BODY$;

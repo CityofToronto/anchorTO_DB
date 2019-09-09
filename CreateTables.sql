@@ -69,11 +69,13 @@ CREATE TABLE network.linear_name
 	APPROVAL_STATUS character varying(1), 
 	DUPLICATION_STATUS character varying(1), 
 	DUPLICATION_DESC character varying(30), 	 
-	OBJECTID numeric(38,0) NOT NULL	
+	OBJECTID integer NOT NULL	
 );
 CREATE INDEX network.linear_name_id ON network.linear_name (linear_name_id);
 CREATE UNIQUE INDEX network.linear_name_objectid_uk ON network.linear_name (objectid);
 */
+CREATE INDEX linear_name_type_up_i ON network.linear_name(upper(type_part));
+CREATE INDEX linear_name_dir_up_i ON network.linear_name(upper(dir_part));
 GRANT ALL ON TABLE network.linear_name TO network;
 GRANT INSERT, SELECT, UPDATE, DELETE ON TABLE network.linear_name TO sde;
 ---------------------------------------------------------------------------------------------------------------------------
@@ -93,7 +95,7 @@ CREATE TABLE network.linear_name_dm
 	LINEAR_NAME_FULL character varying(110),	
 	TRANS_ID_CREATE numeric(12,0), 
 	TRANS_ID_EXPIRE numeric(12,0), 
-	OBJECTID numeric(38,0) NOT NULL
+	OBJECTID integer NOT NULL  -- Only when it's INTEGER type, it can be registered with GDB in ArcCatalog
 );
 --alter table network.linear_name_h add record_type character varying(1);
 --alter table network.linear_name_h add use_by      text;
@@ -108,6 +110,7 @@ CREATE INDEX linear_name_dm_name_type_dir_up_i ON network.linear_name_dm(upper(n
 CREATE INDEX linear_name_dm_name_full_i ON network.linear_name_dm(linear_name_full);
 CREATE INDEX linear_name_dm_name_full_up_i ON network.linear_name_dm(upper(linear_name_full));
 CREATE INDEX linear_name_dm_name_up_i ON network.linear_name_dm(upper(name_part));
+CREATE INDEX linear_name_dm_dir_up_i ON network.linear_name_dm(upper(dir_part));
 
 GRANT ALL ON TABLE network.linear_name_dm TO network;
 GRANT INSERT, SELECT, UPDATE, DELETE ON TABLE network.linear_name_dm TO sde;
@@ -126,7 +129,7 @@ CREATE TABLE network.linear_name_h
 	APPROVAL_STATUS character varying(1), 
 	DUPLICATION_STATUS character varying(1), 
 	DUPLICATION_DESC character varying(30), 		
-	OBJECTID numeric(38,0) NOT NULL
+	OBJECTID integer NOT NULL -- Only when it's INTEGER type, it can be registered with GDB in ArcCatalog
 );
 --alter table network.linear_name_h add record_type character varying(1);
 --alter table network.linear_name_h add use_by      text;
@@ -136,9 +139,28 @@ CREATE TABLE network.linear_name_h
 --alter table network.linear_name_h drop if exists record_id ;
 --alter table network.linear_name_h drop language_code;	
 CREATE UNIQUE INDEX linear_name_h_objectid_uk ON network.linear_name_h (objectid);
+CREATE INDEX linear_name_h_type_up_i ON network.linear_name_h(upper(type_part));
+CREATE INDEX linear_name_h_dir_up_i ON network.linear_name_h(upper(dir_part));
 
 GRANT ALL ON TABLE network.linear_name_h TO network;
 GRANT INSERT, SELECT, UPDATE, DELETE ON TABLE network.linear_name_h TO sde;
+---------------------------------------------------------------------------------------------------------------------------
+CREATE TABLE network.linear_name_type
+(
+    linear_name_type_id numeric(12,0) PRIMARY KEY,
+    trans_id_create numeric(12,0),
+    trans_id_expire numeric(12,0),
+    type_part character varying(15) ,
+    type_part_code character varying(10) ,
+    objectid integer NOT NULL
+);
+CREATE UNIQUE INDEX linear_name_type_objectid_uk ON network.linear_name_type (objectid);
+CREATE UNIQUE INDEX linear_name_type_pk ON network.linear_name_type (linear_name_type_id);
+CREATE UNIQUE INDEX linear_name_type_type_uk ON network.linear_name_type (UPPER(type_part));
+CREATE UNIQUE INDEX linear_name_type_type_code_uk ON network.linear_name_type (UPPER(type_part_code));
+
+GRANT ALL ON TABLE network.linear_name_type TO network;
+GRANT INSERT, SELECT, UPDATE, DELETE ON TABLE network.linear_name_type TO sde;
 ---------------------------------------------------------------------------------------------------------------------------
 CREATE TABLE network.linear_name_type_dm
 (
@@ -149,7 +171,7 @@ CREATE TABLE network.linear_name_type_dm
 	TYPE_PART_CODE character varying(10), 
 	TRANS_ID_CREATE numeric(12,0), 
 	TRANS_ID_EXPIRE numeric(12,0), 
-	OBJECTID numeric(38,0) NOT NULL 
+	OBJECTID integer NOT NULL  -- Only when it's INTEGER type, it can be registered with GDB in ArcCatalog
 );
 --alter table network.linear_name_type_dm add record_type character varying(1);
 --alter table network.linear_name_type_dm drop record_type;
@@ -166,7 +188,7 @@ CREATE TABLE network.linear_name_type_h
 	TRANS_ID_EXPIRE numeric(12,0), 	
 	TYPE_PART character varying(15), 
 	TYPE_PART_CODE character varying(10), 	
-	OBJECTID numeric(38,0) NOT NULL 
+	OBJECTID integer NOT NULL  -- Only when it's INTEGER type, it can be registered with GDB in ArcCatalog
 );
 --alter table network.linear_name_type_h add record_type character varying(1);
 --alter table network.linear_name_type_h drop record_type;
@@ -185,7 +207,7 @@ CREATE TABLE network.linear_name_direction_dm
     trans_id_expire numeric(12,0),    
     dir_part character varying(15) ,
     dir_part_code character varying(10),
-    objectid numeric(38,0) NOT NULL
+    objectid integer NOT NULL  -- Only when it's INTEGER type, it can be registered with GDB in ArcCatalog
 );
 --alter table network.linear_name_direction_dm add record_type character varying(1);
 --alter table network.linear_name_direction_dm drop record_type;
@@ -202,7 +224,7 @@ CREATE TABLE network.linear_name_direction_h
     trans_id_expire numeric(12,0),    
     dir_part character varying(10) ,
     dir_part_code character varying(2),
-    objectid numeric(38,0) NOT NULL
+    objectid integer NOT NULL  -- Only when it's INTEGER type, it can be registered with GDB in ArcCatalog
 );
 --alter table network.linear_name_direction_h add record_type character varying(1);
 --alter table network.linear_name_direction_h drop record_type;
@@ -222,7 +244,7 @@ GRANT INSERT, SELECT, UPDATE, DELETE ON TABLE network.linear_name_direction_h TO
 	LO_NUM_SUF character varying(3), 
 	HI_NUM numeric(6,0), 
 	HI_NUM_SUF character varying(3), 
-	OBJECTID numeric(38,0) NOT NULL
+	OBJECTID integer NOT NULL -- Only when it's INTEGER type, it can be registered with GDB in ArcCatalog
 );
 --alter table network.AUTHORIZED_MUNICIPAL_ADDRESS add RECORD_ID numeric(12,0);
 --alter table network.AUTHORIZED_MUNICIPAL_ADDRESS drop RECORD_ID;
@@ -255,7 +277,7 @@ CREATE TABLE network.ama_dm
 	LINEAR_NAME_FULL character varying(110), 
 	TRANS_ID_CREATE numeric(12,0), 
 	TRANS_ID_EXPIRE numeric(12,0), 
-	OBJECTID numeric(38,0) NOT NULL
+	OBJECTID integer NOT NULL -- Only when it's INTEGER type, it can be registered with GDB in ArcCatalog
 );
 
 CREATE INDEX ama_dm_address_string_id_i ON network.ama_dm (address_string_id);
@@ -282,7 +304,7 @@ CREATE TABLE ama_h
 	LO_NUM_SUF character varying(3), 
 	HI_NUM numeric(6,0), 
 	HI_NUM_SUF character varying(3), 
-	OBJECTID numeric(38,0) NOT NULL
+	OBJECTID integer NOT NULL -- Only when it's INTEGER type, it can be registered with GDB in ArcCatalog
 );
 CREATE UNIQUE INDEX ama_h_objectid_uk ON network.ama_h (objectid);
 --alter table network.ama_h drop if exists record_id;
@@ -833,6 +855,7 @@ CREATE TABLE network.IGE_SOURCE
 --CREATE UNIQUE INDEX IGE_SOURCE_INTERNAL_SOURCE_NO_UK ON NETWORK.IGE_SOURCE(INTERNAL_SOURCE_NO);
 --CREATE UNIQUE INDEX IGE_SOURCE_EXTERNAL_SOURCE_NO_UK ON NETWORK.IGE_SOURCE(EXTERNAL_SOURCE_NO);
 CREATE UNIQUE INDEX IGE_SOURCE_OBJECTID_UK ON NETWORK.IGE_SOURCE(objectid);
+CREATE INDEX IGE_SOURCE_ID_IDX ON network.IGE_SOURCE (SOURCE_ID);
 
 GRANT ALL ON TABLE network.IGE_SOURCE TO network;
 GRANT INSERT, SELECT, UPDATE, DELETE ON TABLE network.IGE_SOURCE TO sde;
@@ -897,6 +920,7 @@ CREATE TABLE network.IGE_SOURCE_H
 	OBJECTID INTEGER NOT NULL
 );
 CREATE UNIQUE INDEX IGE_SOURCE_H_OBJECTID_UK ON NETWORK.IGE_SOURCE_H(objectid);
+CREATE INDEX IGE_SOURCE_H_ID_IDX ON network.IGE_SOURCE_H (SOURCE_ID);
 
 GRANT ALL ON TABLE network.IGE_SOURCE_H TO network;
 GRANT INSERT, SELECT, UPDATE, DELETE ON TABLE network.IGE_SOURCE_H TO sde;
@@ -1285,11 +1309,13 @@ ALTER TABLE network.linear_name
   DROP COLUMN IF EXISTS LANGUAGE_CODE,
   ADD COLUMN IF NOT EXISTS AUTHORIZED VARCHAR(1),
   ADD COLUMN IF NOT EXISTS USAGE_STATUS VARCHAR(1)
-  ;
-CREATE INDEX i_linear_name ON linear_name(activation_status, use_by, usage_status, authorized, duplication_status);
+  ; 
+CREATE INDEX i_linear_name ON linear_name(upper(name_part), upper(dir_part), upper(activation_status), upper(use_by), upper(usage_status), upper(authorized), upper(duplication_status));
 CREATE INDEX i_linear_name_name_type_dir ON linear_name(UPPER(name_part || coalesce(type_part,'') || coalesce(dir_part,'')));
+
 --drop INDEX i_linear_name_name_type_dir
--- Initially, need to  get data from LINEAR_NAME_USAGE view from NETWORK@...
+
+-- Update new Usage_status column: Initially, need to  get data from Oracle PROD NETWORK@...
 1. In Oracle, generate the table and export data: 
 	--DROP TABLE SLEE_linear_name_usage
 	CREATE TABLE SLEE_linear_name_usage AS
@@ -1340,7 +1366,18 @@ WHERE v.linear_name_id = t.linear_name_id;
 -- Testing
 select * from SLEE_LINEAR_NAME_USAGE where linear_name_id = 12468;
 select * from linear_name_evw where linear_name_id = 12468;
-  
+-- Update new Authorized column:
+UPDATE linear_name_evw
+  SET authorized = CASE WHEN UPPER(name_part) LIKE 'LN %' 
+                          OR UPPER(name_part) LIKE 'WW %' 
+						  OR UPPER(name_part) LIKE '% RAMP' 
+						  OR UPPER(type_part) IN ('TRL','RAMP')
+							 THEN 'N'
+                        ELSE 'Y'
+				   END;
+SELECT * FROM linear_name_evw;
+SELECT * FROM linear_name_evw WHERE authorized is null
+SELECT linear_name_id, name_part, type_part, authorized FROM linear_name_evw WHERE authorized = 'N'
 -- for table linear_name_direction
 CREATE SEQUENCE network.linear_name_direction_id_seq;
 ALTER TABLE network.linear_name_direction      
@@ -1348,6 +1385,8 @@ ALTER TABLE network.linear_name_direction
 SELECT setval('network.linear_name_direction_id_seq', 1000000000, true);
 ALTER SEQUENCE network.linear_name_direction_id_seq OWNED BY network.linear_name_direction.linear_name_dir_id;
 
+-- Remove RECORD_ID & RECORD_TYPE columns from table linear_name_direction in ArcCatalog
+  
 -- for table linear_name_group
 CREATE SEQUENCE network.linear_name_group_id_seq;
 ALTER TABLE network.linear_name_group      

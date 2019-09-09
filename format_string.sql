@@ -13,7 +13,13 @@ AS $BODY$
 DECLARE 
   retval text;   
 BEGIN  
-  retval = REPLACE(v_string, '"', '''');
+/*
+  Summary: 
+    Format a string with trim space, replace one double-quotation mark with two singel quoation mark
+  Testing:
+    SELECT format_string('ABC"DE')
+*/
+  retval = TRIM(REPLACE(v_string, '"', ''''));
   RETURN retval;
 EXCEPTION 
   WHEN OTHERS THEN

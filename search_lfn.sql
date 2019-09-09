@@ -11,6 +11,14 @@ CREATE OR REPLACE FUNCTION network.search_lfn(
     VOLATILE 
     ROWS 1000
 AS $BODY$
+/*
+  Summary: Search LFN with different search criteria
+  Testing:
+    SELECT search_lfn('{"lfn_type":"Street","lfn_dir":"east", "activation_status": null,  "authorized": "",  "used_by": "",  "duplication_status":"", "usage_status":"",  "logic": "and"}')
+	SELECT search_lfn('{"activation_status": "A",  "authorized": "",  "used_by": "L",  "usage_status":"",  "logic": "and"}')
+  Return all: SELECT search_lfn('{"activation_status": null,  "authorized": "",  "used_by": "",  "usage_status":"",  "logic": "and"}')
+	
+*/
 --SELECT to_json(r)
 --FROM 
 --(
@@ -58,6 +66,10 @@ AS $BODY$
 		   WHERE (
 			   UPPER(v_search_by::json->>'logic') = 'OR' AND 
 			   (
+				   (is_blank_string(v_search_by::json->>'lfn_type') OR UPPER(l.type_part) = UPPER(v_search_by::json->>'lfn_type'))
+				   OR
+				   (is_blank_string(v_search_by::json->>'lfn_dir') OR UPPER(l.dir_part) = UPPER(v_search_by::json->>'lfn_dir'))
+				   OR
 				   (is_blank_string(v_search_by::json->>'activation_status') OR UPPER(l.activation_status) = UPPER(v_search_by::json->>'activation_status'))
 				   OR 
 				   (is_blank_string(v_search_by::json->>'duplication_status') OR UPPER(l.duplication_status) = UPPER(v_search_by::json->>'duplication_status'))
@@ -73,6 +85,10 @@ AS $BODY$
 	         (
 			   UPPER(v_search_by::json->>'logic') = 'AND' AND 
 			   (
+				   (is_blank_string(v_search_by::json->>'lfn_type') OR UPPER(l.type_part) = UPPER(v_search_by::json->>'lfn_type'))
+				   AND
+				   (is_blank_string(v_search_by::json->>'lfn_dir') OR UPPER(l.dir_part) = UPPER(v_search_by::json->>'lfn_dir'))
+				   AND
 				   (is_blank_string(v_search_by::json->>'activation_status') OR UPPER(l.activation_status) = UPPER(v_search_by::json->>'activation_status'))
 				   AND 
 				   (is_blank_string(v_search_by::json->>'duplication_status') OR UPPER(l.duplication_status) = UPPER(v_search_by::json->>'duplication_status'))

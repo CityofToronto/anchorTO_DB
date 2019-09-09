@@ -19,6 +19,12 @@ DECLARE
   retval integer;
   
 BEGIN
+  /*
+    Summary:
+	  Get source information by source id
+    Testing:
+	  select get_source_by_id(1699, 'sde.DEFAULT');
+  */
     o_status = 'OK';
     o_message = '';
 	o_json = '';	

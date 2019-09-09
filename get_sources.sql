@@ -11,6 +11,12 @@ CREATE OR REPLACE FUNCTION network.get_sources(
     VOLATILE 
     ROWS 1000
 AS $BODY$
+  /*
+    Summary:
+	  Get all sources information
+    Testing:
+	  SELECT get_sources()
+  */
 SELECT to_json(r)
 FROM 
 (

@@ -12,7 +12,13 @@ CREATE OR REPLACE FUNCTION network.validate_task_status(
 AS $BODY$
 DECLARE 
   retval boolean; 
-BEGIN  
+BEGIN 
+/*
+    Summary:
+	  Validate the task status
+    Testing:
+	  SELECT validate_task_status('COMPLETED')
+  */
   retval = false;
   IF EXISTS 
   (SELECT * 

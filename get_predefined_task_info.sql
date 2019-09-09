@@ -10,6 +10,12 @@ CREATE OR REPLACE FUNCTION network.get_predefined_task_info(
     COST 100
     VOLATILE 
 AS $BODY$
+  /*
+    Summary:
+	  Get pre-defined task information
+    Testing:
+	  select get_predefined_task_info('REPORT')
+  */
 SELECT to_json(row)
 FROM
 (

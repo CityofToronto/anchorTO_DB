@@ -15,15 +15,21 @@ DECLARE
   o_message text;  
   o_json text;    
 BEGIN
+/*
+  Summary: 
+    Delete a task.
+  Testing:
+    SELECT delete_task(1000000036)
+*/
     o_status = 'OK';
     o_message = '';	
 	
 	DELETE FROM ige_task
 	  WHERE task_id = $1;
-	-- Beginning of updating Oracle
+	/*-- Beginning of updating Oracle
     DELETE FROM imaint_oracle.ige_task
 	  WHERE task_id = $1;
-    -- End of updating Oracle  
+    -- End of updating Oracle  */
     SELECT row_to_json(c) INTO o_json
 	FROM
 	(

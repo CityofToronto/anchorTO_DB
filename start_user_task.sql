@@ -11,6 +11,12 @@ CREATE OR REPLACE FUNCTION network.start_user_task(
     COST 100
     VOLATILE 
 AS $BODY$
+/*
+    Summary:
+	  Start a user's task
+    Testing:
+	  SELECT start_user_task(1000001331, 'rli4')
+  */
 DECLARE   
   msg text;
   o_json text;

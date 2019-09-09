@@ -17,6 +17,12 @@ DECLARE
   o_json text;  
   retval integer;  
 BEGIN
+  /*
+    Summary:
+	  Get source information by source id
+    Testing:
+	  select get_source_by_id_core(1699);
+  */
     o_status = 'OK';
     o_message = '';
 	o_json = '';	

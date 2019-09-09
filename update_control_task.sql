@@ -17,6 +17,12 @@ CREATE OR REPLACE FUNCTION network.update_control_task(
     VOLATILE 
 AS $BODY$
 DECLARE 
+/*
+    Summary:
+	  Update control task
+    Testing:
+	  SELECT update_control_task(0,10001,null,'some "comments','STREET/ADDRESS',20000,-1);
+  */
   theid numeric(12,0);
   v_status text;
   o_json text;
@@ -52,7 +58,7 @@ BEGIN
 				 v_trans_id_create, 
 				 -1
 			 );         
-	 -- Beginning of updating Oracle
+	/* -- Beginning of updating Oracle
 	 IF get_configuration_bool('anchorTO', 'ANCHORTO', 'sync_with_oracle') THEN
 	   INSERT INTO imaint_oracle.ige_control_task
 				 (
@@ -74,7 +80,7 @@ BEGIN
 					 -1
 				 );		   
 	 END IF;
-	 -- End of updating Oracle
+	 -- End of updating Oracle*/
   ELSE -- Update	
     UPDATE ige_control_task        
 	  SET control_task_status = v_status, 
@@ -82,7 +88,7 @@ BEGIN
 		  control_task_type = v_control_task_type, 				
 		  trans_id_expire = v_trans_id_expire
 	WHERE control_task_id = theid;
-	 -- Beginning of updating Oracle
+	/* -- Beginning of updating Oracle
 	 IF get_configuration_bool('anchorTO', 'ANCHORTO', 'sync_with_oracle') THEN
 	   UPDATE imaint_oracle.ige_control_task        
 	   SET control_task_status = v_status, 
@@ -91,7 +97,7 @@ BEGIN
 		   trans_id_expire = v_trans_id_expire
 	   WHERE control_task_id = theid;
 	 END IF;
-	 -- End of updating Oracle
+	 -- End of updating Oracle*/
   END IF; 
    	
   SELECT row_to_json(c) INTO o_json
