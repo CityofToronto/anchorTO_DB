@@ -621,7 +621,7 @@ SELECT sde_set_default();
 SELECT * from linear_name_evw order by 1 desc;
 SELECT sde.sde_delete_version('myedits12111');
 ------------------------------------------------------------------------------------------------------------------------------------------------------
-
+select * from information_schema.columns where table_schema = current_schema::text and table_name = 'linear_name_dm'
 					 
 					 
 					 

@@ -4,7 +4,7 @@
 
 CREATE OR REPLACE FUNCTION network.update_lfn_dm_h(
 	v_id numeric,
-    v_trans_id_create numeric)
+	v_trans_id_create numeric)
     RETURNS text
     LANGUAGE 'plpgsql'
 
@@ -27,21 +27,25 @@ Summary:
 Record the update in linear_name_dm table (Current & History) and linear_name_h table (History only) 
 When activation_status = 'X', LFN will be expired
 Testing:
-  -- 1. Blank name part:
-  SELECT update_lfn_dm_h('{ "object_id": null,"linear_name_id": null,"name_part": "","type_part": "Street","dir_part": "South","description": "test test", "activation_status": "A","authorized": "Y","used_by": "L"}', 123,-1);
-  -- 2. Regular case:
-  SELECT update_lfn_dm_h('{ "object_id": null,"linear_name_id": null,"name_part": "test","type_part": "Street","dir_part": "South","description": "test test", "activation_status": "A","authorized": "Y","used_by": "L"}',123, -1);
-    --Created linear_name_id: 1000000005
-  SELECT * FROM linear_name_evw WHERE linear_name_id = 1000000005	
+  -- 1. Regular case:
+  SELECT update_lfn('{ "object_id": null,"linear_name_id": null,"name_part": "Ln N College E Shaw-2","type_part": "Street","dir_part": "South","description": "test test", "activation_status": "A","authorized": "Y","used_by": "L"}',123, -1);
+    --Created linear_name_id: 1000000010
+  SELECt update_lfn_dm_h(1000000010, 126);
+  SELECT * FROM linear_name_evw WHERE linear_name_id = 1000000010	
   SELECT * FROM linear_name_h order by 1 DESC
   SELECT * FROM linear_name_dm order by 1 DESC, 2 DESC
-  -- 3. Run above update_lfn_dm_h again to check duplication of linear name
-  -- 4.1 Update name part with an existing name
-    SELECT update_lfn_dm_h('{ "object_id": null,"linear_name_id": 1000000003,"name_part": "Ln N College E Shaw-2","type_part": "Road","dir_part": "","description": "test test", "activation_status": "A","authorized": "Y","used_by": "L"}', 123,-1);
-  -- 4.2 Update referenced LFN 
-    SELECT update_lfn_dm_h('{ "object_id": null,"linear_name_id": 11860,"name_part": "Ln N College E Shaw-2","type_part": "Road","dir_part": "","description": "test test", "activation_status": "A","authorized": "Y","used_by": "L"}', 123,-1);
-  -- 5. Expire LFN
-    SELECT update_lfn_dm_h('{ "object_id": null,"linear_name_id": 1000000005,"name_part": "Ln N College E Shaw-2","type_part": "Road","dir_part": "","description": "test test", "activation_status": "X","authorized": "Y","used_by": "L"}', 123,-1);
+  -- 2. Update LFN
+    SELECT update_lfn('{ "object_id": null,"linear_name_id": 1000000010,"name_part": "Ln N College E Shaw-3","type_part": "Road","dir_part": "","description": "test test", "activation_status": "","authorized": "Y","used_by": "L"}', 123,-1);
+    SELECt update_lfn_dm_h(1000000010, 128);
+  SELECT * FROM linear_name_evw WHERE linear_name_id = 1000000010	
+  SELECT * FROM linear_name_h order by 1 DESC
+  SELECT * FROM linear_name_dm order by 1 DESC, 2 DESC
+  -- 3. Expire LFN
+    SELECT update_lfn('{ "object_id": null,"linear_name_id": 1000000010,"name_part": "Ln N College E Shaw-2","type_part": "Road","dir_part": "","description": "test test", "activation_status": "X","authorized": "Y","used_by": "L"}', 158,-1);
+    SELECt update_lfn_dm_h(1000000010, 158);
+  SELECT * FROM linear_name_evw WHERE linear_name_id = 1000000010	
+  SELECT * FROM linear_name_h order by 1 DESC
+  SELECT * FROM linear_name_dm order by 1 DESC, 2 DESC
 */
     o_status = 'OK';
     o_message = '';   
