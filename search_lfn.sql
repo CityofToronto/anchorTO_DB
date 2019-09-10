@@ -36,11 +36,14 @@ AS $BODY$
 			  m.name_part,
 			  m.type_part,
 			  m.dir_part,
-			  m.activation_status,
+		      m.activation_status,
+			  m.activation_status_desc,
 			  m.duplication_status,
 			  m.duplication_desc,	          
 			  m.used_by,
-	          us.description AS usage_status,
+		      m.used_by_desc,
+		      m.usage_status,
+	          us.description AS usage_status_desc,
 	          --CASE WHEN m.usage_status IN ('C', 'H') THEN 'Y' ELSE 'N' END AS authorized
 		      m.authorized
 	   FROM 
@@ -50,10 +53,12 @@ AS $BODY$
 				  l.name_part,
 				  l.type_part,
 				  l.dir_part,
-				  a.description AS activation_status,
+		          l.activation_status,
+				  a.description AS activation_status_desc,
 				  l.duplication_status,
 				  l.duplication_desc,
-				  u.description AS used_by,
+		          l.use_by AS used_by,
+				  u.description AS used_by_desc,
 		          l.authorized,
 		          l.usage_status
 				  --CASE WHEN EXISTS (SELECT 1 FROM authorized_municipal_address_evw WHERE linear_name_id = l.linear_name_id) THEN 'Y' ELSE 'N' END AS authorized,
