@@ -115,7 +115,8 @@ Testing:
 		END IF;
 	  END IF;
 	  -- End of validation
-	  -- Append to _h table
+	 /*
+	 -- Append to _h table
 	  IF NOT isnew THEN  
 	    RAISE NOTICE 'Recording _h ...';
 		INSERT INTO linear_name_h
@@ -148,6 +149,7 @@ Testing:
 		  WHERE linear_name_id = v_linear_name_id
 		  LIMIT 1;
 	  END IF; -- End of Append to _h table
+	  */
 	  -- Insert / update LFN
 	  IF isnew THEN		    
 		  SELECT nextval('linear_name_id_seq')::numeric(12,0),
@@ -209,7 +211,7 @@ Testing:
 			    WHERE linear_name_id = v_linear_name_id;
 			END IF;
 		END IF; -- End of Update LFN info		
-		-- Update _dm table
+		/*-- Update _dm table
 		  -- 1. Expire the old one
 		  IF NOT isnew THEN		  
 		    RAISE NOTICE 'Expire old _dm record ...';
@@ -259,7 +261,7 @@ Testing:
 			    FROM linear_name_evw
 				WHERE linear_name_id = v_linear_name_id
 				LIMIT 1;
-		  END IF;		
+		  END IF;		*/
     SELECT row_to_json(c) INTO o_json
 	FROM
 	(
