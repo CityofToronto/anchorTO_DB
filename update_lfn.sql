@@ -14,7 +14,7 @@ CREATE OR REPLACE FUNCTION network.update_lfn(
 AS $BODY$
 DECLARE 
   v_linear_name_id numeric(12,0);  
-  v_object_id numeric;
+  v_objectid numeric;
   v_name_part text;
   v_type_part text;
   v_dir_part text;
@@ -36,27 +36,29 @@ Record the update in linear_name_dm table (Current & History) and linear_name_h 
 When activation_status = 'X', LFN will be expired
 Testing:
   -- 1. Blank name part:
-  SELECT update_lfn('{ "object_id": null,"linear_name_id": null,"name_part": "","type_part": "Street","dir_part": "South","description": "test test", "activation_status": "A","authorized": "Y","used_by": "L"}', 123,-1);
+  SELECT update_lfn('{ "objectid": null,"linear_name_id": null,"name_part": "","type_part": "Street","dir_part": "South","description": "test test", "activation_status": "A","authorized": "Y","used_by": "L"}', 123,-1);
   -- 2. Regular case:
-  SELECT update_lfn('{ "object_id": null,"linear_name_id": null,"name_part": "test","type_part": "Street","dir_part": "South","description": "test test", "activation_status": "A","authorized": "Y","used_by": "L"}',123, -1);
+  SELECT update_lfn('{ "objectid": null,"linear_name_id": null,"name_part": "test","type_part": "Street","dir_part": "South","description": "test test", "activation_status": "A","authorized": "Y","used_by": "L"}',123, -1);
     --Created linear_name_id: 1000000005
   SELECT * FROM linear_name_evw WHERE linear_name_id = 1000000005	
   SELECT * FROM linear_name_h order by 1 DESC
   SELECT * FROM linear_name_dm order by 1 DESC, 2 DESC
   -- 3. Run above update_lfn again to check duplication of linear name
   -- 4.1 Update name part with an existing name
-    SELECT update_lfn('{ "object_id": null,"linear_name_id": 1000000003,"name_part": "Ln N College E Shaw-2","type_part": "Road","dir_part": "","description": "test test", "activation_status": "A","authorized": "Y","used_by": "L"}', 123,-1);
+    SELECT update_lfn('{ "objectid": null,"linear_name_id": 1000000003,"name_part": "Ln N College E Shaw-2","type_part": "Road","dir_part": "","description": "test test", "activation_status": "A","authorized": "Y","used_by": "L"}', 123,-1);
   -- 4.2 Update referenced LFN 
-    SELECT update_lfn('{ "object_id": null,"linear_name_id": 11860,"name_part": "Ln N College E Shaw-2","type_part": "Road","dir_part": "","description": "test test", "activation_status": "A","authorized": "Y","used_by": "L"}', 123,-1);
+    SELECT update_lfn('{ "objectid": null,"linear_name_id": 11860,"name_part": "Ln N College E Shaw-2","type_part": "Road","dir_part": "","description": "test test", "activation_status": "A","authorized": "Y","used_by": "L"}', 123,-1);
   -- 5. Expire LFN
-    SELECT update_lfn('{ "object_id": null,"linear_name_id": 1000000005,"name_part": "Ln N College E Shaw-2","type_part": "Road","dir_part": "","description": "test test", "activation_status": "X","authorized": "Y","used_by": "L"}', 123,-1);
+    SELECT update_lfn('{ "objectid": null,"linear_name_id": 1000000005,"name_part": "Ln N College E Shaw-2","type_part": "Road","dir_part": "","description": "test test", "activation_status": "X","authorized": "Y","used_by": "L"}', 123,-1);
+   SELECT update_lfn('{"objectid":null,"linear_name_id":null,"name_part":"Test by ry8","type_part":"Boulevard","dir_part":"East","authorized":"Y","used_by":"B","used_by_desc":null,"description":"test","activation_status":"A","activation_status_desc":null,"usage_status":null,"usage_status_desc":null,"duplication_status":null,"duplication_desc":null,"segment":null,"task_id":1000001331,"user_id":"rli4"}', 111,-1);
+  
 */
     o_status = 'OK';
     o_message = '';   
 	isnew = false;	
 	retval = 0;  
 	
-	  SELECT $1::json->>'object_id',
+	  SELECT $1::json->>'objectid',
              $1::json->>'linear_name_id',
 		     format_string(TRIM(INITCAP($1::json->>'name_part'))),
 		     TRIM(INITCAP($1::json->>'type_part')),
@@ -65,7 +67,7 @@ Testing:
 		     TRIM(UPPER($1::json->>'activation_status')),
 			 TRIM(UPPER($1::json->>'authorized')),
 			 TRIM(UPPER($1::json->>'used_by'))
-		INTO v_object_id,
+		INTO v_objectid,
 			 v_linear_name_id,			
 			 v_name_part,
 			 v_type_part,
@@ -154,7 +156,7 @@ Testing:
 	  IF isnew THEN		    
 		  SELECT nextval('linear_name_id_seq')::numeric(12,0),
 				 sde.next_rowid(current_schema()::text, 'linear_name')
-		  INTO v_linear_name_id, v_object_id;
+		  INTO v_linear_name_id, v_objectid;
 		  RAISE NOTICE 'Creating new LFN ...';
 		  INSERT INTO linear_name_evw
 				   (
@@ -176,7 +178,7 @@ Testing:
 					   usage_status
 				   )
 		   VALUES (	
-					v_object_id,
+					v_objectid,
 					v_linear_name_id,
 					v_trans_id_create,
 					v_trans_id_expire,
@@ -191,7 +193,7 @@ Testing:
 					null,
 					null,
 					v_authorized,
-					null
+					'N'
 			  );
 		ELSE -- Update LFN info		   
 		    RAISE NOTICE 'Updating LFN ...';
