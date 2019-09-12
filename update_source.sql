@@ -233,41 +233,7 @@ BEGIN
 				  );
 			  --RETURNING source_id INTO sourceid;
 			  raise notice 'source_id #2: %', sourceid;
-		  ELSE -- Update source info 
-		    RAISE NOTICE 'Recording _h ...';
-			INSERT INTO ige_source_h
-				  (
-					  source_id, 
-					  source_class,
-					  source_type,
-					  internal_source_no,
-					  internal_source_date,
-					  external_source_no,
-					  external_source_date,
-					  plan_name,
-					  source_comments,
-					  source_status,
-					  parent_source_id,					  
-					  trans_id_create, 
-					  trans_id_expire, 
-					  objectid)
-			  SELECT  source_id, 
-					  source_class,
-					  source_type,
-					  internal_source_no,
-					  internal_source_date,
-					  external_source_no,
-					  external_source_date,
-					  plan_name,
-					  source_comments,
-					  source_status,
-					  parent_source_id, 
-					  trans_id_create, 
-					  v_trans_id_create, -- make it expired	
-					  sde.next_rowid(current_schema()::text, 'ige_source_h')
-			  FROM ige_source_evw 
-			  WHERE source_id = sourceid
-			  LIMIT 1;
+		  ELSE -- Update source info 		    
 			RAISE NOTICE 'Updating ...';  
 		    UPDATE ige_source_evw 
 			    SET  source_class = v_source_class, 
@@ -285,55 +251,8 @@ BEGIN
 				WHERE source_id = sourceid;
 			raise notice 'Updated...1';
 			SELECT objectid INTO v_object_id FROM ige_source_evw WHERE source_id = sourceid;	
-			raise notice 'Updating...2';
-			
-			RAISE NOTICE 'Expire old _dm record ...';
-		    UPDATE ige_source_dm
-		      SET date_expiry = current_timestamp,
-			      trans_id_expire = v_trans_id_create
-		      WHERE source_id = sourceid 
-			    AND date_expiry = TO_TIMESTAMP('3000-01-01 00:00:00','YYYY-MM-DD HH24:MI:SS');				
-		  END IF; -- End of update source
-		  RAISE NOTICE 'Creating new _dm record ...';
-		  INSERT INTO ige_source_dm
-				   (
-					   objectid, 					   
-					   source_id,					   
-					   date_effective,
-					   date_expiry,
-					   source_class,
-					   source_type,
-					   internal_source_no,
-					   internal_source_date,
-					   external_source_no,
-					   external_source_date,
-					   plan_name,
-					   source_comments,
-					   source_status,
-					   parent_source_id,
-					   trans_id_create, 
-					   trans_id_expire
-				   )
-			   SELECT	
-					sde.next_rowid(current_schema()::text, 'ige_source_dm'),
-					source_id,
-					current_timestamp,
-					TO_TIMESTAMP('3000-01-01 00:00:00','YYYY-MM-DD HH24:MI:SS'),
-					source_class,
-					source_type,
-					internal_source_no,
-					internal_source_date,
-					external_source_no,
-					external_source_date,
-					plan_name,
-					source_comments,
-					source_status,
-					parent_source_id,
-					trans_id_create,
-					trans_id_expire
-			    FROM ige_source_evw
-				WHERE source_id = sourceid
-				LIMIT 1;
+			raise notice 'Updating...2';	
+		  END IF; -- End of update source		  
 		END IF;	 		
 	ELSE
 	  o_status = 'Failed';

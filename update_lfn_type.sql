@@ -27,7 +27,6 @@ BEGIN
 /*
 Summary: 
   Create (linear_name_type_id = null) or Update (linear_name_type_id <> null) LFN type (versioned linear_name_type table)
-Record the update in linear_name_type_dm table (Current & History) and linear_name_type_h table (History only) 
 Testing:
   -- 1. Blank type_part:
   SELECT update_lfn_type('{ "object_id": null,"linear_name_type_id": null,"name": "","code": ""}', 123);
@@ -121,7 +120,7 @@ Testing:
 		END IF;
 	  END IF;
 	  -- End of validation
-	  -- Append to _h table
+	 /* -- Append to _h table
 	  IF NOT isnew THEN  
 	    RAISE NOTICE 'Recording _h ...';
 		INSERT INTO linear_name_type_h
@@ -141,7 +140,7 @@ Testing:
 		  FROM linear_name_type_evw 
 		  WHERE linear_name_type_id = v_linear_name_type_id
 		  LIMIT 1;
-	  END IF; -- End of Append to _h table
+	  END IF; -- End of Append to _h table*/
 	  -- Insert / update LFN
 	  IF isnew THEN		    
 		  SELECT nextval('linear_name_type_id_seq')::numeric(12,0),
@@ -178,7 +177,7 @@ Testing:
 			    WHERE linear_name_type_id = v_linear_name_type_id;
 			END IF;*/
 		END IF; -- End of Update LFN type info		
-		-- Update _dm table
+		/*-- Update _dm table
 		  -- 1. Expire the old one
 		  IF NOT isnew THEN		  
 		    RAISE NOTICE 'Expire old _dm record ...';
@@ -213,7 +212,8 @@ Testing:
 					type_part_code
 			    FROM linear_name_type_evw
 				WHERE linear_name_type_id = v_linear_name_type_id
-				LIMIT 1;		 
+				LIMIT 1;	
+				*/
     SELECT row_to_json(c) INTO o_json
 	FROM
 	(

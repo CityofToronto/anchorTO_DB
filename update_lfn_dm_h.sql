@@ -23,9 +23,6 @@ BEGIN
 /*
 Summary: 
   Update linear_name_h (History) & linear_name_dm (Current & History) table after updating linear_name (versioned) table successfully
-  Create (linear_name_id = null) or Update (linear_name_id <> null) LFN (versioned linear name table)
-Record the update in linear_name_dm table (Current & History) and linear_name_h table (History only) 
-When activation_status = 'X', LFN will be expired
 Testing:
   -- 1. Regular case:
   SELECT update_lfn('{ "object_id": null,"linear_name_id": null,"name_part": "Ln N College E Shaw-2","type_part": "Street","dir_part": "South","description": "test test", "activation_status": "A","authorized": "Y","used_by": "L"}',123, -1);
