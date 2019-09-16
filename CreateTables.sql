@@ -1133,7 +1133,6 @@ CREATE TABLE network.IGE_SOURCE_PRESENTATION_H
 	SOURCE_PRES_DESC VARCHAR(255) NOT NULL, 
 	GEO_REFERENCED VARCHAR(1) NOT NULL, 
 	PRESENTATION BYTEA, 
-	SOURCE_PRES_FILE_NAME VARCHAR(100), 
 	TRANS_ID_CREATE numeric(12,0) NOT NULL, 
 	TRANS_ID_EXPIRE numeric(12,0) NOT NULL, 
 	OBJECTID INT NOT NULL
@@ -1314,70 +1313,297 @@ CREATE INDEX i_linear_name ON linear_name(upper(name_part), upper(dir_part), upp
 CREATE INDEX i_linear_name_name_type_dir ON linear_name(UPPER(name_part || coalesce(type_part,'') || coalesce(dir_part,'')));
 
 --drop INDEX i_linear_name_name_type_dir
+---------- Data Migration ------------------
+-- LN01: ACTIVATION_STATUS
+         Set 'P' to 'X' where there is no segment currently using the name.
+         Set 'P' to 'A' where there are segments currently using the name.
+         Set any incorrect LFN to 'X' to prevent them from showing up n the pick-list in future, e.g. 'ted rogers Way' (Sepideh to provide the list).
+		 SELECT distinct ACTIVATION_STATUS FROM linear_name_evw;		 
+		 
+		 UPDATE linear_name_evw l
+		   SET activation_status = 'B' --temporarily 'B' --> 'A'
+		   WHERE activation_status = 'P'	 
+		     AND EXISTS 
+		     (SELECT linear_name_id FROM base_centreline_evw WHERE trans_id_expire = -1 AND linear_name_id = l.linear_name_id);
+		 UPDATE linear_name_evw l
+		   SET activation_status = 'W' --temporarily 'W' --> 'X'
+		   WHERE activation_status = 'P'	 
+		     AND NOT EXISTS 
+		     (SELECT linear_name_id FROM base_centreline_evw WHERE trans_id_expire = -1 AND linear_name_id = l.linear_name_id);
+		  -- Verify
+		  SELECT linear_name_id 
+		  FROM base_centreline_evw 
+		  WHERE linear_name_id IN (SELECT linear_name_id FROM linear_name_evw WHERE activation_status = 'B')
+		  
+		  SELECT linear_name_id 
+		  FROM base_centreline_evw 
+		  WHERE linear_name_id IN (SELECT linear_name_id FROM linear_name_evw WHERE activation_status = 'W')
+		  -- Final update:
+		  UPDATE linear_name_evw l
+		   SET activation_status = 'A' 
+		   WHERE activation_status = 'B';
+		  UPDATE linear_name_evw l
+		   SET activation_status = 'X' 
+		   WHERE activation_status = 'W';
+		   
+-- LN02: APPROVAL_STATUS: 
+         Keep 'S' & 'A'; Change 'P' to 'A'
+        SELECT distinct approval_status FROM linear_name_evw;
 
--- Update new Usage_status column: Initially, need to  get data from Oracle PROD NETWORK@...
-1. In Oracle, generate the table and export data: 
-	--DROP TABLE SLEE_linear_name_usage
-	CREATE TABLE SLEE_linear_name_usage AS
-	SELECT
-	LINEAR_NAME_ID
-	,CASE WHEN EXISTS
-	   ( select * from cityprj.corridor n
-		where trim(n.CORRIDOR_NAME) = upper(trim(replace(name_part||' '||type_part||' '||DIR_part,'  ',' ')))
-		) THEN 1 ELSE 0 END AS  PARCEL_USAGE_STATUS
-	,CASE WHEN EXISTS
-	   ( select * from cadast.corridor_wh n
-		where trim(n.CORRIDOR_NAME) = upper(trim(replace(name_part||' '||type_part||' '||DIR_part,'  ',' ')))
-		) THEN 1 ELSE 0 END AS  PARCEL_H_USAGE_STATUS
-	,CASE WHEN EXISTS 
-	   ( select * from network.base_centreline_gv n
-		 where l.linear_name_id = n.linear_name_id
-	   ) THEN 1 ELSE 0 END AS CENTRELINE_USAGE_STATUS 
-	,CASE WHEN EXISTS 
-	   (select * from network.base_centreline_h n
-		where l.linear_name_id = n.linear_name_id
-		) THEN 1 ELSE 0 END AS CENTRELINE_H_USAGE_STATUS 
-	,CASE WHEN EXISTS
-	   (select * 
-		from ama_gv am
-		where am.linear_name_id = l.LINEAR_NAME_ID
-	   ) THEN 1 ELSE 0 END AS AMA_USAGE_STATUS
-	,CASE WHEN EXISTS
-	   (select * 
-		from ama_h ah
-		where ah.linear_name_id = l.LINEAR_NAME_ID
-	   ) THEN 1 ELSE 0 END AS AMA_H_USAGE_STATUS
-	,USE_BY
-	,NAME_PART
-	,TYPE_PART
-	,DIR_PART
-	from linear_name_gv l
-	;
-2. Import data from slee_linear_name_usage.sql
-3. Update usage_status field in linear_name_evw
-  UPDATE linear_name_evw v
-  SET usage_status = 
-      CASE WHEN t.parcel_usage_status = 1 OR t.centreline_usage_status = 1 OR t.ama_usage_status = 1 THEN 'C'
-	       WHEN t.parcel_h_usage_status = 1 OR t.centreline_h_usage_status = 1 OR t.ama_h_usage_status = 1 THEN 'H'
-		   ELSE 'N'
-	  END 
-FROM  SLEE_LINEAR_NAME_USAGE t
-WHERE v.linear_name_id = t.linear_name_id;
--- Testing
-select * from SLEE_LINEAR_NAME_USAGE where linear_name_id = 12468;
-select * from linear_name_evw where linear_name_id = 12468;
--- Update new Authorized column:
-UPDATE linear_name_evw
-  SET authorized = CASE WHEN UPPER(name_part) LIKE 'LN %' 
-                          OR UPPER(name_part) LIKE 'WW %' 
-						  OR UPPER(name_part) LIKE '% RAMP' 
-						  OR UPPER(type_part) IN ('TRL','RAMP')
-							 THEN 'N'
-                        ELSE 'Y'
-				   END;
-SELECT * FROM linear_name_evw;
-SELECT * FROM linear_name_evw WHERE authorized is null
-SELECT linear_name_id, name_part, type_part, authorized FROM linear_name_evw WHERE authorized = 'N'
+		UPDATE linear_name_evw 
+		  SET approval_status = 'A'
+		  WHERE approval_status = 'P';
+		  
+-- LN03: AUTHORIZED column: Update new Authorized column: select * from linear_name_evw where name_part ~ '^[0-9]'
+		UPDATE linear_name_evw
+		  SET authorized = CASE WHEN name_part ~ '^[0-9]'
+								  OR UPPER(name_part) LIKE 'LN %' 
+								  OR UPPER(name_part) LIKE 'WW %' 
+								  OR UPPER(name_part) LIKE '% RAMP' 
+								  OR UPPER(type_part) IN ('TRL','RAMP')
+									 THEN 'N'
+								ELSE 'Y'
+						   END;
+      -- For exception list:
+	    SELECT linear_name_id, name_part, authorized, use_by
+		FROM linear_name_evw
+		WHERE upper(name_part) || coalesce(' ' || UPPER(type_part), '') IN 
+		( 
+		    'BED OF THE DON RIVER',
+			'BLOOR STREET RAMP',
+			'BRIMLEY ROAD RAMP',
+			'CANADIAN NATIONAL RAILWAY',
+			'CANADIAN PACIFIC RAILWAY',
+			'DON RIVER CHANNEL',
+			'DON VALLEY PARKWAY',
+			'FERRY SLIP',
+			'FREDERICK G GARDINER EXPRESSWAY',
+			'HIGHWAY 27',
+			'HIGHWAY 400',
+			'HIGHWAY 401',
+			'HIGHWAY 404',
+			'HIGHWAY 409',
+			'HIGHWAY 427',
+			'LAGOON',
+			'LAKE ONTARIO',
+			'METROLINX',
+			'POND',
+			'PROGRESS AVENUE RAMP',
+			'PUBLIC LANE',
+			'PUBLIC ROAD',
+			'PUBLIC WALKWAY',
+			'QUEEN ELIZABETH WAY',
+			'ROAD ALLOWANCE',
+			'SCARBOROUGH BEACH BOULEVARD',
+			'SHIP CHANNEL',
+			'TORONTO HARBOUR',
+			'TORONTO INNER HARBOUR',
+			'VIKING LANE RAMP',
+			'WATER',
+			'WESTERN CHANNEL',
+			'WILLIAM R ALLEN ROAD',
+			'TORONTO ISLANDS LAGOON',
+			'DORIS MCCARTHY TRAIL'
+		) ORDER BY 1;
+		
+		UPDATE linear_name_evw
+		  SET authorized = 'N'
+		  WHERE upper(name_part) || coalesce(' ' || UPPER(type_part), '') IN 
+		( 
+		    'BED OF THE DON RIVER',
+			'BLOOR STREET RAMP',
+			'BRIMLEY ROAD RAMP',
+			'CANADIAN NATIONAL RAILWAY',
+			'CANADIAN PACIFIC RAILWAY',
+			'DON RIVER CHANNEL',
+			--'DON VALLEY PARKWAY',
+			'FERRY SLIP',
+			--'FREDERICK G GARDINER EXPRESSWAY',
+			--'HIGHWAY 27',
+			--'HIGHWAY 400',
+			--'HIGHWAY 401',
+			--'HIGHWAY 404',
+			--'HIGHWAY 409',
+			--'HIGHWAY 427',
+			'LAGOON',
+			'LAKE ONTARIO',
+			'METROLINX',
+			'POND',
+			'PROGRESS AVENUE RAMP',
+			'PUBLIC LANE',
+			'PUBLIC ROAD',
+			'PUBLIC WALKWAY',
+			--'QUEEN ELIZABETH WAY',
+			'ROAD ALLOWANCE',
+			--'SCARBOROUGH BEACH BOULEVARD',
+			'SHIP CHANNEL',
+			'TORONTO HARBOUR',
+			'TORONTO INNER HARBOUR',
+			'VIKING LANE RAMP',
+			'WATER',
+			'WESTERN CHANNEL',
+			--'WILLIAM R ALLEN ROAD',
+			'TORONTO ISLANDS LAGOON'
+			--'DORIS MCCARTHY TRAIL'
+		)  
+		UPDATE linear_name_evw
+		  SET authorized = 'Y'
+		  WHERE upper(name_part) || coalesce(' ' || UPPER(type_part), '') IN 
+		( 
+		    'DON VALLEY PARKWAY',			
+			'FREDERICK G GARDINER EXPRESSWAY',
+			'HIGHWAY 27',
+			'HIGHWAY 400',
+			'HIGHWAY 401',
+			'HIGHWAY 404',
+			'HIGHWAY 409',
+			'HIGHWAY 427',			
+			'QUEEN ELIZABETH WAY',			
+			'SCARBOROUGH BEACH BOULEVARD',			
+			'WILLIAM R ALLEN ROAD',			
+			'DORIS MCCARTHY TRAIL'
+		) 	
+       
+		SELECT * FROM linear_name_evw where upper(name_part) = 'BRIMLEY'
+		SELECT * FROM linear_name_evw;
+		SELECT * FROM linear_name_evw WHERE authorized is null
+		SELECT linear_name_id, name_part, type_part, authorized FROM linear_name_evw WHERE authorized = 'N'
+
+-- LN04: Update new Usage_status column: Initially, need to  get data from Oracle PROD NETWORK@...
+		1. In Oracle, generate the table and export data: 
+			--DROP TABLE SLEE_linear_name_usage
+			CREATE TABLE SLEE_linear_name_usage AS
+			SELECT
+			LINEAR_NAME_ID
+			,CASE WHEN EXISTS
+			   ( select * from cityprj.corridor n
+				where trim(n.CORRIDOR_NAME) = upper(trim(replace(name_part||' '||type_part||' '||DIR_part,'  ',' ')))
+				) THEN 1 ELSE 0 END AS  PARCEL_USAGE_STATUS
+			,CASE WHEN EXISTS
+			   ( select * from cadast.corridor_wh n
+				where trim(n.CORRIDOR_NAME) = upper(trim(replace(name_part||' '||type_part||' '||DIR_part,'  ',' ')))
+				) THEN 1 ELSE 0 END AS  PARCEL_H_USAGE_STATUS
+			,CASE WHEN EXISTS 
+			   ( select * from network.base_centreline_gv n
+				 where l.linear_name_id = n.linear_name_id
+			   ) THEN 1 ELSE 0 END AS CENTRELINE_USAGE_STATUS 
+			,CASE WHEN EXISTS 
+			   (select * from network.base_centreline_h n
+				where l.linear_name_id = n.linear_name_id
+				) THEN 1 ELSE 0 END AS CENTRELINE_H_USAGE_STATUS 
+			,CASE WHEN EXISTS
+			   (select * 
+				from ama_gv am
+				where am.linear_name_id = l.LINEAR_NAME_ID
+			   ) THEN 1 ELSE 0 END AS AMA_USAGE_STATUS
+			,CASE WHEN EXISTS
+			   (select * 
+				from ama_h ah
+				where ah.linear_name_id = l.LINEAR_NAME_ID
+			   ) THEN 1 ELSE 0 END AS AMA_H_USAGE_STATUS
+			,USE_BY
+			,NAME_PART
+			,TYPE_PART
+			,DIR_PART
+			from linear_name_gv l
+			;
+		2. Import data from slee_linear_name_usage.sql
+		3. Update usage_status field in linear_name_evw
+		  UPDATE linear_name_evw v
+		  SET usage_status = 
+			  CASE WHEN t.parcel_usage_status = 1 OR t.centreline_usage_status = 1 OR t.ama_usage_status = 1 THEN 'C'
+				   WHEN t.parcel_h_usage_status = 1 OR t.centreline_h_usage_status = 1 OR t.ama_h_usage_status = 1 THEN 'H'
+				   ELSE 'N'
+			  END 
+		FROM  SLEE_LINEAR_NAME_USAGE t
+		WHERE v.linear_name_id = t.linear_name_id;
+		-- Testing
+		select * from SLEE_LINEAR_NAME_USAGE where linear_name_id = 12468;
+		select * from linear_name_evw where linear_name_id = 12468;
+-- LN05: Use_by column:
+		UPDATE linear_name_evw
+		  SET use_by = CASE WHEN authorized = 'Y' THEN 'B' 
+							ELSE 'L'
+					   END;
+      -- For exception list:
+	    SELECT linear_name_id, name_part, authorized, use_by
+		FROM linear_name_evw
+		WHERE upper(name_part) || coalesce(' ' || UPPER(type_part), '') IN 
+		( 
+		    'BED OF THE DON RIVER',
+			'BLOOR STREET RAMP',
+			'BRIMLEY ROAD RAMP',
+			'CANADIAN NATIONAL RAILWAY',
+			'CANADIAN PACIFIC RAILWAY',
+			'DON RIVER CHANNEL',
+			'DON VALLEY PARKWAY',
+			'FERRY SLIP',
+			'FREDERICK G GARDINER EXPRESSWAY',
+			'HIGHWAY 27',
+			'HIGHWAY 400',
+			'HIGHWAY 401',
+			'HIGHWAY 404',
+			'HIGHWAY 409',
+			'HIGHWAY 427',
+			'LAGOON',
+			'LAKE ONTARIO',
+			'METROLINX',
+			'POND',
+			'PROGRESS AVENUE RAMP',
+			'PUBLIC LANE',
+			'PUBLIC ROAD',
+			'PUBLIC WALKWAY',
+			'QUEEN ELIZABETH WAY',
+			'ROAD ALLOWANCE',
+			'SCARBOROUGH BEACH BOULEVARD',
+			'SHIP CHANNEL',
+			'TORONTO HARBOUR',
+			'TORONTO INNER HARBOUR',
+			'VIKING LANE RAMP',
+			'WATER',
+			'WESTERN CHANNEL',
+			'WILLIAM R ALLEN ROAD',
+			'TORONTO ISLANDS LAGOON'
+		) ORDER BY 1;
+		UPDATE linear_name_evw
+		  SET use_by = 'P'
+		  WHERE upper(name_part) || coalesce(' ' || UPPER(type_part), '') IN 
+		( 
+		    'BED OF THE DON RIVER',
+			'BLOOR STREET RAMP',
+			'BRIMLEY ROAD RAMP',
+			'CANADIAN NATIONAL RAILWAY',
+			'CANADIAN PACIFIC RAILWAY',
+			'DON RIVER CHANNEL',
+			'DON VALLEY PARKWAY',
+			'FERRY SLIP',
+			'FREDERICK G GARDINER EXPRESSWAY',
+			'HIGHWAY 27',
+			'HIGHWAY 400',
+			'HIGHWAY 401',
+			'HIGHWAY 404',
+			'HIGHWAY 409',
+			'HIGHWAY 427',
+			'LAGOON',
+			'LAKE ONTARIO',
+			'METROLINX',
+			'POND',
+			'PROGRESS AVENUE RAMP',
+			'PUBLIC LANE',
+			'PUBLIC ROAD',
+			'PUBLIC WALKWAY',
+			'QUEEN ELIZABETH WAY',
+			'ROAD ALLOWANCE',
+			'SCARBOROUGH BEACH BOULEVARD',
+			'SHIP CHANNEL',
+			'TORONTO HARBOUR',
+			'TORONTO INNER HARBOUR',
+			'VIKING LANE RAMP',
+			'WATER',
+			'WESTERN CHANNEL',
+			'WILLIAM R ALLEN ROAD',
+			'TORONTO ISLANDS LAGOON'
+		)
 -- for table linear_name_direction
 CREATE SEQUENCE network.linear_name_direction_id_seq;
 ALTER TABLE network.linear_name_direction      
