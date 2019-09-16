@@ -1,8 +1,8 @@
--- FUNCTION: network.create_source_task(text, text)
+-- FUNCTION: code_src.create_source_task(text, text)
 
--- DROP FUNCTION network.create_source_task(text, text);
+-- DROP FUNCTION code_src.create_source_task(text, text);
 
-CREATE OR REPLACE FUNCTION network.create_source_task(
+CREATE OR REPLACE FUNCTION code_src.create_source_task(
 	uname text,
 	ucomment text)
     RETURNS text
@@ -10,6 +10,7 @@ CREATE OR REPLACE FUNCTION network.create_source_task(
 
     COST 100
     VOLATILE 
+	SECURITY DEFINER 
 AS $BODY$
 DECLARE 
   transid numeric(12,0);
@@ -79,5 +80,5 @@ EXCEPTION
 END;  
 $BODY$;
 
-ALTER FUNCTION network.create_source_task(text, text)
-    OWNER TO network;
+ALTER FUNCTION code_src.create_source_task(text, text) OWNER TO network;
+GRANT EXECUTE ON FUNCTION code_src.create_source_task(text, text) TO anchorto_run

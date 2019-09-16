@@ -1,14 +1,15 @@
--- FUNCTION: network.get_source_by_id_core(integer)
+-- FUNCTION: code_src.get_source_by_id_core(integer)
 
--- DROP FUNCTION network.get_source_by_id_core(integer);
+-- DROP FUNCTION code_src.get_source_by_id_core(integer);
 
-CREATE OR REPLACE FUNCTION network.get_source_by_id_core(
+CREATE OR REPLACE FUNCTION code_src.get_source_by_id_core(
 	v_source_id integer)
     RETURNS text
     LANGUAGE 'plpgsql'
 
     COST 100
     VOLATILE 
+	SECURITY DEFINER
 AS $BODY$
 DECLARE   
   transname text;
@@ -158,5 +159,5 @@ EXCEPTION
 END;  
 $BODY$;
 
-ALTER FUNCTION network.get_source_by_id_core(integer)
-    OWNER TO network;
+ALTER FUNCTION code_src.get_source_by_id_core(integer) OWNER TO network;
+GRANT EXECUTE ON FUNCTION code_src.get_source_by_id_core(integer) TO anchorto_run

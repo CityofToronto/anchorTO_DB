@@ -1,8 +1,8 @@
--- FUNCTION: network.close_task_by_trans_id(text,numeric, text)
+-- FUNCTION: code_src.close_task_by_trans_id(text, numeric, text)
 
--- DROP FUNCTION network.close_task_by_trans_id(text,numeric, text);
+-- DROP FUNCTION code_src.close_task_by_trans_id(text, numeric, text);
 
-CREATE OR REPLACE FUNCTION network.close_task_by_trans_id(
+CREATE OR REPLACE FUNCTION code_src.close_task_by_trans_id(
 	v_user_name text,
 	v_trans_id numeric,
 	v_status text)
@@ -11,6 +11,7 @@ CREATE OR REPLACE FUNCTION network.close_task_by_trans_id(
 
     COST 100
     VOLATILE 
+	SECURITY DEFINER 
 AS $BODY$
 DECLARE    
 /*
@@ -120,5 +121,5 @@ EXCEPTION
 END;  
 $BODY$;
 
-ALTER FUNCTION network.close_task_by_trans_id(text,numeric, text)
-    OWNER TO network;
+ALTER FUNCTION code_src.close_task_by_trans_id(text, numeric, text) OWNER TO network;
+GRANT EXECUTE ON FUNCTION code_src.close_task_by_trans_id(text, numeric, text) TO anchorto_run

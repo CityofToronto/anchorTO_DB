@@ -1,8 +1,8 @@
--- FUNCTION: network.search_lfn(text)
+-- FUNCTION: code_src.search_lfn(text)
 
--- DROP FUNCTION network.search_lfn(text);
+-- DROP FUNCTION code_src.search_lfn(text);
 
-CREATE OR REPLACE FUNCTION network.search_lfn(
+CREATE OR REPLACE FUNCTION code_src.search_lfn(
 	v_search_by text)
     RETURNS SETOF json 
     LANGUAGE 'sql'
@@ -10,6 +10,7 @@ CREATE OR REPLACE FUNCTION network.search_lfn(
     COST 100
     VOLATILE 
     ROWS 1000
+	SECURITY DEFINER
 AS $BODY$
 /*
   Summary: Search LFN with different search criteria
@@ -145,5 +146,5 @@ AS $BODY$
 	;	
    $BODY$;
 
-ALTER FUNCTION network.search_lfn(text)
-    OWNER TO network;
+ALTER FUNCTION code_src.search_lfn(text) OWNER TO network;
+ GRANT EXECUTE ON FUNCTION code_src.search_lfn(text) TO anchorto_run

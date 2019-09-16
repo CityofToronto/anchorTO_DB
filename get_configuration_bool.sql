@@ -1,8 +1,8 @@
--- FUNCTION: network.get_configuration_bool(text, text, text, boolean)
+-- FUNCTION: code_src.get_configuration_bool(text, text, text, boolean)
 
--- DROP FUNCTION network.get_configuration_bool(text, text, text, boolean);
+-- DROP FUNCTION code_src.get_configuration_bool(text, text, text, boolean);
 
-CREATE OR REPLACE FUNCTION network.get_configuration_bool(
+CREATE OR REPLACE FUNCTION code_src.get_configuration_bool(
 	v_category text,
 	v_type text,
 	v_name text,
@@ -11,7 +11,7 @@ CREATE OR REPLACE FUNCTION network.get_configuration_bool(
     LANGUAGE 'plpgsql'
 
     COST 100
-    VOLATILE 
+    VOLATILE SECURITY DEFINER 
 AS $BODY$
 DECLARE 
   retval boolean;
@@ -42,5 +42,6 @@ EXCEPTION
 END;  
 $BODY$;
 
-ALTER FUNCTION network.get_configuration_bool(text, text, text, boolean)
-    OWNER TO network;
+ALTER FUNCTION code_src.get_configuration_bool(text, text, text, boolean) OWNER TO network;
+
+GRANT EXECUTE ON FUNCTION code_src.get_configuration_bool(text, text, text, boolean) TO anchorto_run

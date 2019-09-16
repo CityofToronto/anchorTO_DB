@@ -1,15 +1,15 @@
--- FUNCTION: network.update_lfn_type_dm_h(numeric, numeric)
+-- FUNCTION: code_src.update_lfn_type_dm_h(numeric, numeric)
 
--- DROP FUNCTION network.update_lfn_type_dm_h(numeric, numeric);
+-- DROP FUNCTION code_src.update_lfn_type_dm_h(numeric, numeric);
 
-CREATE OR REPLACE FUNCTION network.update_lfn_type_dm_h(
+CREATE OR REPLACE FUNCTION code_src.update_lfn_type_dm_h(
 	v_id numeric,
 	v_trans_id_create numeric)
     RETURNS text
     LANGUAGE 'plpgsql'
 
     COST 100
-    VOLATILE 
+    VOLATILE SECURITY DEFINER 
 AS $BODY$
 DECLARE 
   v_object_id numeric;  
@@ -25,12 +25,12 @@ Summary:
   Update linear_name_type_h (History) & linear_name_type_dm (Current & History) table after updating linear_name_type (versioned) table successfully
 Testing:
   -- 3. Regular case:
-  SELECT update_lfn_type('{ "object_id": null,"linear_name_type_id": null,"name": "StreetNorth","code": "St NOR"}', 125);
+  SELECT update_lfn_type('{ "object_id": null,"linear_name_type_id": null,"type_part": "StreetNorth","type_part_code": "St NOR"}', 125);
   SELECT update_lfn_type_dm_h(1000000003, 125)
    --Created linear_name_type_id: 1000000003
-  SELECT update_lfn_type('{ "object_id": null,"linear_name_type_id": 1000000003,"name": "Street North","code": "St No"}', 220);
+  SELECT update_lfn_type('{ "object_id": null,"linear_name_type_id": 1000000003,"type_part": "Street North","type_part_code": "St No"}', 220);
   SELECT update_lfn_type_dm_h(1000000003, 220)
-  SELECT update_lfn_type('{ "object_id": null,"linear_name_type_id": 1000000003,"name": "Street North","code": "St N"}', 228);
+  SELECT update_lfn_type('{ "object_id": null,"linear_name_type_id": 1000000003,"type_part": "Street North","type_part_code": "St N"}', 228);
   SELECT update_lfn_type_dm_h(1000000003, 228)
   
   SELECT * FROM linear_name_type_evw WHERE linear_name_type_id = 1000000003	
@@ -132,5 +132,10 @@ EXCEPTION
 END;  
 $BODY$;
 
-ALTER FUNCTION network.update_lfn_type_dm_h(numeric, numeric)
+ALTER FUNCTION code_src.update_lfn_type_dm_h(numeric, numeric)
     OWNER TO network;
+
+GRANT EXECUTE ON FUNCTION code_src.update_lfn_type_dm_h(numeric, numeric) TO anchorto_run;
+
+GRANT EXECUTE ON FUNCTION code_src.update_lfn_type_dm_h(numeric, numeric) TO network;
+

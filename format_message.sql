@@ -1,8 +1,8 @@
--- FUNCTION: network.format_message(text, text)
+-- FUNCTION: code_src.format_message(text, text)
 
--- DROP FUNCTION network.format_message(text, text);
+-- DROP FUNCTION code_src.format_message(text, text);
 
-CREATE OR REPLACE FUNCTION network.format_message(
+CREATE OR REPLACE FUNCTION code_src.format_message(
 	instring text,
 	customval text)
     RETURNS text
@@ -10,6 +10,7 @@ CREATE OR REPLACE FUNCTION network.format_message(
 
     COST 100
     VOLATILE 
+	SECURITY DEFINER
 AS $BODY$
 DECLARE 
   msg text;   
@@ -32,5 +33,5 @@ EXCEPTION
 END;  
 $BODY$;
 
-ALTER FUNCTION network.format_message(text, text)
-    OWNER TO network;
+ALTER FUNCTION code_src.format_message(text, text)  OWNER TO network;
+GRANT EXECUTE ON FUNCTION code_src.format_message(text, text)  TO anchorto_run

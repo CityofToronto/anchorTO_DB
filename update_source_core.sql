@@ -1,8 +1,8 @@
--- FUNCTION: network.update_source_core(text, numeric, numeric)
+-- FUNCTION: code_src.update_source_core(text, numeric, numeric)
 
--- DROP FUNCTION network.update_source_core(text, numeric, numeric);
+-- DROP FUNCTION code_src.update_source_core(text, numeric, numeric);
 
-CREATE OR REPLACE FUNCTION network.update_source_core(
+CREATE OR REPLACE FUNCTION code_src.update_source_core(
 	v_info text,
 	v_trans_id_create numeric,
 	v_trans_id_expire numeric DEFAULT '-1'::integer)
@@ -10,7 +10,8 @@ CREATE OR REPLACE FUNCTION network.update_source_core(
     LANGUAGE 'plpgsql'
 
     COST 100
-    VOLATILE 
+    VOLATILE  
+	SECURITY DEFINER
 AS $BODY$
 DECLARE 
 /*
@@ -199,5 +200,5 @@ EXCEPTION
 END;  
 $BODY$;
 
-ALTER FUNCTION network.update_source_core(text, numeric, numeric)
-    OWNER TO network;
+ALTER FUNCTION code_src.update_source_core(text, numeric, numeric) OWNER TO network;
+GRANT EXECUTE ON FUNCTION code_src.update_source_core(text, numeric, numeric) TO anchorto_run

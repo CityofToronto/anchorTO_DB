@@ -1,8 +1,8 @@
--- FUNCTION: network.start_user_task(numeric, text)
+-- FUNCTION: code_src.start_user_task(numeric, text)
 
--- DROP FUNCTION network.start_user_task(numeric, text);
+-- DROP FUNCTION code_src.start_user_task(numeric, text);
 
-CREATE OR REPLACE FUNCTION network.start_user_task(
+CREATE OR REPLACE FUNCTION code_src.start_user_task(
 	v_task_id numeric,
 	v_user_name text)
     RETURNS text
@@ -10,6 +10,7 @@ CREATE OR REPLACE FUNCTION network.start_user_task(
 
     COST 100
     VOLATILE 
+	SECURITY DEFINER
 AS $BODY$
 /*
     Summary:
@@ -97,5 +98,5 @@ EXCEPTION
 END;  
 $BODY$;
 
-ALTER FUNCTION network.start_user_task(numeric, text)
-    OWNER TO network;
+ALTER FUNCTION code_src.start_user_task(numeric, text) OWNER TO network;
+ GRANT EXECUTE ON FUNCTION code_src.start_user_task(numeric, text) TO anchorto_run

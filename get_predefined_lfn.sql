@@ -1,14 +1,15 @@
--- FUNCTION: network.get_predefined_lfn()
+-- FUNCTION: code_src.get_predefined_lfn()
 
--- DROP FUNCTION network.get_predefined_lfn();
+-- DROP FUNCTION code_src.get_predefined_lfn();
 
-CREATE OR REPLACE FUNCTION network.get_predefined_lfn(
+CREATE OR REPLACE FUNCTION code_src.get_predefined_lfn(
 	)
     RETURNS json
     LANGUAGE 'sql'
 
     COST 100
     VOLATILE 
+	SECURITY DEFINER
 AS $BODY$
 
 /*
@@ -91,5 +92,5 @@ FROM
  ;
 $BODY$;
 
-ALTER FUNCTION network.get_predefined_lfn()
-    OWNER TO network;
+ALTER FUNCTION code_src.get_predefined_lfn() OWNER TO network;
+GRANT EXECUTE ON FUNCTION code_src.get_predefined_lfn() TO anchorto_run

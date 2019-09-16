@@ -1,16 +1,16 @@
--- FUNCTION: network.get_next_task_by_user_name(text)
+-- FUNCTION: code_src.get_next_task_by_user_name(text)
 
--- DROP FUNCTION network.get_next_task_by_user_name(text);
+-- DROP FUNCTION code_src.get_next_task_by_user_name(text);
 
-CREATE OR REPLACE FUNCTION network.get_next_task_by_user_name(
+CREATE OR REPLACE FUNCTION code_src.get_next_task_by_user_name(
 	v_user_name text)
     RETURNS json
     LANGUAGE 'sql'
 
     COST 100
     VOLATILE 
-AS 
-$BODY$
+	SECURITY DEFINER
+AS $BODY$
 /*
     Summary:
 	  Get next task(s) by user name
@@ -88,5 +88,5 @@ FROM
  ;
 $BODY$;
 
-ALTER FUNCTION network.get_next_task_by_user_name(text)
-    OWNER TO network;
+ALTER FUNCTION code_src.get_next_task_by_user_name(text) OWNER TO network;
+GRANT EXECUTE ON FUNCTION code_src.get_next_task_by_user_name(text) TO anchorto_run

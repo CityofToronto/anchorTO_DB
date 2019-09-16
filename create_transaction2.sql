@@ -1,27 +1,33 @@
--- FUNCTION: code_src.create_transaction(numeric, text, text, text)
+-- FUNCTION: code_src.create_transaction2(numeric, text, text, text)
 
--- DROP FUNCTION code_src.create_transaction(numeric, text, text, text);
+-- DROP FUNCTION code_src.create_transaction2(numeric, text, text, text);
 
-CREATE OR REPLACE FUNCTION code_src.create_transaction(
+CREATE OR REPLACE FUNCTION code_src.create_transaction2(
 	taskid numeric,
 	uname text,
 	ucomment text,
 	uapplication text)
-    RETURNS numeric
+    RETURNS text
     LANGUAGE 'plpgsql'
-    SECURITY DEFINER 
+
     COST 100
     VOLATILE 
-AS $BODY$
-DECLARE 
+	SECURITY DEFINER 
+AS $BODY$DECLARE 
   transid numeric(12,0);
+  o_status  text;
+  o_message text;
+  o_json text;
 BEGIN
 /*
   Summary: 
     Create a transaction.
   Testing:
-    SELECT create_transaction(1,'slee33', 'some comments', 'anchorTO');
+    SELECT create_transaction2(1,'slee33', 'some comments', 'anchorTO');
 */
+    o_status = 'OK';
+    o_message = '';
+	transid = -1;
   INSERT INTO ige_transaction(trans_id,
 								task_id,
 								source_id,
@@ -71,13 +77,29 @@ BEGIN
                    'OPEN'); 	
          END IF;
 		 -- End of updating Oracle*/
-    RETURN transid;
+    SELECT row_to_json(c) INTO o_json
+	FROM
+	(
+	  SELECT o_status status, 
+	       o_message message,
+		   transid
+	) c;
+	RETURN o_json;
+
 EXCEPTION 
   WHEN OTHERS THEN
-    RAISE NOTICE '%', SQLERRM;
-    RETURN -1;
+    o_status = SQLSTATE;
+	o_message = SQLERRM;	
+	SELECT row_to_json(c) INTO o_json
+	FROM
+	(
+	  SELECT o_status status, 
+	       o_message message,
+		   transid
+	) c;
+    RETURN o_json;
 END;  
 $BODY$;
 
-ALTER FUNCTION code_src.create_transaction(numeric, text, text, text) OWNER TO network;
-GRANT EXECUTE ON FUNCTION code_src.create_transaction(numeric, text, text, text) TO anchorto_run
+ALTER FUNCTION code_src.create_transaction2(numeric, text, text, text)  OWNER TO network;
+GRANT EXECUTE ON FUNCTION code_src.create_transaction2(numeric, text, text, text) TO anchorto_run

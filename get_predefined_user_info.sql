@@ -1,14 +1,15 @@
--- FUNCTION: network.get_predefined_user_info()
+-- FUNCTION: code_src.get_predefined_user_info()
 
--- DROP FUNCTION network.get_predefined_user_info();
+-- DROP FUNCTION code_src.get_predefined_user_info();
 
-CREATE OR REPLACE FUNCTION network.get_predefined_user_info(
+CREATE OR REPLACE FUNCTION code_src.get_predefined_user_info(
 	)
     RETURNS json
     LANGUAGE 'sql'
 
     COST 100
     VOLATILE 
+	SECURITY DEFINER
 AS $BODY$
   /*
     Summary:
@@ -53,5 +54,5 @@ FROM
  ;
 $BODY$;
 
-ALTER FUNCTION network.get_predefined_user_info()
-    OWNER TO network;
+ALTER FUNCTION code_src.get_predefined_user_info() OWNER TO network;
+GRANT EXECUTE ON FUNCTION code_src.get_predefined_user_info() TO anchorto_run

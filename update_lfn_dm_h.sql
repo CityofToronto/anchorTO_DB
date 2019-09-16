@@ -1,8 +1,8 @@
--- FUNCTION: network.update_lfn_dm_h(numeric, numeric)
+-- FUNCTION: code_src.update_lfn_dm_h(numeric, numeric)
 
--- DROP FUNCTION network.update_lfn_dm_h(numeric, numeric);
+-- DROP FUNCTION code_src.update_lfn_dm_h(numeric, numeric);
 
-CREATE OR REPLACE FUNCTION network.update_lfn_dm_h(
+CREATE OR REPLACE FUNCTION code_src.update_lfn_dm_h(
 	v_id numeric,
 	v_trans_id_create numeric)
     RETURNS text
@@ -10,6 +10,7 @@ CREATE OR REPLACE FUNCTION network.update_lfn_dm_h(
 
     COST 100
     VOLATILE 
+	SECURITY DEFINER 
 AS $BODY$
 DECLARE 
   v_object_id numeric;  
@@ -164,5 +165,5 @@ EXCEPTION
 END;  
 $BODY$;
 
-ALTER FUNCTION network.update_lfn_dm_h(numeric, numeric)
-    OWNER TO network;
+ALTER FUNCTION code_src.update_lfn_dm_h(numeric, numeric) OWNER TO network;
+GRANT EXECUTE ON FUNCTION code_src.update_lfn_dm_h(numeric, numeric) TO anchorto_run

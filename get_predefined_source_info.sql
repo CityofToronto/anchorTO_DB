@@ -1,16 +1,16 @@
--- FUNCTION: network.get_predefined_source_info()
+-- FUNCTION: code_src.get_predefined_source_info()
 
--- DROP FUNCTION network.get_predefined_source_info();
+-- DROP FUNCTION code_src.get_predefined_source_info();
 
-CREATE OR REPLACE FUNCTION network.get_predefined_source_info(
+CREATE OR REPLACE FUNCTION code_src.get_predefined_source_info(
 	)
     RETURNS json
     LANGUAGE 'sql'
 
     COST 100
     VOLATILE 
-AS 
-$BODY$
+	SECURITY DEFINER
+AS $BODY$
   /*
     Summary:
 	  Get pre-defined source information
@@ -36,5 +36,5 @@ FROM
  ;
 $BODY$;
 
-ALTER FUNCTION network.get_predefined_source_info()
-    OWNER TO network;
+ALTER FUNCTION code_src.get_predefined_source_info() OWNER TO network;
+GRANT EXECUTE ON FUNCTION code_src.get_predefined_source_info() TO anchorto_run

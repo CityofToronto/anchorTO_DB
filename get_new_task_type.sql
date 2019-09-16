@@ -1,8 +1,8 @@
--- FUNCTION: network.get_new_task_type(text)
+-- FUNCTION: code_src.get_new_task_type(text)
 
--- DROP FUNCTION network.get_new_task_type(text);
+-- DROP FUNCTION code_src.get_new_task_type(text);
 
-CREATE OR REPLACE FUNCTION network.get_new_task_type(
+CREATE OR REPLACE FUNCTION code_src.get_new_task_type(
 	in_control_task_type text)
     RETURNS SETOF json 
     LANGUAGE 'sql'
@@ -10,6 +10,7 @@ CREATE OR REPLACE FUNCTION network.get_new_task_type(
     COST 100
     VOLATILE 
     ROWS 1000
+	SECURITY DEFINER
 AS $BODY$
 /*
     Summary:
@@ -33,5 +34,5 @@ FROM
 ) row;
 $BODY$;
 
-ALTER FUNCTION network.get_new_task_type(text)
-    OWNER TO network;
+ALTER FUNCTION code_src.get_new_task_type(text) OWNER TO network;
+GRANT EXECUTE ON FUNCTION code_src.get_new_task_type(text) TO anchorto_run

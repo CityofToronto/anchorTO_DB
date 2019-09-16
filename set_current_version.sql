@@ -1,14 +1,15 @@
--- FUNCTION: network.set_current_version(text)
+-- FUNCTION: code_src.set_current_version(text)
 
--- DROP FUNCTION network.set_current_version(text);
+-- DROP FUNCTION code_src.set_current_version(text);
 
-CREATE OR REPLACE FUNCTION network.set_current_version(
+CREATE OR REPLACE FUNCTION code_src.set_current_version(
 	v_version_name text)
     RETURNS integer
     LANGUAGE 'plpgsql'
 
     COST 100
     VOLATILE 
+	SECURITY DEFINER
 AS $BODY$
 DECLARE 
   retval integer;   
@@ -28,5 +29,5 @@ EXCEPTION
 END;  
 $BODY$;
 
-ALTER FUNCTION network.set_current_version(text)
-    OWNER TO network;
+ALTER FUNCTION code_src.set_current_version(text) OWNER TO network;
+ GRANT EXECUTE ON FUNCTION code_src.set_current_version(text) TO anchorto_run

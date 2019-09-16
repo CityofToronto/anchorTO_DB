@@ -1,14 +1,15 @@
--- FUNCTION: network.get_task_id_by_trans_id(numeric)
+-- FUNCTION: code_src.get_task_id_by_trans_id(numeric)
 
--- DROP FUNCTION network.get_task_id_by_trans_id(numeric);
+-- DROP FUNCTION code_src.get_task_id_by_trans_id(numeric);
 
-CREATE OR REPLACE FUNCTION network.get_task_id_by_trans_id(
+CREATE OR REPLACE FUNCTION code_src.get_task_id_by_trans_id(
 	v_trans_id numeric)
     RETURNS numeric
     LANGUAGE 'plpgsql'
 
     COST 100
     VOLATILE 
+	SECURITY DEFINER 
 AS $BODY$
 DECLARE 
   taskid ige_task.task_id%TYPE;
@@ -32,5 +33,5 @@ EXCEPTION
 END;  
 $BODY$;
 
-ALTER FUNCTION network.get_task_id_by_trans_id(numeric)
-    OWNER TO network;
+ALTER FUNCTION code_src.get_task_id_by_trans_id(numeric) OWNER TO network;
+GRANT EXECUTE ON FUNCTION code_src.get_task_id_by_trans_id(numeric) TO anchorto_run

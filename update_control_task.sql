@@ -1,8 +1,8 @@
--- FUNCTION: network.update_control_task(numeric, numeric, text, text, text, numeric, numeric)
+-- FUNCTION: code_src.update_control_task(numeric, numeric, text, text, text, numeric, numeric)
 
--- DROP FUNCTION network.update_control_task(numeric, numeric, text, text, text, numeric, numeric);
+-- DROP FUNCTION code_src.update_control_task(numeric, numeric, text, text, text, numeric, numeric);
 
-CREATE OR REPLACE FUNCTION network.update_control_task(
+CREATE OR REPLACE FUNCTION code_src.update_control_task(
 	v_control_task_id numeric,
 	v_source_id numeric,
 	v_control_task_status text,
@@ -15,6 +15,7 @@ CREATE OR REPLACE FUNCTION network.update_control_task(
 
     COST 100
     VOLATILE 
+	SECURITY DEFINER
 AS $BODY$
 DECLARE 
 /*
@@ -125,5 +126,5 @@ EXCEPTION
 END;  
 $BODY$;
 
-ALTER FUNCTION network.update_control_task(numeric, numeric, text, text, text, numeric, numeric)
-    OWNER TO network;
+ALTER FUNCTION code_src.update_control_task(numeric, numeric, text, text, text, numeric, numeric) OWNER TO network;
+GRANT EXECUTE ON FUNCTION code_src.update_control_task(numeric, numeric, text, text, text, numeric, numeric) TO anchorto_run

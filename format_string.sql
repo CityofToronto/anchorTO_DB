@@ -1,14 +1,15 @@
--- FUNCTION: network.format_string(text)
+-- FUNCTION: code_src.format_string(text)
 
--- DROP FUNCTION network.format_string(text);
+-- DROP FUNCTION code_src.format_string(text);
 
-CREATE OR REPLACE FUNCTION network.format_string(
+CREATE OR REPLACE FUNCTION code_src.format_string(
 	v_string text)
     RETURNS text
     LANGUAGE 'plpgsql'
 
     COST 100
     VOLATILE 
+	SECURITY DEFINER
 AS $BODY$
 DECLARE 
   retval text;   
@@ -28,5 +29,6 @@ EXCEPTION
 END;  
 $BODY$;
 
-ALTER FUNCTION network.format_string(text)
+ALTER FUNCTION code_src.format_string(text)
     OWNER TO network;
+GRANT EXECUTE ON FUNCTION format_string(text) TO anchorto_run;

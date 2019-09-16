@@ -1,14 +1,15 @@
--- FUNCTION: network.update_user_info(text)
+-- FUNCTION: code_src.update_user_info(text)
 
--- DROP FUNCTION network.update_user_info(text);
+-- DROP FUNCTION code_src.update_user_info(text);
 
-CREATE OR REPLACE FUNCTION network.update_user_info(
+CREATE OR REPLACE FUNCTION code_src.update_user_info(
 	info text)
     RETURNS text
     LANGUAGE 'plpgsql'
 
     COST 100
     VOLATILE 
+	SECURITY DEFINER
 AS $BODY$
 DECLARE 
 /*
@@ -196,5 +197,5 @@ BEGIN
 END;  
 $BODY$;
 
-ALTER FUNCTION network.update_user_info(text)
-    OWNER TO network;
+ALTER FUNCTION code_src.update_user_info(text) OWNER TO network;
+GRANT EXECUTE ON FUNCTION code_src.update_user_info(text) TO anchorto_run

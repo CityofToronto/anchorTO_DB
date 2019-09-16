@@ -1,8 +1,8 @@
--- FUNCTION: network.get_users()
+-- FUNCTION: code_src.get_users()
 
--- DROP FUNCTION network.get_users();
+-- DROP FUNCTION code_src.get_users();
 
-CREATE OR REPLACE FUNCTION network.get_users(
+CREATE OR REPLACE FUNCTION code_src.get_users(
 	)
     RETURNS SETOF json 
     LANGUAGE 'sql'
@@ -10,8 +10,8 @@ CREATE OR REPLACE FUNCTION network.get_users(
     COST 100
     VOLATILE 
     ROWS 1000
-AS 
-$BODY$
+	SECURITY DEFINER
+AS $BODY$
   /*
     Summary:
 	  Get user list
@@ -25,5 +25,5 @@ from
  from ige_user order by user_id) row;
    $BODY$;
 
-ALTER FUNCTION network.get_users()
-    OWNER TO network;
+ALTER FUNCTION code_src.get_users() OWNER TO network;
+GRANT EXECUTE ON FUNCTION code_src.get_users() TO anchorto_run

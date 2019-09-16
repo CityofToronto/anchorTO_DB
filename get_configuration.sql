@@ -1,8 +1,8 @@
--- FUNCTION: network.get_configuration(text, text, text, text)
+-- FUNCTION: code_src.get_configuration(text, text, text, text)
 
--- DROP FUNCTION network.get_configuration(text, text, text, text);
+-- DROP FUNCTION code_src.get_configuration(text, text, text, text);
 
-CREATE OR REPLACE FUNCTION network.get_configuration(
+CREATE OR REPLACE FUNCTION code_src.get_configuration(
 	v_category text,
 	v_type text,
 	v_name text,
@@ -11,12 +11,12 @@ CREATE OR REPLACE FUNCTION network.get_configuration(
     LANGUAGE 'plpgsql'
 
     COST 100
-    VOLATILE 
+    VOLATILE SECURITY DEFINER 
 AS $BODY$
 DECLARE 
   retval text;   
 BEGIN  
-/*
+/*show search_path
     Summary:
 	  Get settings from configuration table
     Testing:
@@ -37,5 +37,10 @@ EXCEPTION
 END;  
 $BODY$;
 
-ALTER FUNCTION network.get_configuration(text, text, text, text)
+ALTER FUNCTION code_src.get_configuration(text, text, text, text)
     OWNER TO network;
+
+GRANT EXECUTE ON FUNCTION code_src.get_configuration(text, text, text, text) TO anchorto_run;
+
+GRANT EXECUTE ON FUNCTION code_src.get_configuration(text, text, text, text) TO network;
+

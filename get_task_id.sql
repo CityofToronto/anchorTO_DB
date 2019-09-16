@@ -1,25 +1,19 @@
--- FUNCTION: network.get_task_id(text, text)
+-- FUNCTION: code_src.get_task_id(text, text)
 
--- DROP FUNCTION network.get_task_id(text, text);
+-- DROP FUNCTION code_src.get_task_id(text, text);
 
-CREATE OR REPLACE FUNCTION network.get_task_id(
+CREATE OR REPLACE FUNCTION code_src.get_task_id(
 	vversion text,
 	appcode text)
     RETURNS numeric
     LANGUAGE 'plpgsql'
-
+    SECURITY DEFINER
     COST 100
     VOLATILE 
 AS $BODY$
 DECLARE 
   taskid ige_task.task_id%TYPE;
 BEGIN
-  /*
-    Summary:
-	  Get task id by version # and appcode
-    Testing:
-	  SELECT get_task_id('TRANS81','ANCHORTO')
-  */
   SELECT task_id INTO taskid
   FROM ige_transaction
   WHERE (trans_status = 'OPEN' OR trans_status IS NULL)
@@ -35,5 +29,5 @@ EXCEPTION
 END;  
 $BODY$;
 
-ALTER FUNCTION network.get_task_id(text, text)
-    OWNER TO network;
+ALTER FUNCTION code_src.get_task_id(text, text) OWNER TO network;
+GRANT EXECUTE ON FUNCTION code_src.get_task_id(text, text) TO anchorto_run

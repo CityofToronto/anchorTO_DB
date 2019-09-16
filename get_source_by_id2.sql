@@ -1,8 +1,8 @@
--- FUNCTION: code_src.get_source_by_id(integer, text)
+-- FUNCTION: code_src.get_source_by_id2(integer, text)
 
--- DROP FUNCTION code_src.get_source_by_id(integer, text);
+-- DROP FUNCTION code_src.get_source_by_id2(integer, text);
 
-CREATE OR REPLACE FUNCTION code_src.get_source_by_id(
+CREATE OR REPLACE FUNCTION code_src.get_source_by_id2(
 	v_source_id integer,
 	v_version_name text DEFAULT 'SDE.DEFAULT'::text)
     RETURNS text
@@ -20,18 +20,12 @@ DECLARE
   retval integer;
   
 BEGIN
-  /*
-    Summary:
-	  Get source information by source id
-    Testing:
-	  select get_source_by_id(1699, 'sde.DEFAULT');
-  */
     o_status = 'OK';
     o_message = '';
 	o_json = '';	
 	retval = 0;
 	--select sde.sde_set_default();
-	SELECT sde.sde_set_current_version(v_version_name) INTO retval;	
+	--SELECT sde.sde_set_current_version(v_version_name) INTO retval;	
 	raise notice 'set version #1:%', retval;
 	--SELECT set_edit_version(v_version_name, 1) INTO retval;
 	--raise notice 'set_edit_version:%', retval;
@@ -39,7 +33,7 @@ BEGIN
 	--SELECT set_edit_version(v_version_name, 2);
 	--raise notice 'set_edit_version:%', retval;
 	IF retval = 0 THEN 
-	  SELECT get_source_by_id_core(v_source_id) INTO o_json;		
+	  SELECT get_source_by_id2_core(v_source_id) INTO o_json;		
 	ELSE 
 	  SELECT row_to_json(c) INTO o_json
 	  FROM
@@ -49,14 +43,14 @@ BEGIN
 	  ) c;
 	END IF;	
 	raise notice 'json:%', o_json;	
-	SELECT sde.sde_set_default() INTO retval;
+	--SELECT sde.sde_set_default() INTO retval;
 	raise notice 'set_default #1:%',retval;
 	--SELECT set_edit_version(v_version_name, 2) INTO retval;
 	--raise notice 'set_edit_version:%', retval;
 	RETURN o_json;
 EXCEPTION 
   WHEN OTHERS THEN
-    SELECT sde.sde_set_default() INTO retval;
+    --SELECT sde.sde_set_default() INTO retval;
 	raise notice 'set_default #2:%',retval;
     o_status = SQLSTATE;
 	o_message = SQLERRM;	
@@ -71,5 +65,5 @@ EXCEPTION
 END;  
 $BODY$;
 
-ALTER FUNCTION code_src.get_source_by_id(integer, text) OWNER TO network;
-GRANT EXECUTE ON FUNCTION code_src.get_source_by_id(integer, text) TO anchorto_run
+ALTER FUNCTION code_src.get_source_by_id2(integer, text) OWNER TO network;
+GRANT EXECUTE ON FUNCTION code_src.get_source_by_id2(integer, text) TO anchorto_run

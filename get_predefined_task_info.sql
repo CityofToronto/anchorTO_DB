@@ -1,14 +1,15 @@
--- FUNCTION: network.get_predefined_task_info(text)
+-- FUNCTION: code_src.get_predefined_task_info(text)
 
--- DROP FUNCTION network.get_predefined_task_info(text);
+-- DROP FUNCTION code_src.get_predefined_task_info(text);
 
-CREATE OR REPLACE FUNCTION network.get_predefined_task_info(
+CREATE OR REPLACE FUNCTION code_src.get_predefined_task_info(
 	in_source_class text)
     RETURNS json
     LANGUAGE 'sql'
 
     COST 100
     VOLATILE 
+	SECURITY DEFINER
 AS $BODY$
   /*
     Summary:
@@ -87,5 +88,5 @@ FROM
  ;
 $BODY$;
 
-ALTER FUNCTION network.get_predefined_task_info(text)
-    OWNER TO network;
+ALTER FUNCTION code_src.get_predefined_task_info(text) OWNER TO network;
+GRANT EXECUTE ON FUNCTION code_src.get_predefined_task_info(text) TO anchorto_run

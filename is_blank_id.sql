@@ -1,14 +1,15 @@
--- FUNCTION: network.is_blank_id(text)
+-- FUNCTION: code_src.is_blank_id(text)
 
--- DROP FUNCTION network.is_blank_id(text);
+-- DROP FUNCTION code_src.is_blank_id(text);
 
-CREATE OR REPLACE FUNCTION network.is_blank_id(
+CREATE OR REPLACE FUNCTION code_src.is_blank_id(
 	str text)
     RETURNS boolean
     LANGUAGE 'plpgsql'
 
     COST 100
     VOLATILE 
+	SECURITY DEFINER 
 AS $BODY$   
 BEGIN
 /*
@@ -30,5 +31,6 @@ EXCEPTION
 END;  
 $BODY$;
 
-ALTER FUNCTION network.is_blank_id(text)
+ALTER FUNCTION code_src.is_blank_id(text)
     OWNER TO network;
+GRANT EXECUTE ON FUNCTION code_src.is_blank_id(text) TO anchorto_run

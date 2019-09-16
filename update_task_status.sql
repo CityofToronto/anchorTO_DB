@@ -1,8 +1,8 @@
--- FUNCTION: network.update_task_status(numeric, text)
+-- FUNCTION: code_src.update_task_status(numeric, text)
 
--- DROP FUNCTION network.update_task_status(numeric, text);
+-- DROP FUNCTION code_src.update_task_status(numeric, text);
 
-CREATE OR REPLACE FUNCTION network.update_task_status(
+CREATE OR REPLACE FUNCTION code_src.update_task_status(
 	v_task_id numeric,
 	v_status text)
     RETURNS text
@@ -10,6 +10,7 @@ CREATE OR REPLACE FUNCTION network.update_task_status(
 
     COST 100
     VOLATILE 
+	SECURITY DEFINER
 AS $BODY$
 DECLARE   
   o_status text;  
@@ -107,5 +108,5 @@ EXCEPTION
 END;  
 $BODY$;
 
-ALTER FUNCTION network.update_task_status(numeric, text)
-    OWNER TO network;
+ALTER FUNCTION code_src.update_task_status(numeric, text) OWNER TO network;
+ GRANT EXECUTE ON FUNCTION code_src.update_task_status(numeric, text) TO anchorto_run

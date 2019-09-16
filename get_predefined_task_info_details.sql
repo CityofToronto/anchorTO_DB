@@ -1,8 +1,8 @@
--- FUNCTION: network.get_predefined_task_info_details(text)
+-- FUNCTION: code_src.get_predefined_task_info_details(text)
 
--- DROP FUNCTION network.get_predefined_task_info_details(text);
+-- DROP FUNCTION code_src.get_predefined_task_info_details(text);
 
-CREATE OR REPLACE FUNCTION network.get_predefined_task_info_details(
+CREATE OR REPLACE FUNCTION code_src.get_predefined_task_info_details(
 	in_source_class text,
 	OUT result json)
     RETURNS json
@@ -10,8 +10,8 @@ CREATE OR REPLACE FUNCTION network.get_predefined_task_info_details(
 
     COST 100
     VOLATILE 
-AS 
-$BODY$
+	SECURITY DEFINER
+AS $BODY$
 DECLARE
 
     _temp json;
@@ -85,5 +85,5 @@ BEGIN
 END
 $BODY$;
 
-ALTER FUNCTION network.get_predefined_task_info_details(text)
-    OWNER TO network;
+ALTER FUNCTION code_src.get_predefined_task_info_details(text) OWNER TO network;
+GRANT EXECUTE ON FUNCTION code_src.get_predefined_task_info_details(text) TO anchorto_run

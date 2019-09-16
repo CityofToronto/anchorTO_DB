@@ -1,8 +1,8 @@
--- FUNCTION: network.close_task(text, text, text, text)
+-- FUNCTION: code_src.close_task(text, text, text, text)
 
--- DROP FUNCTION network.close_task(text, text, text, text);
+-- DROP FUNCTION code_src.close_task(text, text, text, text);
 
-CREATE OR REPLACE FUNCTION network.close_task(
+CREATE OR REPLACE FUNCTION code_src.close_task(
 	uname text,
 	editversion text,
 	uapplication text,
@@ -12,13 +12,14 @@ CREATE OR REPLACE FUNCTION network.close_task(
 
     COST 100
     VOLATILE 
+	SECURITY DEFINER 
 AS $BODY$
 DECLARE    
 /*
     Summary:
 	  Close a task
     Testing:
-	  select network.close_task('slee333', '3', 'uapp1', 'COMPLETED') 
+	  select code_src.close_task('slee333', '3', 'uapp1', 'COMPLETED') 
   */
   userstatus text[] = '{"ABORTED","COMPLETED"}';
   vfound boolean;
@@ -109,5 +110,5 @@ EXCEPTION
 END;  
 $BODY$;
 
-ALTER FUNCTION network.close_task(text, text, text, text)
-    OWNER TO network;
+ALTER FUNCTION code_src.close_task(text, text, text, text) OWNER TO network;
+GRANT EXECUTE ON FUNCTION code_src.close_task(text, text, text, text) TO anchorto_run

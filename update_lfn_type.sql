@@ -1,8 +1,8 @@
--- FUNCTION: network.update_lfn_type(text, numeric, numeric)
+-- FUNCTION: code_src.update_lfn_type(text, numeric, numeric)
 
--- DROP FUNCTION network.update_lfn_type(text, numeric, numeric);
+-- DROP FUNCTION code_src.update_lfn_type(text, numeric, numeric);
 
-CREATE OR REPLACE FUNCTION network.update_lfn_type(
+CREATE OR REPLACE FUNCTION code_src.update_lfn_type(
 	v_info text,
 	v_trans_id_create numeric,
 	v_trans_id_expire numeric DEFAULT '-1'::integer)
@@ -11,6 +11,7 @@ CREATE OR REPLACE FUNCTION network.update_lfn_type(
 
     COST 100
     VOLATILE 
+	SECURITY DEFINER
 AS $BODY$
 DECLARE 
   v_linear_name_type_id numeric(12,0);  
@@ -29,25 +30,25 @@ Summary:
   Create (linear_name_type_id = null) or Update (linear_name_type_id <> null) LFN type (versioned linear_name_type table)
 Testing:
   -- 1. Blank type_part:
-  SELECT update_lfn_type('{ "object_id": null,"linear_name_type_id": null,"name": "","code": ""}', 123);
+  SELECT update_lfn_type('{ "objectid": null,"linear_name_type_id": null,"type_part": "","type_part_code": ""}', 123);
   -- 2. Blank type_part_code:
-  SELECT update_lfn_type('{ "object_id": null,"linear_name_type_id": null,"name": "New Type","code": ""}', 123);
+  SELECT update_lfn_type('{ "objectid": null,"linear_name_type_id": null,"type_part": "New Type","type_part_code": ""}', 123);
   -- 3. Regular case:
-  SELECT update_lfn_type('{ "object_id": null,"linear_name_type_id": null,"name": "Street name","code": "St N"}', 125);
-  SELECT update_lfn_type('{ "object_id": null,"linear_name_type_id": 1000000002,"name": "Street Name","code": "St N"}', 126);
-  SELECT update_lfn_type('{ "object_id": null,"linear_name_type_id": 1000000002,"name": "Street Name","code": "St N"}', 128);
+  SELECT update_lfn_type('{ "objectid": null,"linear_name_type_id": null,"type_part": "Street name","type_part_code": "St N"}', 125);
+  SELECT update_lfn_type('{ "objectid": null,"linear_name_type_id": 1000000002,"type_part": "Street Name","type_part_code": "St N"}', 126);
+  SELECT update_lfn_type('{ "objectid": null,"linear_name_type_id": 1000000002,"type_part": "Street Name","type_part_code": "St N"}', 128);
     --Created linear_name_type_id: 1000000002
   SELECT * FROM linear_name_type_evw WHERE linear_name_type_id = 1000000002	
   SELECT * FROM linear_name_type_h order by objectid DESC
   SELECT * FROM linear_name_type_dm order by 1 DESC, 2 DESC
   -- 4. Run above update_lfn_type again to check duplication of linear name type
   -- 5. Update type part to an existing name
-    SELECT update_lfn_type('{ "object_id": null,"linear_name_type_id": 1000000002,"name": "Street","code": "St N"}', 125);
+    SELECT update_lfn_type('{ "objectid": null,"linear_name_type_id": 1000000002,"type_part": "Street","type_part_code": "St N"}', 125);
   -- 6. Update a referenced type part
-    SELECT update_lfn_type('{ "object_id": null,"linear_name_type_id": 2,"name": "Woods","code": "Wd"}', 125);
+    SELECT update_lfn_type('{ "objectid": null,"linear_name_type_id": 2,"type_part": "Woods","type_part_code": "Wd"}', 125);
   -- 7. Type part & type part code are alphabet only
-    SELECT update_lfn_type('{ "object_id": null,"linear_name_type_id": 2,"name": "Street2","code": "St"}', 125);
-	SELECT update_lfn_type('{ "object_id": null,"linear_name_type_id": 2,"name": "Street","code": "St2"}', 125);
+    SELECT update_lfn_type('{ "objectid": null,"linear_name_type_id": 2,"type_part": "Street2","type_part_code": "St"}', 125);
+	SELECT update_lfn_type('{ "objectid": null,"linear_name_type_id": 2,"type_part": "Street","type_part_code": "St2"}', 125);
 */
     o_status = 'OK';
     o_message = '';   
@@ -55,8 +56,8 @@ Testing:
 	retval = 0;  
 	
 	  SELECT $1::json->>'linear_name_type_id',
-		     format_string(TRIM(INITCAP($1::json->>'name'))),		     
-		     format_string(TRIM(INITCAP($1::json->>'code')))
+		     format_string(TRIM(INITCAP($1::json->>'type_part'))),		     
+		     format_string(TRIM(INITCAP($1::json->>'type_part_code')))
 		INTO v_linear_name_type_id,	
 			 v_type_part,
 			 v_type_part_code;
@@ -238,5 +239,6 @@ EXCEPTION
 END;  
 $BODY$;
 
-ALTER FUNCTION network.update_lfn_type(text, numeric, numeric)
+ALTER FUNCTION code_src.update_lfn_type(text, numeric, numeric)
     OWNER TO network;
+GRANT EXECUTE ON FUNCTION code_src.update_lfn_type(text, numeric, numeric) TO anchorto_run;

@@ -1,8 +1,8 @@
--- FUNCTION: network.get_user_by_name(text)
+-- FUNCTION: code_src.get_user_by_name(text)
 
--- DROP FUNCTION network.get_user_by_name(text);
+-- DROP FUNCTION code_src.get_user_by_name(text);
 
-CREATE OR REPLACE FUNCTION network.get_user_by_name(
+CREATE OR REPLACE FUNCTION code_src.get_user_by_name(
 	a text)
     RETURNS SETOF json 
     LANGUAGE 'sql'
@@ -10,6 +10,7 @@ CREATE OR REPLACE FUNCTION network.get_user_by_name(
     COST 100
     VOLATILE 
     ROWS 1000
+	SECURITY DEFINER
 AS $BODY$
  /*
     Summary:
@@ -57,5 +58,5 @@ from
 ) row;
 $BODY$;
 
-ALTER FUNCTION network.get_user_by_name(text)
-    OWNER TO network;
+ALTER FUNCTION code_src.get_user_by_name(text) OWNER TO network;
+GRANT EXECUTE ON FUNCTION code_src.get_user_by_name(text) TO anchorto_run

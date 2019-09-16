@@ -1,14 +1,15 @@
--- FUNCTION: network.delete_task(numeric)
+-- FUNCTION: code_src.delete_task(numeric)
 
--- DROP FUNCTION network.delete_task(numeric);
+-- DROP FUNCTION code_src.delete_task(numeric);
 
-CREATE OR REPLACE FUNCTION network.delete_task(
+CREATE OR REPLACE FUNCTION code_src.delete_task(
 	taskid numeric)
     RETURNS text
     LANGUAGE 'plpgsql'
 
     COST 100
     VOLATILE 
+	SECURITY DEFINER
 AS $BODY$
 DECLARE     
   o_status text;
@@ -51,5 +52,5 @@ EXCEPTION
 END;  
 $BODY$;
 
-ALTER FUNCTION network.delete_task(numeric)
-    OWNER TO network;
+ALTER FUNCTION code_src.delete_task(numeric) OWNER TO network;
+ GRANT EXECUTE ON FUNCTION code_src.delete_task(numeric) TO anchorto_run

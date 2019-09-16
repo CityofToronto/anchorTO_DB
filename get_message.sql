@@ -1,8 +1,8 @@
--- FUNCTION: network.get_message(integer, text, text, text, text, text, text, text, text, text, text, text)
+-- FUNCTION: code_src.get_message(integer, text, text, text, text, text, text, text, text, text, text, text)
 
--- DROP FUNCTION network.get_message(integer, text, text, text, text, text, text, text, text, text, text, text);
+-- DROP FUNCTION code_src.get_message(integer, text, text, text, text, text, text, text, text, text, text, text);
 
-CREATE OR REPLACE FUNCTION network.get_message(
+CREATE OR REPLACE FUNCTION code_src.get_message(
 	msg_no integer,
 	msg_type text,
 	msg_cat text,
@@ -20,6 +20,7 @@ CREATE OR REPLACE FUNCTION network.get_message(
 
     COST 100
     VOLATILE 
+	SECURITY DEFINER 
 AS $BODY$
 DECLARE    
   msg text;
@@ -28,7 +29,7 @@ BEGIN
     Summary:
 	  Get customized message from table
     Testing:
-	  get_message(50680,'ERR','SURCTSK', '0', 888);
+	  SELECT get_message(50680,'ERR','SURCTSK', '0', '888');
   */
   msg = '';
   SELECT message INTO msg
@@ -58,5 +59,5 @@ EXCEPTION
 END;  
 $BODY$;
 
-ALTER FUNCTION network.get_message(integer, text, text, text, text, text, text, text, text, text, text, text)
-    OWNER TO network;
+ALTER FUNCTION code_src.get_message(integer, text, text, text, text, text, text, text, text, text, text, text) OWNER TO network;
+GRANT EXECUTE ON FUNCTION code_src.get_message(integer, text, text, text, text, text, text, text, text, text, text, text) TO anchorto_run

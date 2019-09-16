@@ -1,8 +1,8 @@
--- FUNCTION: network.update_lfn(text, numeric, numeric)
+-- FUNCTION: code_src.update_lfn(text, numeric, numeric)
 
--- DROP FUNCTION network.update_lfn(text, numeric, numeric);
+-- DROP FUNCTION code_src.update_lfn(text, numeric, numeric);
 
-CREATE OR REPLACE FUNCTION network.update_lfn(
+CREATE OR REPLACE FUNCTION code_src.update_lfn(
 	v_info text,
 	v_trans_id_create numeric,
 	v_trans_id_expire numeric DEFAULT '-1'::integer)
@@ -10,7 +10,8 @@ CREATE OR REPLACE FUNCTION network.update_lfn(
     LANGUAGE 'plpgsql'
 
     COST 100
-    VOLATILE 
+    VOLATILE  
+	SECURITY DEFINER
 AS $BODY$
 DECLARE 
   v_linear_name_id numeric(12,0);  
@@ -50,7 +51,7 @@ Testing:
     SELECT update_lfn('{ "objectid": null,"linear_name_id": 11860,"name_part": "Ln N College E Shaw-2","type_part": "Road","dir_part": "","description": "test test", "activation_status": "A","authorized": "Y","used_by": "L"}', 123,-1);
   -- 5. Expire LFN
     SELECT update_lfn('{ "objectid": null,"linear_name_id": 1000000005,"name_part": "Ln N College E Shaw-2","type_part": "Road","dir_part": "","description": "test test", "activation_status": "X","authorized": "Y","used_by": "L"}', 123,-1);
-   SELECT update_lfn('{"objectid":null,"linear_name_id":null,"name_part":"Test by ry8","type_part":"Boulevard","dir_part":"East","authorized":"Y","used_by":"B","used_by_desc":null,"description":"test","activation_status":"A","activation_status_desc":null,"usage_status":null,"usage_status_desc":null,"duplication_status":null,"duplication_desc":null,"segment":null,"task_id":1000001331,"user_id":"rli4"}', 111,-1);
+   SELECT update_lfn('{"objectid":null,"linear_name_id":null,"name_part":"Test by ry","type_part":"Boulevard","dir_part":"East","authorized":"Y","used_by":"B","used_by_desc":null,"description":"test","activation_status":"A","activation_status_desc":null,"usage_status":null,"usage_status_desc":null,"duplication_status":null,"duplication_desc":null,"segment":null,"task_id":1000001331,"user_id":"rli4"}', 111,-1);
   
 */
     o_status = 'OK';
@@ -288,5 +289,5 @@ EXCEPTION
 END;  
 $BODY$;
 
-ALTER FUNCTION network.update_lfn(text, numeric, numeric)
-    OWNER TO network;
+ALTER FUNCTION code_src.update_lfn(text, numeric, numeric) OWNER TO network;
+GRANT EXECUTE ON FUNCTION code_src.update_lfn(text, numeric, numeric) TO anchorto_run

@@ -1,14 +1,15 @@
--- FUNCTION: network.delete_transaction_by_trans_id(numeric)
+-- FUNCTION: code_src.delete_transaction_by_trans_id(numeric)
 
--- DROP FUNCTION network.delete_transaction_by_trans_id(numeric);
+-- DROP FUNCTION code_src.delete_transaction_by_trans_id(numeric);
 
-CREATE OR REPLACE FUNCTION network.delete_transaction_by_trans_id(
+CREATE OR REPLACE FUNCTION code_src.delete_transaction_by_trans_id(
 	transid numeric)
     RETURNS text
     LANGUAGE 'plpgsql'
 
     COST 100
     VOLATILE 
+	SECURITY DEFINER
 AS $BODY$
 DECLARE     
   o_status text;
@@ -48,5 +49,5 @@ EXCEPTION
 END;  
 $BODY$;
 
-ALTER FUNCTION network.delete_transaction_by_trans_id(numeric)
-    OWNER TO network;
+ALTER FUNCTION code_src.delete_transaction_by_trans_id(numeric) OWNER TO network;
+ GRANT EXECUTE ON FUNCTION code_src.delete_transaction_by_trans_id(numeric) TO anchorto_run

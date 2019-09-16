@@ -1,8 +1,8 @@
--- FUNCTION: network.set_edit_version(text, integer)
+-- FUNCTION: code_src.set_edit_version(text, integer)
 
--- DROP FUNCTION network.set_edit_version(text, integer);
+-- DROP FUNCTION code_src.set_edit_version(text, integer);
 
-CREATE OR REPLACE FUNCTION network.set_edit_version(
+CREATE OR REPLACE FUNCTION code_src.set_edit_version(
 	v_version_name text,
 	edit_action integer)
     RETURNS integer
@@ -10,6 +10,7 @@ CREATE OR REPLACE FUNCTION network.set_edit_version(
 
     COST 100
     VOLATILE 
+	SECURITY DEFINER
 AS $BODY$
 DECLARE 
   retval integer;   
@@ -29,5 +30,5 @@ EXCEPTION
 END;  
 $BODY$;
 
-ALTER FUNCTION network.set_edit_version(text, integer)
-    OWNER TO network;
+ALTER FUNCTION code_src.set_edit_version(text, integer) OWNER TO network;
+ GRANT EXECUTE ON FUNCTION code_src.set_edit_version(text, integer) TO anchorto_run

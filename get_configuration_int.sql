@@ -1,8 +1,8 @@
--- FUNCTION: network.get_configuration_int(text, text, text, integer)
+-- FUNCTION: code_src.get_configuration_int(text, text, text, integer)
 
--- DROP FUNCTION network.get_configuration_int(text, text, text, integer);
+-- DROP FUNCTION code_src.get_configuration_int(text, text, text, integer);
 
-CREATE OR REPLACE FUNCTION network.get_configuration_int(
+CREATE OR REPLACE FUNCTION code_src.get_configuration_int(
 	v_category text,
 	v_type text,
 	v_name text,
@@ -11,7 +11,7 @@ CREATE OR REPLACE FUNCTION network.get_configuration_int(
     LANGUAGE 'plpgsql'
 
     COST 100
-    VOLATILE 
+    VOLATILE SECURITY DEFINER 
 AS $BODY$
 DECLARE 
   retval integer;
@@ -36,5 +36,5 @@ EXCEPTION
 END;  
 $BODY$;
 
-ALTER FUNCTION network.get_configuration_int(text, text, text, integer)
-    OWNER TO network;
+ALTER FUNCTION code_src.get_configuration_int(text, text, text, integer) OWNER TO network;
+GRANT EXECUTE ON FUNCTION code_src.get_configuration_int(text, text, text, integer) TO anchorto_run

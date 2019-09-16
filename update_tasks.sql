@@ -1,8 +1,8 @@
--- FUNCTION: network.update_tasks(json, numeric, numeric, text, numeric, numeric)
+-- FUNCTION: code_src.update_tasks(json, numeric, numeric, text, numeric, numeric)
 
--- DROP FUNCTION network.update_tasks(json, numeric, numeric, text, numeric, numeric);
+-- DROP FUNCTION code_src.update_tasks(json, numeric, numeric, text, numeric, numeric);
 
-CREATE OR REPLACE FUNCTION network.update_tasks(
+CREATE OR REPLACE FUNCTION code_src.update_tasks(
 	v_task json,
 	v_source_id numeric,
 	v_control_task_id numeric,
@@ -14,6 +14,7 @@ CREATE OR REPLACE FUNCTION network.update_tasks(
 
     COST 100
     VOLATILE 
+	SECURITY DEFINER
 AS $BODY$
 DECLARE 
 /*
@@ -236,10 +237,10 @@ EXCEPTION
 END;  
 $BODY$;
 
-ALTER FUNCTION network.update_tasks(json, numeric, numeric, text, numeric, numeric)
+ALTER FUNCTION code_src.update_tasks(json, numeric, numeric, text, numeric, numeric)
     OWNER TO network;
 
-GRANT EXECUTE ON FUNCTION network.update_tasks(json, numeric, numeric, text, numeric, numeric) TO anchorto;
+GRANT EXECUTE ON FUNCTION code_src.update_tasks(json, numeric, numeric, text, numeric, numeric) TO anchorto_run;
 
-GRANT EXECUTE ON FUNCTION network.update_tasks(json, numeric, numeric, text, numeric, numeric) TO network;
+GRANT EXECUTE ON FUNCTION code_src.update_tasks(json, numeric, numeric, text, numeric, numeric) TO network;
 

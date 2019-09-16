@@ -1,13 +1,13 @@
--- FUNCTION: network.update_trans_status(numeric, text)
+-- FUNCTION: code_src.update_trans_status(numeric, text)
 
--- DROP FUNCTION network.update_trans_status(numeric, text);
+-- DROP FUNCTION code_src.update_trans_status(numeric, text);
 
-CREATE OR REPLACE FUNCTION network.update_trans_status(
+CREATE OR REPLACE FUNCTION code_src.update_trans_status(
 	v_trans_id numeric,
 	v_status text)
     RETURNS text
     LANGUAGE 'plpgsql'
-
+    SECURITY DEFINER 
     COST 100
     VOLATILE 
 AS $BODY$
@@ -16,9 +16,9 @@ DECLARE
     Summary:
 	  Update transaction status by transaction id
     Testing:
-	  select network.update_trans_status(296388, 'COM')
-	  select network.update_trans_status(296388, 'ABORTED')
-	  select network.update_trans_status(296388, 'COMPLETED') 
+	  select code_src.update_trans_status(296388, 'COM')
+	  select code_src.update_trans_status(296388, 'ABORTED')
+	  select code_src.update_trans_status(296388, 'COMPLETED') 
 	  SELECT * FROM ige_transaction where trans_id = 296388
  */
   userstatus text[] = '{"ABORTED","COMPLETED"}';
@@ -72,5 +72,5 @@ EXCEPTION
 END;  
 $BODY$;
 
-ALTER FUNCTION network.update_trans_status(numeric, text)
-    OWNER TO network;
+ALTER FUNCTION code_src.update_trans_status(numeric, text) OWNER TO network;
+GRANT EXECUTE ON FUNCTION code_src.update_trans_status(numeric, text) TO anchorto_run

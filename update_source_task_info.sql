@@ -1,8 +1,8 @@
--- FUNCTION: network.update_source_task_info(text, numeric, numeric, numeric)
+-- FUNCTION: code_src.update_source_task_info(text, numeric, numeric, numeric)
 
--- DROP FUNCTION network.update_source_task_info(text, numeric, numeric, numeric);
+-- DROP FUNCTION code_src.update_source_task_info(text, numeric, numeric, numeric);
 
-CREATE OR REPLACE FUNCTION network.update_source_task_info(
+CREATE OR REPLACE FUNCTION code_src.update_source_task_info(
 	v_info text,
 	v_source_id numeric,
 	v_trans_id_create numeric,
@@ -12,6 +12,7 @@ CREATE OR REPLACE FUNCTION network.update_source_task_info(
 
     COST 100
     VOLATILE 
+	SECURITY DEFINER
 AS $BODY$
 DECLARE 
 /*
@@ -148,5 +149,5 @@ EXCEPTION
 END;  
 $BODY$;
 
-ALTER FUNCTION network.update_source_task_info(text, numeric, numeric, numeric)
-    OWNER TO network;
+ALTER FUNCTION code_src.update_source_task_info(text, numeric, numeric, numeric) OWNER TO network;
+GRANT EXECUTE ON FUNCTION code_src.update_source_task_info(text, numeric, numeric, numeric) TO anchorto_run

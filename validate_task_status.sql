@@ -1,14 +1,15 @@
--- FUNCTION: network.validate_task_status(text)
+-- FUNCTION: code_src.validate_task_status(text)
 
--- DROP FUNCTION network.validate_task_status(text);
+-- DROP FUNCTION code_src.validate_task_status(text);
 
-CREATE OR REPLACE FUNCTION network.validate_task_status(
+CREATE OR REPLACE FUNCTION code_src.validate_task_status(
 	v_status text)
     RETURNS boolean
     LANGUAGE 'plpgsql'
 
     COST 100
     VOLATILE 
+	SECURITY DEFINER
 AS $BODY$
 DECLARE 
   retval boolean; 
@@ -36,5 +37,5 @@ EXCEPTION
 END;  
 $BODY$;
 
-ALTER FUNCTION network.validate_task_status(text)
-    OWNER TO network;
+ALTER FUNCTION code_src.validate_task_status(text)  OWNER TO network;
+GRANT EXECUTE ON FUNCTION code_src.validate_task_status(text) TO anchorto_run

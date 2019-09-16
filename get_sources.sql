@@ -1,8 +1,8 @@
--- FUNCTION: network.get_sources()
+-- FUNCTION: code_src.get_sources()
 
--- DROP FUNCTION network.get_sources();
+-- DROP FUNCTION code_src.get_sources();
 
-CREATE OR REPLACE FUNCTION network.get_sources(
+CREATE OR REPLACE FUNCTION code_src.get_sources(
 	)
     RETURNS SETOF json 
     LANGUAGE 'sql'
@@ -10,6 +10,7 @@ CREATE OR REPLACE FUNCTION network.get_sources(
     COST 100
     VOLATILE 
     ROWS 1000
+	SECURITY DEFINER
 AS $BODY$
   /*
     Summary:
@@ -47,5 +48,5 @@ FROM
 	;	
    $BODY$;
 
-ALTER FUNCTION network.get_sources()
-    OWNER TO network;
+ALTER FUNCTION code_src.get_sources() OWNER TO network;
+GRANT EXECUTE ON FUNCTION code_src.get_sources() TO anchorto_run

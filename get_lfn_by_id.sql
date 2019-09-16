@@ -1,14 +1,14 @@
--- FUNCTION: network.get_lfn_by_id(numeric)
+-- FUNCTION: code_src.get_lfn_by_id(numeric)
 
--- DROP FUNCTION network.get_lfn_by_id(numeric);
+-- DROP FUNCTION code_src.get_lfn_by_id(numeric);
 
-CREATE OR REPLACE FUNCTION network.get_lfn_by_id(
+CREATE OR REPLACE FUNCTION code_src.get_lfn_by_id(
 	v_linear_name_id numeric)
     RETURNS SETOF json 
     LANGUAGE 'sql'
 
     COST 100
-    VOLATILE 
+    VOLATILE SECURITY DEFINER 
     ROWS 1000
 AS $BODY$
 /*
@@ -99,5 +99,10 @@ AS $BODY$
 	;	
    $BODY$;
 
-ALTER FUNCTION network.get_lfn_by_id(numeric)
+ALTER FUNCTION code_src.get_lfn_by_id(numeric)
     OWNER TO network;
+
+GRANT EXECUTE ON FUNCTION code_src.get_lfn_by_id(numeric) TO anchorto_run;
+
+GRANT EXECUTE ON FUNCTION code_src.get_lfn_by_id(numeric) TO network;
+
