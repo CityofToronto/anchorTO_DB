@@ -1848,10 +1848,13 @@ select * from imaint_oracle.ige_mesages;
 CREATE SCHEMA code_src AUTHORIZATION network; -- Schema to host functions
 CREATE USER anchorto_run PASSWORD 'tsnine';   -- User for front-end
 GRANT USAGE ON SCHEMA code_src TO anchorto_run;
-ALTER USER anchorto_run SET search_path TO '$user', code_src, sde;
+GRANT USAGE ON SCHEMA network TO anchorto_run;
+ALTER USER anchorto_run SET search_path TO '$user', code_src, network, sde;
 ALTER USER network SET search_path TO '$user', code_src, public, sde;
-
+--revoke execute on all functions in schema network from public;
+ 
 -- Create all functions under code_src, make sure SECURITY DEFINER is added before AS $BODY$ part
+
 -- After creating a function in code_src, need to grant execute to anchor_run user
 grant execute on function code_src.get_lfn_by_id(numeric) to anchorto_run;
 grant execute on function code_src.get_configuration (text, text, text, text) to anchorto_run;
