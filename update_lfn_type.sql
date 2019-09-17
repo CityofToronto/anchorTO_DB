@@ -10,8 +10,7 @@ CREATE OR REPLACE FUNCTION code_src.update_lfn_type(
     LANGUAGE 'plpgsql'
 
     COST 100
-    VOLATILE 
-	SECURITY DEFINER
+    VOLATILE SECURITY DEFINER 
 AS $BODY$
 DECLARE 
   v_linear_name_type_id numeric(12,0);  
@@ -19,6 +18,7 @@ DECLARE
   v_type_part text;
   v_type_part_code text;  
   v_current_type_part text;
+  v_activation_status text;
   o_status text;  
   o_message text;
   o_json text;   
@@ -56,9 +56,11 @@ Testing:
 	retval = 0;  
 	
 	  SELECT $1::json->>'linear_name_type_id',
+	         $1::json->>'activation_status',
 		     format_string(TRIM(INITCAP($1::json->>'type_part'))),		     
 		     format_string(TRIM(INITCAP($1::json->>'type_part_code')))
 		INTO v_linear_name_type_id,	
+		     v_activation_status,
 			 v_type_part,
 			 v_type_part_code;
 	  SELECT is_blank_id(v_linear_name_type_id::text) INTO isnew; 
@@ -66,6 +68,7 @@ Testing:
 	  raise notice 'linear_name_type_id: %', v_linear_name_type_id;	  
 	  raise notice 'Type Part: %', v_type_part;
 	  raise notice 'Type Part Code: %', v_type_part_code;	
+	  raise notice 'Activation Status: %', v_activation_status;
 	  -- Validation	  
 	  IF is_blank_string(v_type_part) THEN
 	    RAISE 'Linear name type cannot be blank' USING ERRCODE = '20000';
@@ -173,10 +176,10 @@ Testing:
 				 trans_id_create = v_trans_id_create
 			WHERE linear_name_type_id = v_linear_name_type_id;	
 			-- Expire LFN type
-			/*IF v_activation_status = 'X' THEN 
+			IF v_activation_status = 'X' THEN 
 			  DELETE FROM linear_name_type_evw
 			    WHERE linear_name_type_id = v_linear_name_type_id;
-			END IF;*/
+			END IF;
 		END IF; -- End of Update LFN type info		
 		/*-- Update _dm table
 		  -- 1. Expire the old one
@@ -241,4 +244,10 @@ $BODY$;
 
 ALTER FUNCTION code_src.update_lfn_type(text, numeric, numeric)
     OWNER TO network;
+
 GRANT EXECUTE ON FUNCTION code_src.update_lfn_type(text, numeric, numeric) TO anchorto_run;
+
+revoke EXECUTE ON FUNCTION code_src.update_lfn_type(text, numeric, numeric) from PUBLIC;
+
+GRANT EXECUTE ON FUNCTION code_src.update_lfn_type(text, numeric, numeric) TO network;
+
