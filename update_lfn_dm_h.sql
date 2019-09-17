@@ -9,8 +9,7 @@ CREATE OR REPLACE FUNCTION code_src.update_lfn_dm_h(
     LANGUAGE 'plpgsql'
 
     COST 100
-    VOLATILE 
-	SECURITY DEFINER 
+    VOLATILE SECURITY DEFINER 
 AS $BODY$
 DECLARE 
   v_object_id numeric;  
@@ -165,5 +164,12 @@ EXCEPTION
 END;  
 $BODY$;
 
-ALTER FUNCTION code_src.update_lfn_dm_h(numeric, numeric) OWNER TO network;
-GRANT EXECUTE ON FUNCTION code_src.update_lfn_dm_h(numeric, numeric) TO anchorto_run
+ALTER FUNCTION code_src.update_lfn_dm_h(numeric, numeric)
+    OWNER TO network;
+
+GRANT EXECUTE ON FUNCTION code_src.update_lfn_dm_h(numeric, numeric) TO anchorto_run;
+
+revoke EXECUTE ON FUNCTION code_src.update_lfn_dm_h(numeric, numeric) from PUBLIC;
+
+GRANT EXECUTE ON FUNCTION code_src.update_lfn_dm_h(numeric, numeric) TO network;
+
