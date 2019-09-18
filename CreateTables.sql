@@ -1849,6 +1849,7 @@ CREATE SCHEMA code_src AUTHORIZATION network; -- Schema to host functions
 CREATE USER anchorto_run PASSWORD 'tsnine';   -- User for front-end
 GRANT USAGE ON SCHEMA code_src TO anchorto_run;
 GRANT USAGE ON SCHEMA network TO anchorto_run;
+--GRANT EXECUTE ON ALL FUNCTIONS IN SCHEMA sde TO anchorto_run;
 ALTER USER anchorto_run SET search_path TO '$user', code_src, network, sde;
 ALTER USER network SET search_path TO '$user', code_src, public, sde;
 --revoke execute on all functions in schema network from public;
