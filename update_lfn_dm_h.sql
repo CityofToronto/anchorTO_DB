@@ -152,7 +152,7 @@ Testing:
 EXCEPTION
   WHEN OTHERS THEN 
     o_status = SQLSTATE;
-	o_message = SQLERRM;	
+	o_message = format_string(SQLERRM);	
 	SELECT row_to_json(c) INTO o_json
 	FROM
 	(
@@ -169,7 +169,6 @@ ALTER FUNCTION code_src.update_lfn_dm_h(numeric, numeric)
 
 GRANT EXECUTE ON FUNCTION code_src.update_lfn_dm_h(numeric, numeric) TO anchorto_run;
 
-revoke EXECUTE ON FUNCTION code_src.update_lfn_dm_h(numeric, numeric) from PUBLIC;
-
 GRANT EXECUTE ON FUNCTION code_src.update_lfn_dm_h(numeric, numeric) TO network;
 
+REVOKE ALL ON FUNCTION code_src.update_lfn_dm_h(numeric, numeric) FROM PUBLIC;
