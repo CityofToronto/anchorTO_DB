@@ -9,8 +9,7 @@ CREATE OR REPLACE FUNCTION code_src.update_task_status(
     LANGUAGE 'plpgsql'
 
     COST 100
-    VOLATILE 
-	SECURITY DEFINER
+    VOLATILE SECURITY DEFINER 
 AS $BODY$
 DECLARE   
   o_status text;  
@@ -32,9 +31,12 @@ BEGIN
     o_message = '';
     -- Validate status 
 	IF validate_task_status(v_status) THEN
+	  
 	  UPDATE ige_task
-	    SET task_status = UPPER(v_status)
-	  WHERE task_id = v_task_id;
+		SET task_status = UPPER(v_status)
+	  WHERE task_id = v_task_id
+	    AND ( v_status <> 'WORK STARTED'); -- OR taken_by IS NULL);
+	   
 	  IF UPPER(v_status) = 'COMPLETED' THEN
 	    UPDATE ige_task_active 
 		  SET task_id = null,
@@ -108,5 +110,11 @@ EXCEPTION
 END;  
 $BODY$;
 
-ALTER FUNCTION code_src.update_task_status(numeric, text) OWNER TO network;
- GRANT EXECUTE ON FUNCTION code_src.update_task_status(numeric, text) TO anchorto_run
+ALTER FUNCTION code_src.update_task_status(numeric, text)
+    OWNER TO network;
+
+GRANT EXECUTE ON FUNCTION code_src.update_task_status(numeric, text) TO anchorto_run;
+
+GRANT EXECUTE ON FUNCTION code_src.update_task_status(numeric, text) TO network;
+
+REVOKE ALL ON FUNCTION code_src.update_task_status(numeric, text) FROM PUBLIC;
