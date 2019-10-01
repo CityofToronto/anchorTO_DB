@@ -8,8 +8,7 @@ CREATE OR REPLACE FUNCTION code_src.get_predefined_lfn(
     LANGUAGE 'sql'
 
     COST 100
-    VOLATILE 
-	SECURITY DEFINER
+    VOLATILE SECURITY DEFINER 
 AS $BODY$
 
 /*
@@ -83,7 +82,7 @@ FROM
 	 (
 		  SELECT usage_status AS status,
 		         description AS desc
-	      FROM dmn_ama_usage_status
+	      FROM dmn_ln_usage_status
 	      WHERE trans_id_expire = -1
 	      ORDER BY sort_sequence
 	 ) f
@@ -92,5 +91,12 @@ FROM
  ;
 $BODY$;
 
-ALTER FUNCTION code_src.get_predefined_lfn() OWNER TO network;
-GRANT EXECUTE ON FUNCTION code_src.get_predefined_lfn() TO anchorto_run
+ALTER FUNCTION code_src.get_predefined_lfn()
+    OWNER TO network;
+
+GRANT EXECUTE ON FUNCTION code_src.get_predefined_lfn() TO anchorto_run;
+
+GRANT EXECUTE ON FUNCTION code_src.get_predefined_lfn() TO PUBLIC;
+
+GRANT EXECUTE ON FUNCTION code_src.get_predefined_lfn() TO network;
+
