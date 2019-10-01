@@ -32,13 +32,16 @@ BEGIN
 
       SELECT validate_lfn('{"linear_name_id":null,"name_part":"Ry Test Again","dir_part":null,"type_part":null}')
 	  select * from linear_name_evw where upper(name_part) like 'RY TEST%' 
-	  select * from linear_name_evw where upper(name_part) like 'DYAS RD%' 
+	  select * from linear_name_evw where upper(name_part) like 'DYAS%' 
 	  select * from linear_name_evw where upper(name_part) like 'FINCH%' 
 	  SELECT validate_lfn('{"linear_name_id":null,"name_part":"finch avenue east","dir_part":"","type_part":""}') --duplicated lfn
 	  SELECT validate_lfn('{"linear_name_id":null,"name_part":"finch ave east","dir_part":"","type_part":""}') --duplicated lfn
 	  SELECT validate_lfn('{"linear_name_id":null,"name_part":"finch ave e","dir_part":"","type_part":""}') --duplicated lfn
 	  SELECT validate_lfn('{"linear_name_id":null,"name_part":"finch avenue e","dir_part":"","type_part":""}') --duplicated lfn
-	  SELECT validate_lfn('{"linear_name_id":null,"name_part":"finch ave e","dir_part":"","type_part":""}') --duplicated lfn
+	  SELECT validate_lfn('{"linear_name_id":null,"name_part":"finch ave e","dir_part":null,"type_part":null}') --duplicated lfn
+	  
+	  SELECT validate_lfn('{"linear_name_id":null,"name_part":"dyas road","dir_part":"","type_part":""}') --duplicated lfn
+	  SELECT validate_lfn('{"linear_name_id":null,"name_part":"dyas rd","dir_part":"","type_part":""}') --duplicated lfn
   */
   o_status = 'OK';
   o_message = ''; 
@@ -58,8 +61,8 @@ BEGIN
 	       CASE WHEN EXISTS 
 	                 (SELECT 1
 		              FROM linear_name_evw n
-					  JOIN linear_name_type_evw nt ON n.type_part = nt.type_part
-					  JOIN linear_name_direction_evw nd ON n.dir_part = nd.dir_part
+					  LEFT JOIN linear_name_type_evw nt ON n.type_part = nt.type_part
+					  LEFT JOIN linear_name_direction_evw nd ON n.dir_part = nd.dir_part
 		              WHERE 
 					    (
 					        format_string_to_validate(UPPER(n.name_part || coalesce(n.type_part,'') || coalesce(n.dir_part,''))) = 
