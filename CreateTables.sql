@@ -554,6 +554,7 @@ CREATE TABLE network.DMN_LN_USE_BY
 	TRANS_ID_CREATE numeric(12,0), 
 	TRANS_ID_EXPIRE numeric(12,0)
 );
+
 ---------------------------------------------------------------------------------------------------------------------------
 
 CREATE TABLE network.DMN_LN_ACTIVATION_STATUS
@@ -1314,6 +1315,16 @@ CREATE INDEX i_linear_name_name_type_dir ON linear_name(UPPER(name_part || coale
 
 --drop INDEX i_linear_name_name_type_dir
 ---------- Data Migration ------------------
+-- Fix typo "Cadatral" after loading data from Oracle 
+    select * from network.dmn_ln_use_by order by 1
+
+    UPDATE dmn_ln_use_by
+      SET description = 'Cadastral Only'
+    WHERE use_by = 'P';
+-- Update 'Historic Only' to 'Historic' as requested
+  UPDATE dmn_ln_usage_status
+  SET description = 'Historic'
+  WHERE usage_status = 'H';
 -- LN01: ACTIVATION_STATUS
          Set 'P' to 'X' where there is no segment currently using the name.
          Set 'P' to 'A' where there are segments currently using the name.
@@ -1604,6 +1615,37 @@ CREATE INDEX i_linear_name_name_type_dir ON linear_name(UPPER(name_part || coale
 			'WILLIAM R ALLEN ROAD',
 			'TORONTO ISLANDS LAGOON'
 		)
+-- LN06: DUPLICATION_STATUS & DUPLICATION_DESC columns in linear_name table
+         Populate the two columns for all duplicated LFN names (e.g. Kelvin Ave is duplicate but one record is not flagged as duplicate).
+
+	UPDATE linear_name_evw
+	  SET duplication_status = 'D'
+	WHERE linear_name_id IN 
+	(
+		SELECT linear_name_id -- c.*
+		FROM
+		(
+			SELECT *
+			FROM linear_name_evw s
+			WHERE UPPER(name_part || coalesce(type_part,'') || coalesce(dir_part,'')) IN 
+			  (
+					SELECT full_name
+					FROM
+					(
+					SELECT UPPER(name_part || coalesce(type_part,'') || coalesce(dir_part,'')) AS full_name,
+						   ROW_NUMBER() OVER (PARTITION BY UPPER(name_part || coalesce(type_part,'') || coalesce(dir_part,'')) ORDER BY linear_name_id) AS rid,
+						   t.* 
+					FROM linear_name_evw t
+					) tt
+					WHERE rid > 1
+				)
+		) c
+		 WHERE coalesce(duplication_status, '') <> 'D'
+		--ORDER BY name_part, type_part, dir_part, linear_name_id	
+	)  
+-- LN07: LFN with ACTIVATION_STATUS set to 'Expired'
+         Make the record expired by populating columns TRANS_ID_EXPIRE and EXPIREY_DATE
+
 -- for table linear_name_direction
 CREATE SEQUENCE network.linear_name_direction_id_seq;
 ALTER TABLE network.linear_name_direction      
@@ -1737,7 +1779,26 @@ UPDATE dmn_source_class
   WHERE source_class IN ('PLAN', 'REPORT'); 
 SELECT * from dmn_source_class;  
 */
+-------------- Fix objectid number issue ----------------
+-- Issue: After registering table with ArcGIS, then importing data from other server, 
+--        the max(objectid) in the table might be greater than the next objectid (next_rowid), which would violate the unique object id constraint for the future
+SELECT network.fix_objectid_number()
+-------------- Fix rowid_column issue -------------------
+-- Find the incorrect rowid column for registered tables
 
+
+SELECT * 
+FROM sde.sde_table_registry 
+WHERE schema = 'network'
+  AND rowid_column <> 'objectid';
+-- Fix it, run under admin
+UPDATE sde.sde_table_registry
+  SET rowid_column = 'objectid'
+  WHERE schema = 'network'
+    AND table_name = 'linear_name_dm'; 
+	
+
+--------------------------------------------------------  
 -- Create new anchorTo tables
 CREATE TABLE network.ige_task_active
 (	
@@ -1842,8 +1903,20 @@ select * from imaint_oracle.ige_task limit 10;
 select * from imaint_oracle.ige_transaction limit 10;
 select * from imaint_oracle.ige_control_task limit 10;
 select * from imaint_oracle.ige_mesages;
-
-----------------Re-structure Setup schema code_src & user anchorto_run------------------------------
+---------------- Grant feature layer access to anchorto_run ------------------------------------------
+-- 1. Use ArcCatalog tool to do it
+https://desktop.arcgis.com/en/arcmap/10.3/manage-data/gdbs-in-oracle/grant-dataset-privileges.htm
+ArcToolBox --> "Data Management Tools" --> "Geodatabase Administration" --> "Change Privileges"
+"Input Dataset": "Database Connections\banf-network-lbm.sde\lbm.network.ADDRESS_NAME"
+"User": "anchorto_run"
+"View(Select)": "GRANT"
+"Edit(Update/Insert/Delete)": "GRANT"
+-- 2. Grant it in DB   
+GRANT SELECT, INSERT, UPDATE, DELETE ON AUTHORIZED_MUNICIPAL_ADDRESS TO anchorto_run;
+GRANT SELECT, INSERT, UPDATE, DELETE ON d23 TO anchorto_run;
+GRANT SELECT, INSERT, UPDATE, DELETE ON a23 TO anchorto_run;
+GRANT SELECT, INSERT, UPDATE, DELETE ON i23 TO anchorto_run;
+---------------- Re-structure Setup schema code_src & user anchorto_run ------------------------------
 -- Run under admin account for the DB
 CREATE SCHEMA code_src AUTHORIZATION network; -- Schema to host functions
 CREATE USER anchorto_run PASSWORD 'tsnine';   -- User for front-end
@@ -1859,7 +1932,7 @@ ALTER USER network SET search_path TO '$user', code_src, public, sde;
 -- After creating a function in code_src, need to grant execute to anchor_run user
 grant execute on function code_src.get_lfn_by_id(numeric) to anchorto_run;
 grant execute on function code_src.get_configuration (text, text, text, text) to anchorto_run;
-
+...
 -- Testing scripts under anchorto_run user:
 SELECT get_lfn_by_id(1570)
 SELECT get_configuration('anchorTO', 'ANCHORTO', 'sync_with_oracle')
