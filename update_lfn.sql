@@ -107,11 +107,12 @@ Testing:
 		IF retval > 0 THEN -- #1
 		  RAISE 'Linear full name (name_part + type_part + dir_part) must be unique' USING ERRCODE = '20001';	
 		END IF;  
-		-- LFN maybe expired or editted if it's never been referenced	  
+		-- LFN maybe expired or editted if it's never been referenced or for historic reference, it can be expired	  
 		SELECT count(*) INTO retval 
 		FROM linear_name_evw 
 		WHERE linear_name_id = v_linear_name_id
-		 AND usage_status IN ('C', 'H');
+		 --AND usage_status IN ('C', 'H');
+		  AND (usage_status = 'C' OR (usage_status = 'H' AND v_activation_status <> 'X' ));
 		IF retval > 0 THEN -- #2
 		  RAISE 'LFN has been referenced and cannot be editted' USING ERRCODE = '20002';		 
 		END IF;
@@ -203,7 +204,7 @@ Testing:
 				 dir_part = v_dir_part,
 				 description = v_description,
 				 authorized = v_authorized,
-				 activation_status = CASE WHEN v_activation_status = 'X' THEN activation_status ELSE v_activation_status END, 
+				 activation_status = v_activation_status, --CASE WHEN v_activation_status = 'X' THEN activation_status ELSE v_activation_status END, 
 				 use_by = v_use_by,
 				 trans_id_create = v_trans_id_create
 			WHERE linear_name_id = v_linear_name_id;	
@@ -293,7 +294,6 @@ ALTER FUNCTION code_src.update_lfn(text, numeric, numeric)
 
 GRANT EXECUTE ON FUNCTION code_src.update_lfn(text, numeric, numeric) TO anchorto_run;
 
-revoke EXECUTE ON FUNCTION code_src.update_lfn(text, numeric, numeric) from PUBLIC;
-
 GRANT EXECUTE ON FUNCTION code_src.update_lfn(text, numeric, numeric) TO network;
 
+REVOKE ALL ON FUNCTION code_src.update_lfn(text, numeric, numeric) FROM PUBLIC;
