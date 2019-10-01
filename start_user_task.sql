@@ -9,8 +9,7 @@ CREATE OR REPLACE FUNCTION code_src.start_user_task(
     LANGUAGE 'plpgsql'
 
     COST 100
-    VOLATILE 
-	SECURITY DEFINER
+    VOLATILE SECURITY DEFINER 
 AS $BODY$
 /*
     Summary:
@@ -33,7 +32,7 @@ DECLARE
 BEGIN 
     o_status = 'OK';
     o_message = ''; 
-	-- Check if the task belongs the user or user's group(s)
+	-- Check if the task belongs to the user or user's group(s)
 	IF EXISTS
 	  (
 		SELECT * 
@@ -50,11 +49,12 @@ BEGIN
 				 )	
 			 )
 	  ) THEN
-	  -- Update task status
+	  -- Update task status	 
 	  UPDATE ige_task
 	    SET taken_by = v_user_name
 	  WHERE task_id = v_task_id;
-	  SELECT update_task_status(v_task_id, STATUS_STARTED) INTO ret_json;
+	  
+	 SELECT update_task_status(v_task_id, STATUS_STARTED) INTO ret_json;
 	  SELECT ret_json::json->>'status',
 	       ret_json::json->>'message'
       INTO  ret_status,
@@ -64,6 +64,8 @@ BEGIN
 				errcode= ret_status,
 				message= ret_msg;
 	  END IF;
+	  
+	 
 	  -- Get task information to return 
 	  SELECT trans_id_create, task_type INTO v_version_num,	v_active_task_type FROM ige_task t	WHERE task_id = v_task_id;
 	ELSE
@@ -98,5 +100,11 @@ EXCEPTION
 END;  
 $BODY$;
 
-ALTER FUNCTION code_src.start_user_task(numeric, text) OWNER TO network;
- GRANT EXECUTE ON FUNCTION code_src.start_user_task(numeric, text) TO anchorto_run
+ALTER FUNCTION code_src.start_user_task(numeric, text)
+    OWNER TO network;
+
+GRANT EXECUTE ON FUNCTION code_src.start_user_task(numeric, text) TO anchorto_run;
+
+GRANT EXECUTE ON FUNCTION code_src.start_user_task(numeric, text) TO network;
+
+REVOKE ALL ON FUNCTION code_src.start_user_task(numeric, text) FROM PUBLIC;
