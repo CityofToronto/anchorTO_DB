@@ -255,6 +255,9 @@ CREATE UNIQUE INDEX AUTHORIZED_MUNICIPAL_ADDRESS_objectid_uk ON network.AUTHORIZ
 GRANT ALL ON TABLE network.AUTHORIZED_MUNICIPAL_ADDRESS TO network;
 GRANT INSERT, SELECT, UPDATE, DELETE ON TABLE network.AUTHORIZED_MUNICIPAL_ADDRESS TO sde;*/
 
+select * from authorized_municipal_address limit 10;
+--DROP record_id column in ArcCatalog -------------ALTER TABLE authorized_municipal_address DROP record_id CASCADE;
+--Add column usage_status in ArcCatalog ----------------------ALTER TABLE authorized_municipal_address ADD COLUMN IF NOT EXISTS USAGE_STATUS VARCHAR(1);
 ---------------------------------------------------------------------------------------------------------------------------
 CREATE TABLE network.ama_dm
 (
@@ -292,6 +295,8 @@ CREATE UNIQUE INDEX ama_dm_objectid_uk ON network.ama_dm (objectid);
 -- select count(*) from ama_dm;
 GRANT ALL ON TABLE network.ama_dm TO network;
 GRANT INSERT, SELECT, UPDATE, DELETE ON TABLE network.ama_dm TO sde;
+
+ALTER TABLE ama_dm ADD COLUMN IF NOT EXISTS LINEAR_NAME_AUTHORIZED VARCHAR(1); 
 ---------------------------------------------------------------------------------------------------------------------------
 CREATE TABLE ama_h
 (
@@ -1228,12 +1233,13 @@ GRANT INSERT, SELECT, UPDATE, DELETE ON TABLE network. TO sde;
 -- Change the initial value to the max of existing values
 -- Update the owner of the sequence
 	
--- for table address_class
-CREATE SEQUENCE network.address_class_id_seq;
+-- for table address_class 
+DROP SEQUENCE if exists network.address_class_id_seq cascade;
+CREATE SEQUENCE network.address_id_seq;
 ALTER TABLE network.address_class      
-  ALTER COLUMN address_id SET DEFAULT nextval('address_class_id_seq')::numeric(12,0);
-SELECT setval('network.address_class_id_seq', 1000000000, true);
-ALTER SEQUENCE network.address_class_id_seq OWNED BY network.address_class.address_id;
+  ALTER COLUMN address_id SET DEFAULT nextval('address_id_seq')::numeric(12,0);
+SELECT setval('network.address_id_seq', 1000000000, true);
+ALTER SEQUENCE network.address_id_seq OWNED BY network.address_class.address_id;
 
 -- for table address_name
 CREATE SEQUENCE network.address_name_id_seq;
@@ -1249,54 +1255,61 @@ ALTER TABLE network.address_point
 SELECT setval('network.address_point_id_seq', 1000000000, true);
 ALTER SEQUENCE network.address_point_id_seq OWNED BY network.address_point.address_point_id;
 
--- for table authorized_municipal_address
-CREATE SEQUENCE network.ama_id_seq;
+-- for table authorized_municipal_address 
+DROP SEQUENCE if exists network.ama_id_seq cascade;
+CREATE SEQUENCE network.address_string_id_seq;
 ALTER TABLE network.authorized_municipal_address      
-  ALTER COLUMN address_string_id SET DEFAULT nextval('ama_id_seq')::numeric(12,0);
-SELECT setval('network.ama_id_seq', 1000000000, true);
-ALTER SEQUENCE network.ama_id_seq OWNED BY network.authorized_municipal_address.address_string_id;
+  ALTER COLUMN address_string_id SET DEFAULT nextval('address_string_id_seq')::numeric(12,0);
+SELECT setval('network.address_string_id_seq', 1000000000, true);
+ALTER SEQUENCE network.address_string_id_seq OWNED BY network.authorized_municipal_address.address_string_id;
 
 -- for table base_centreline
-CREATE SEQUENCE network.base_centreline_id_seq;
+DROP SEQUENCE if exists network.base_centreline_id_seq cascade;
+CREATE SEQUENCE network.centreline_id_seq;
 ALTER TABLE network.base_centreline      
-  ALTER COLUMN centreline_id SET DEFAULT nextval('base_centreline_id_seq')::numeric(12,0);
-SELECT setval('network.base_centreline_id_seq', 1000000000, true);
-ALTER SEQUENCE network.base_centreline_id_seq OWNED BY network.base_centreline.centreline_id;
+  ALTER COLUMN centreline_id SET DEFAULT nextval('centreline_id_seq')::numeric(12,0);
+SELECT setval('network.centreline_id_seq', 1000000000, true);
+ALTER SEQUENCE network.centreline_id_seq OWNED BY network.base_centreline.centreline_id;
 
 -- for table base_connectivity
-CREATE SEQUENCE network.base_connectivity_id_seq;
+DROP SEQUENCE if exists network.base_connectivity_id_seq cascade;
+CREATE SEQUENCE network.connectivity_id_seq;
 ALTER TABLE network.base_connectivity      
-  ALTER COLUMN connectivity_id SET DEFAULT nextval('base_connectivity_id_seq')::numeric(12,0);
-SELECT setval('network.base_connectivity_id_seq', 1000000000, true);
-ALTER SEQUENCE network.base_connectivity_id_seq OWNED BY network.base_connectivity.connectivity_id;
+  ALTER COLUMN connectivity_id SET DEFAULT nextval('connectivity_id_seq')::numeric(12,0);
+SELECT setval('network.connectivity_id_seq', 1000000000, true);
+ALTER SEQUENCE network.connectivity_id_seq OWNED BY network.base_connectivity.connectivity_id;
 
 -- for table base_intersection
-CREATE SEQUENCE network.base_intersection_id_seq;
+DROP SEQUENCE if exists network.base_intersection_id_seq cascade;
+CREATE SEQUENCE network.intersection_id_seq;
 ALTER TABLE network.base_intersection      
-  ALTER COLUMN intersection_id SET DEFAULT nextval('base_intersection_id_seq')::numeric(12,0);
-SELECT setval('network.base_intersection_id_seq', 1000000000, true);
-ALTER SEQUENCE network.base_intersection_id_seq OWNED BY network.base_intersection.intersection_id;
+  ALTER COLUMN intersection_id SET DEFAULT nextval('intersection_id_seq')::numeric(12,0);
+SELECT setval('network.intersection_id_seq', 1000000000, true);
+ALTER SEQUENCE network.intersection_id_seq OWNED BY network.base_intersection.intersection_id;
 
 -- for table base_intersection_elevation
-CREATE SEQUENCE network.base_intersection_elevation_id_seq;
+DROP SEQUENCE if exists network.base_intersection_elevation_id_seq cascade;
+CREATE SEQUENCE network.elevation_id_seq;
 ALTER TABLE network.base_intersection_elevation      
-  ALTER COLUMN elevation_id SET DEFAULT nextval('base_intersection_elevation_id_seq')::numeric(12,0);
-SELECT setval('network.base_intersection_elevation_id_seq', 1000000000, true);
-ALTER SEQUENCE network.base_intersection_elevation_id_seq OWNED BY network.base_intersection_elevation.elevation_id;
+  ALTER COLUMN elevation_id SET DEFAULT nextval('elevation_id_seq')::numeric(12,0);
+SELECT setval('network.elevation_id_seq', 1000000000, true);
+ALTER SEQUENCE network.elevation_id_seq OWNED BY network.base_intersection_elevation.elevation_id;
 
 -- for table base_turn
-CREATE SEQUENCE network.base_turn_id_seq;
+DROP SEQUENCE if exists network.base_turn_id_seq cascade;
+CREATE SEQUENCE network.turn_id_seq;
 ALTER TABLE network.base_turn      
-  ALTER COLUMN turn_id SET DEFAULT nextval('base_turn_id_seq')::numeric(12,0);
-SELECT setval('network.base_turn_id_seq', 1000000000, true);
-ALTER SEQUENCE network.base_turn_id_seq OWNED BY network.base_turn.turn_id;
+  ALTER COLUMN turn_id SET DEFAULT nextval('turn_id_seq')::numeric(12,0);
+SELECT setval('network.turn_id_seq', 1000000000, true);
+ALTER SEQUENCE network.turn_id_seq OWNED BY network.base_turn.turn_id;
 
 -- for table centreline_geometry_lineage
-CREATE SEQUENCE network.centreline_geometry_lineage_id_seq;
+DROP SEQUENCE if exists network.centreline_geometry_lineage_id_seq cascade;
+CREATE SEQUENCE network.centreline_lineage_id_seq;
 ALTER TABLE network.centreline_geometry_lineage      
-  ALTER COLUMN centreline_lineage_id SET DEFAULT nextval('centreline_geometry_lineage_id_seq')::numeric(12,0);
-SELECT setval('network.centreline_geometry_lineage_id_seq', 1000000000, true);
-ALTER SEQUENCE network.centreline_geometry_lineage_id_seq OWNED BY network.centreline_geometry_lineage.centreline_lineage_id;
+  ALTER COLUMN centreline_lineage_id SET DEFAULT nextval('centreline_lineage_id_seq')::numeric(12,0);
+SELECT setval('network.centreline_lineage_id_seq', 1000000000, true);
+ALTER SEQUENCE network.centreline_lineage_id_seq OWNED BY network.centreline_geometry_lineage.centreline_lineage_id;
 
 -- for table linear_name
 CREATE SEQUENCE network.linear_name_id_seq;
@@ -1304,6 +1317,7 @@ ALTER TABLE network.linear_name
   ALTER COLUMN linear_name_id SET DEFAULT nextval('linear_name_id_seq')::numeric(12,0);
 SELECT setval('network.linear_name_id_seq', 1000000000, true);
 ALTER SEQUENCE network.linear_name_id_seq OWNED BY network.linear_name.linear_name_id;
+
 ALTER TABLE network.linear_name 
   DROP COLUMN IF EXISTS RECORD_ID,
   DROP COLUMN IF EXISTS LANGUAGE_CODE,
@@ -1646,58 +1660,35 @@ CREATE INDEX i_linear_name_name_type_dir ON linear_name(UPPER(name_part || coale
 -- LN07: LFN with ACTIVATION_STATUS set to 'Expired'
          Make the record expired by populating columns TRANS_ID_EXPIRE and EXPIREY_DATE
 
--- for table linear_name_direction
-CREATE SEQUENCE network.linear_name_direction_id_seq;
-ALTER TABLE network.linear_name_direction      
-  ALTER COLUMN linear_name_dir_id SET DEFAULT nextval('linear_name_direction_id_seq')::numeric(12,0);
-SELECT setval('network.linear_name_direction_id_seq', 1000000000, true);
-ALTER SEQUENCE network.linear_name_direction_id_seq OWNED BY network.linear_name_direction.linear_name_dir_id;
 
+-- Update new-added authorized_municipal_address.USAGE_STATUS column: 
+	UPDATE authorized_municipal_address a
+	SET usage_status = 'N';
+
+	UPDATE authorized_municipal_address a
+	SET usage_status = 'C'
+	WHERE  address_string_id IN 
+	(SELECT address_string_id FROM address_point_evw WHERE trans_id_expire = -1);
+
+	UPDATE authorized_municipal_address a
+	SET usage_status = 'C'
+	WHERE  usage_status = 'N' 
+	AND address_string_id IN 
+	(SELECT address_string_id FROM address_point_dm);
+-- Remove RECORD_ID & add USAGE_STATUS column from table authorized_municipal_address in ArcCatalog
 -- Remove RECORD_ID & RECORD_TYPE columns from table linear_name_direction in ArcCatalog
   
--- for table linear_name_group
-CREATE SEQUENCE network.linear_name_group_id_seq;
-ALTER TABLE network.linear_name_group      
-  ALTER COLUMN group_id SET DEFAULT nextval('linear_name_group_id_seq')::numeric(12,0);
-SELECT setval('network.linear_name_group_id_seq', 1000000000, true);
-ALTER SEQUENCE network.linear_name_group_id_seq OWNED BY network.linear_name_group.group_id;
-
--- for table linear_name_type
-CREATE SEQUENCE network.linear_name_type_id_seq;
-ALTER TABLE network.linear_name_type      
-  ALTER COLUMN linear_name_type_id SET DEFAULT nextval('linear_name_type_id_seq')::numeric(12,0);
-SELECT setval('network.linear_name_type_id_seq', 1000000000, true);
-ALTER SEQUENCE network.linear_name_type_id_seq OWNED BY network.linear_name_type.linear_name_type_id;
 
 ALTER TABLE network.linear_name_type 
   DROP COLUMN IF EXISTS RECORD_ID,
   DROP COLUMN IF EXISTS RECORD_TYPE;
   
--- for table linear_name_xref
-CREATE SEQUENCE network.linear_name_xref_id_seq;
-ALTER TABLE network.linear_name_xref      
-  ALTER COLUMN linear_name_xref_id SET DEFAULT nextval('linear_name_xref_id_seq')::numeric(12,0);
-SELECT setval('network.linear_name_xref_id_seq', 1000000000, true);
-ALTER SEQUENCE network.linear_name_xref_id_seq OWNED BY network.linear_name_xref.linear_name_xref_id;
-
--- for table site_area
-CREATE SEQUENCE network.site_area_id_seq;
-ALTER TABLE network.site_area      
-  ALTER COLUMN site_area_id SET DEFAULT nextval('site_area_id_seq')::numeric(12,0);
-SELECT setval('network.site_area_id_seq', 1000000000, true);
-ALTER SEQUENCE network.site_area_id_seq OWNED BY network.site_area.site_area_id;
 
 -- For table network.ige_user
 -- Run under admin user to disable foreign key first 
 --alter table network.ige_user disable trigger all;
 --alter table network.ige_user_steward disable trigger all;
   
-CREATE SEQUENCE network.ige_user_id_seq;
-ALTER TABLE network.ige_user   
-  ALTER COLUMN user_id SET DEFAULT nextval('ige_user_id_seq')::numeric(12,0);
---SELECT setval('network.ige_user_id_seq', MAX(t.user_id)::bigint, true) FROM network.ige_user t;
-SELECT setval('network.ige_user_id_seq', 100000, true);
-ALTER SEQUENCE network.ige_user_id_seq OWNED BY network.ige_user.user_id;
 
 ALTER TABLE network.ige_user
     ADD COLUMN FULL_NAME VARCHAR(50);
@@ -1727,26 +1718,6 @@ ALTER TABLE ige_source
   DROP COLUMN IF EXISTS NAME_SUFFIX, 	
   DROP COLUMN IF EXISTS FORMER_MUNICIPALITY; 
 
-CREATE SEQUENCE network.ige_source_id_seq;
-ALTER TABLE network.ige_source      
-  ALTER COLUMN source_id SET DEFAULT nextval('ige_source_id_seq')::numeric(12,0);
---SELECT setval('network.ige_source_id_seq', MAX(t.source_id)::bigint, true) FROM network.ige_source t;
-SELECT setval('network.ige_source_id_seq', 2000000, true);
-ALTER SEQUENCE network.ige_source_id_seq OWNED BY network.ige_source.source_id;
-
-CREATE SEQUENCE network.ige_task_id_seq;
-ALTER TABLE network.ige_task
-  ALTER COLUMN task_id SET DEFAULT nextval('ige_task_id_seq')::numeric(12,0);
---SELECT setval('network.ige_task_id_seq', MAX(t.task_id), true) FROM network.ige_task t;
-SELECT setval('network.ige_task_id_seq', 2000000, true);
-ALTER SEQUENCE network.ige_task_id_seq OWNED BY network.ige_task.task_id;
-
-CREATE SEQUENCE network.ige_transaction_id_seq;
-ALTER TABLE network.ige_transaction   
-  ALTER COLUMN trans_id SET DEFAULT nextval('ige_transaction_id_seq')::numeric(12,0);
---SELECT setval('network.ige_transaction_id_seq', MAX(t.trans_id), true) FROM network.ige_transaction t;
-SELECT setval('network.ige_transaction_id_seq', 2000000, true);
-ALTER SEQUENCE network.ige_transaction_id_seq OWNED BY network.ige_transaction.trans_id;
 
 ALTER TABLE ige_source_dm
   DROP COLUMN IF EXISTS NAME_PREFIX, 
@@ -1761,12 +1732,6 @@ ALTER TABLE ige_source_h
   DROP COLUMN IF EXISTS NAME_SUFFIX, 	
   DROP COLUMN IF EXISTS FORMER_MUNICIPALITY;  
 
-CREATE SEQUENCE network.ige_control_task_id_seq;
-ALTER TABLE network.ige_control_task
-  ALTER COLUMN control_task_id SET DEFAULT nextval('ige_control_task_id_seq')::numeric(12,0);
---SELECT setval('network.ige_control_task_id_seq', MAX(t.control_task_id)::bigint, true) FROM network.ige_control_task t;
-SELECT setval('network.ige_control_task_id_seq', 2000000, true);
-ALTER SEQUENCE network.ige_control_task_id_seq OWNED BY network.ige_control_task.control_task_id;
 
 -- For table dmn_source_class
 ALTER TABLE dmn_source_class
@@ -1779,6 +1744,159 @@ UPDATE dmn_source_class
   WHERE source_class IN ('PLAN', 'REPORT'); 
 SELECT * from dmn_source_class;  
 */
+-------------- Fix table sequence issue ------------------------
+-- for table address_class
+CREATE SEQUENCE IF NOT EXISTS network.address_class_id_seq;
+ALTER TABLE network.address_class      
+   ALTER COLUMN address_id SET DEFAULT nextval('address_class_id_seq')::numeric(12,0);  
+SELECT setval('network.address_class_id_seq'::regclass, GREATEST(1000000000, max(address_id))::bigint, true) FROM address_class_evw;
+ALTER SEQUENCE network.address_class_id_seq OWNED BY network.address_class.address_id;
+
+-- for table address_name
+CREATE SEQUENCE IF NOT EXISTS network.address_name_id_seq;
+ALTER TABLE network.address_name      
+  ALTER COLUMN address_name_id SET DEFAULT nextval('address_name_id_seq')::numeric(12,0);
+SELECT setval('network.address_name_id_seq', GREATEST(1000000000, max(address_name_id))::bigint, true) FROM address_name_evw;
+ALTER SEQUENCE network.address_name_id_seq OWNED BY network.address_name.address_name_id;
+
+-- for table address_point
+CREATE SEQUENCE IF NOT EXISTS network.address_point_id_seq;
+ALTER TABLE network.address_point      
+  ALTER COLUMN address_point_id SET DEFAULT nextval('address_point_id_seq')::numeric(12,0);
+SELECT setval('network.address_point_id_seq', GREATEST(1000000000, max(address_point_id))::bigint, true) FROM address_point_evw;
+ALTER SEQUENCE network.address_point_id_seq OWNED BY network.address_point.address_point_id;
+
+-- for table authorized_municipal_address
+CREATE SEQUENCE IF NOT EXISTS network.ama_id_seq;
+ALTER TABLE network.authorized_municipal_address      
+  ALTER COLUMN address_string_id SET DEFAULT nextval('ama_id_seq')::numeric(12,0);
+SELECT setval('network.ama_id_seq', GREATEST(1000000000, max(address_string_id))::bigint, true) FROM authorized_municipal_address;
+ALTER SEQUENCE network.ama_id_seq OWNED BY network.authorized_municipal_address.address_string_id;
+
+-- for table base_centreline
+CREATE SEQUENCE IF NOT EXISTS network.base_centreline_id_seq;
+ALTER TABLE network.base_centreline      
+  ALTER COLUMN centreline_id SET DEFAULT nextval('base_centreline_id_seq')::numeric(12,0);
+SELECT setval('network.base_centreline_id_seq', GREATEST(1000000000, max(centreline_id))::bigint, true) FROM base_centreline_evw;
+ALTER SEQUENCE network.base_centreline_id_seq OWNED BY network.base_centreline.centreline_id;
+
+-- for table base_connectivity
+CREATE SEQUENCE IF NOT EXISTS network.base_connectivity_id_seq;
+ALTER TABLE network.base_connectivity      
+  ALTER COLUMN connectivity_id SET DEFAULT nextval('base_connectivity_id_seq')::numeric(12,0);
+SELECT setval('network.base_connectivity_id_seq', GREATEST(1000000000, max(connectivity_id))::bigint, true) FROM base_connectivity_evw;
+ALTER SEQUENCE network.base_connectivity_id_seq OWNED BY network.base_connectivity.connectivity_id;
+
+-- for table base_intersection
+CREATE SEQUENCE IF NOT EXISTS network.base_intersection_id_seq;
+ALTER TABLE network.base_intersection      
+  ALTER COLUMN intersection_id SET DEFAULT nextval('base_intersection_id_seq')::numeric(12,0);
+SELECT setval('network.base_intersection_id_seq', GREATEST(1000000000, max(intersection_id))::bigint, true) FROM base_intersection_evw;
+ALTER SEQUENCE network.base_intersection_id_seq OWNED BY network.base_intersection.intersection_id;
+
+-- for table base_intersection_elevation
+CREATE SEQUENCE IF NOT EXISTS network.base_intersection_elevation_id_seq;
+ALTER TABLE network.base_intersection_elevation      
+  ALTER COLUMN elevation_id SET DEFAULT nextval('base_intersection_elevation_id_seq')::numeric(12,0);
+SELECT setval('network.base_intersection_elevation_id_seq', GREATEST(1000000000, max(elevation_id))::bigint, true) FROM base_intersection_elevation_evw;
+ALTER SEQUENCE network.base_intersection_elevation_id_seq OWNED BY network.base_intersection_elevation.elevation_id;
+
+-- for table base_turn
+CREATE SEQUENCE IF NOT EXISTS network.base_turn_id_seq;
+ALTER TABLE network.base_turn      
+  ALTER COLUMN turn_id SET DEFAULT nextval('base_turn_id_seq')::numeric(12,0);
+SELECT setval('network.base_turn_id_seq', GREATEST(1000000000, max(turn_id))::bigint, true) FROM base_turn_evw;
+ALTER SEQUENCE network.base_turn_id_seq OWNED BY network.base_turn.turn_id;
+
+-- for table centreline_geometry_lineage
+CREATE SEQUENCE IF NOT EXISTS network.centreline_geometry_lineage_id_seq;
+ALTER TABLE network.centreline_geometry_lineage      
+  ALTER COLUMN centreline_lineage_id SET DEFAULT nextval('centreline_geometry_lineage_id_seq')::numeric(12,0);
+SELECT setval('network.centreline_geometry_lineage_id_seq', GREATEST(1000000000, max(centreline_lineage_id))::bigint, true) FROM centreline_geometry_lineage_evw;
+ALTER SEQUENCE network.centreline_geometry_lineage_id_seq OWNED BY network.centreline_geometry_lineage.centreline_lineage_id;
+
+-- for table linear_name
+CREATE SEQUENCE IF NOT EXISTS network.linear_name_id_seq;
+ALTER TABLE network.linear_name      
+  ALTER COLUMN linear_name_id SET DEFAULT nextval('linear_name_id_seq')::numeric(12,0);
+SELECT setval('network.linear_name_id_seq', GREATEST(1000000000, max(linear_name_id))::bigint, true) FROM linear_name_evw;
+ALTER SEQUENCE network.linear_name_id_seq OWNED BY network.linear_name.linear_name_id;
+
+-- for table ige_control_task
+CREATE SEQUENCE IF NOT EXISTS network.ige_control_task_id_seq;
+ALTER TABLE network.ige_control_task
+  ALTER COLUMN control_task_id SET DEFAULT nextval('ige_control_task_id_seq')::numeric(12,0);
+--SELECT setval('network.ige_control_task_id_seq', MAX(t.control_task_id)::bigint, true) FROM network.ige_control_task t;
+SELECT setval('network.ige_control_task_id_seq', GREATEST(2000000, max(control_task_id))::bigint, true) FROM ige_control_task;
+ALTER SEQUENCE network.ige_control_task_id_seq OWNED BY network.ige_control_task.control_task_id;
+
+-- for table ige_source
+CREATE SEQUENCE IF NOT EXISTS network.ige_source_id_seq;
+ALTER TABLE network.ige_source      
+  ALTER COLUMN source_id SET DEFAULT nextval('ige_source_id_seq')::numeric(12,0);
+--SELECT setval('network.ige_source_id_seq', MAX(t.source_id)::bigint, true) FROM network.ige_source t;
+SELECT setval('network.ige_source_id_seq', GREATEST(2000000, max(source_id))::bigint, true) FROM ige_source_evw;
+ALTER SEQUENCE network.ige_source_id_seq OWNED BY network.ige_source.source_id;
+
+-- for table ige_task
+CREATE SEQUENCE IF NOT EXISTS network.ige_task_id_seq;
+ALTER TABLE network.ige_task
+  ALTER COLUMN task_id SET DEFAULT nextval('ige_task_id_seq')::numeric(12,0);
+--SELECT setval('network.ige_task_id_seq', MAX(t.task_id), true) FROM network.ige_task t;
+SELECT setval('network.ige_task_id_seq', GREATEST(2000000, max(task_id))::bigint, true) FROM ige_task;
+ALTER SEQUENCE network.ige_task_id_seq OWNED BY network.ige_task.task_id;
+
+-- for table ige_transaction
+CREATE SEQUENCE IF NOT EXISTS network.ige_transaction_id_seq;
+ALTER TABLE network.ige_transaction   
+  ALTER COLUMN trans_id SET DEFAULT nextval('ige_transaction_id_seq')::numeric(12,0);
+--SELECT setval('network.ige_transaction_id_seq', MAX(t.trans_id), true) FROM network.ige_transaction t;
+SELECT setval('network.ige_transaction_id_seq', GREATEST(2000000, max(trans_id))::bigint, true) FROM ige_transaction;
+ALTER SEQUENCE network.ige_transaction_id_seq OWNED BY network.ige_transaction.trans_id;
+
+-- for table ige_source_presentation
+CREATE SEQUENCE IF NOT EXISTS network.ige_source_presentation_id_seq;
+ALTER TABLE network.ige_source_presentation  
+  ALTER COLUMN source_pres_id SET DEFAULT nextval('ige_source_presentation_id_seq')::numeric(12,0);
+SELECT setval('network.ige_source_presentation_id_seq', GREATEST(1000000000, max(source_pres_id))::bigint, true) FROM ige_source_presentation_evw;
+ALTER SEQUENCE network.ige_source_presentation_id_seq OWNED BY network.ige_source_presentation.source_pres_id;
+-- for table ige_user 
+CREATE SEQUENCE IF NOT EXISTS network.ige_user_id_seq;
+ALTER TABLE network.ige_user  
+  ALTER COLUMN user_id SET DEFAULT nextval('ige_user_id_seq')::numeric(12,0);
+SELECT setval('network.ige_user_id_seq', GREATEST(2000000, max(user_id))::bigint, true) FROM ige_user;
+ALTER SEQUENCE network.ige_user_id_seq OWNED BY network.ige_user.user_id;
+
+-- for table linear_name_direction
+CREATE SEQUENCE IF NOT EXISTS network.linear_name_direction_id_seq;
+ALTER TABLE network.linear_name_direction  
+  ALTER COLUMN linear_name_dir_id SET DEFAULT nextval('linear_name_direction_id_seq')::numeric(12,0);
+SELECT setval('network.linear_name_direction_id_seq', GREATEST(2000000, max(linear_name_dir_id))::bigint, true) FROM linear_name_direction_evw;
+ALTER SEQUENCE network.linear_name_direction_id_seq OWNED BY network.linear_name_direction.linear_name_dir_id;
+-- for table linear_name_group
+CREATE SEQUENCE IF NOT EXISTS network.linear_name_group_id_seq;
+ALTER TABLE network.linear_name_group  
+  ALTER COLUMN group_id SET DEFAULT nextval('linear_name_group_id_seq')::numeric(12,0);
+SELECT setval('network.linear_name_group_id_seq', GREATEST(2000000, max(group_id))::bigint, true) FROM linear_name_group_evw;
+ALTER SEQUENCE network.linear_name_group_id_seq OWNED BY network.linear_name_group.group_id;
+-- for table linear_name_type
+CREATE SEQUENCE IF NOT EXISTS network.linear_name_type_id_seq;
+ALTER TABLE network.linear_name_type  
+  ALTER COLUMN linear_name_type_id SET DEFAULT nextval('linear_name_type_id_seq')::numeric(12,0);
+SELECT setval('network.linear_name_type_id_seq', GREATEST(2000000, max(linear_name_type_id))::bigint, true) FROM linear_name_type_evw;
+ALTER SEQUENCE network.linear_name_type_id_seq OWNED BY network.linear_name_type.linear_name_type_id;
+-- for table linear_name_xref
+CREATE SEQUENCE IF NOT EXISTS network.linear_name_xref_id_seq;
+ALTER TABLE network.linear_name_xref  
+  ALTER COLUMN linear_name_xref_id SET DEFAULT nextval('linear_name_xref_id_seq')::numeric(12,0);
+SELECT setval('network.linear_name_xref_id_seq', GREATEST(2000000, max(linear_name_xref_id))::bigint, true) FROM linear_name_xref_evw;
+ALTER SEQUENCE network.linear_name_xref_id_seq OWNED BY network.linear_name_xref.linear_name_xref_id;
+-- for table site_area
+CREATE SEQUENCE IF NOT EXISTS network.site_area_id_seq;
+ALTER TABLE network.site_area  
+  ALTER COLUMN site_area_id SET DEFAULT nextval('site_area_id_seq')::numeric(12,0);
+SELECT setval('network.site_area_id_seq', GREATEST(2000000, max(site_area_id))::bigint, true) FROM site_area_evw;
+ALTER SEQUENCE network.site_area_id_seq OWNED BY network.site_area.site_area_id;
 -------------- Fix objectid number issue ----------------
 -- Issue: After registering table with ArcGIS, then importing data from other server, 
 --        the max(objectid) in the table might be greater than the next objectid (next_rowid), which would violate the unique object id constraint for the future
@@ -1857,9 +1975,118 @@ CREATE OR REPLACE VIEW v_dmn_report_type AS
   WHERE trans_id_expire = -1
   ORDER BY sort_sequence;
 --select * from v_dmn_report_type
+CREATE OR REPLACE VIEW v_ama AS
+  SELECT a.*, 
+         l.name_part, 
+		 l.type_part, 
+		 l.dir_part, 
+		 l.activation_status, 
+		 l.duplication_desc, 
+		 l.usage_status AS lfn_usage_status,
+		 u.description AS lfn_usage_status_desc		
+  FROM authorized_municipal_address_evw a
+  JOIN linear_name_evw l ON a.linear_name_id = l.linear_name_id
+  JOIN dmn_ln_usage_status u ON u.usage_status = l.usage_status
+-- SELECT * FROM v_ama;  
 
-
-
+CREATE OR REPLACE VIEW network.v2_ama AS
+ SELECT a.address_string_id,
+    a.trans_id_create,
+    a.trans_id_expire,
+    a.linear_name_id,
+    a.lo_num,
+    a.lo_num_suf,
+    a.hi_num,
+    a.hi_num_suf,
+    a.objectid,
+    a.usage_status,
+    a.sde_state_id,
+    l.linear_name_id AS linear_name_id2,
+    l.trans_id_create AS trans_id_create2,
+    l.trans_id_expire AS trans_id_expire2,
+    l.record_type,
+    l.use_by,
+    l.name_part,
+    l.type_part,
+    l.dir_part,
+    l.description,
+    l.activation_status,
+    l.approval_status,
+    l.duplication_status,
+    l.duplication_desc,
+   -- l.objectid AS objectid2,
+    l.authorized,
+    l.usage_status AS lfn_usage_status,
+    l.sde_state_id AS sde_state_id2,
+    u.usage_status AS usage_status3,
+    u.description AS lfn_usage_status_desc,
+    u.sort_sequence,
+    u.date_effective,
+    u.date_expiry,
+    u.trans_id_create AS trnas_id_create3,
+    u.trans_id_expire AS trans_id_expire3
+   FROM authorized_municipal_address_evw a
+     JOIN linear_name_evw l ON a.linear_name_id = l.linear_name_id
+     JOIN dmn_ln_usage_status u ON u.usage_status::text = l.usage_status::text;
+-- Remove objectid for tables after deployed from another server if using ArcCatalog
+alter table ige_user drop column if exists objectid;
+alter table ige_control_task drop column if exists objectid;
+alter table ige_control_task_default drop column if exists objectid;
+alter table ige_field_info drop column if exists objectid;
+alter table ige_messages drop column if exists objectid;
+alter table ige_task drop column if exists objectid;
+alter table ige_task_active drop column if exists objectid;
+alter table ige_task_comment drop column if exists objectid;
+alter table ige_task_default drop column if exists objectid;
+alter table ige_task_steward drop column if exists objectid;
+alter table ige_trans_conflict_log drop column if exists objectid;
+alter table ige_trans_post drop column if exists objectid;
+alter table ige_trans_validate_log drop column if exists objectid;
+alter table ige_transaction drop column if exists objectid;
+alter table ige_user_steward drop column if exists objectid;
+alter table dmn_address_unit_housing drop column if exists objectid;
+alter table dmn_address_unit_status drop column if exists objectid;
+alter table dmn_ama_usage_status drop column if exists objectid;
+alter table dmn_boolean_value drop column if exists objectid;
+alter table dmn_business_unit drop column if exists objectid;
+alter table dmn_cl_address_parity drop column if exists objectid;
+alter table dmn_cl_feature_code drop column if exists objectid;
+alter table dmn_cl_oneway drop column if exists objectid;
+alter table dmn_control_task_status drop column if exists objectid;
+alter table dmn_control_task_type drop column if exists objectid;
+alter table dmn_int_classification drop column if exists objectid;
+alter table dmn_int_elev_feature_code drop column if exists objectid;
+alter table dmn_int_elevation_level drop column if exists objectid;
+alter table dmn_int_elevation_unit drop column if exists objectid;
+alter table dmn_int_height_unit drop column if exists objectid;
+alter table dmn_ln_activation_status drop column if exists objectid;
+alter table dmn_ln_approval_status drop column if exists objectid;
+alter table dmn_ln_usage_status drop column if exists objectid;
+alter table dmn_ln_use_by drop column if exists objectid;
+alter table dmn_numeric_operator drop column if exists objectid;
+alter table dmn_oar_address_class drop column if exists objectid;
+alter table dmn_oar_centreline_side drop column if exists objectid;
+alter table dmn_oar_class drop column if exists objectid;
+alter table dmn_oar_class_conflict drop column if exists objectid;
+alter table dmn_oar_class_flag drop column if exists objectid;
+alter table dmn_oar_class_linkage drop column if exists objectid;
+alter table dmn_oar_general_use drop column if exists objectid;
+alter table dmn_oar_maint_stage drop column if exists objectid;
+alter table dmn_oar_name_record_type drop column if exists objectid;
+alter table dmn_plan_status drop column if exists objectid;
+alter table dmn_plan_type drop column if exists objectid;
+alter table dmn_plan_type_ext drop column if exists objectid;
+alter table dmn_presentation_type drop column if exists objectid;
+alter table dmn_report_status drop column if exists objectid;
+alter table dmn_report_type drop column if exists objectid;
+alter table dmn_sa_status drop column if exists objectid;
+alter table dmn_source_class drop column if exists objectid;
+alter table dmn_steward_group drop column if exists objectid;
+alter table dmn_steward_status drop column if exists objectid;
+alter table dmn_string_operator drop column if exists objectid;
+alter table dmn_task_status drop column if exists objectid;
+alter table dmn_task_type drop column if exists objectid;
+-------------------------------------------------------------------
 
 import foreign schema "IGE"
 limit to (ige_user)
@@ -2004,7 +2231,8 @@ SELECT update_tasks('[{"task_assigned_to":"SITE_AREA_MAINT","task_type":"SITEARE
 						    -1);
 select update_user_info('{"business_unit": "IT - SDS - GCC","email": "slee3300@toronto.ca","fullname": "Steve lee3300","status": "ACTIVE","steward_group": ["SITE_AREA_MAINT","AMA_MAINT","CENTRELINE_ADDRESS_MAINT"],"user_id": null,"username": "Slee33000"}');
 ------------------------------------------------------------------------------- 
-
+SELECT sde_set_current_version('anchorto_run.TRANS1000000751');
+SELECT * FROM ige_source_evw 
 
 
 

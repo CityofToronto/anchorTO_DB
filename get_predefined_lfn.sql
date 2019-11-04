@@ -88,14 +88,18 @@ FROM
 	 ) f
   ) AS usage_status,
   (
-	  SELECT * 
-      FROM 
-      (
-          SELECT distinct trim(unnest(string_to_array(duplication_desc,','))) municipality 
-          FROM linear_name_evw 
-          WHERE duplication_desc is not null
-	   ) t
-	   ORDER BY 1
+	  SELECT json_agg(row_to_json(g)) 
+	  FROM 
+	  (
+          SELECT *
+		  FROM 
+		  (
+			  SELECT distinct trim(unnest(string_to_array(duplication_desc,','))) municipality 
+			  FROM linear_name_evw 
+			  WHERE duplication_desc is not null
+		  ) t
+		  ORDER BY 1
+	   ) g	   
   ) AS municipality
 ) row
  ;
