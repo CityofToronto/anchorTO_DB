@@ -86,7 +86,17 @@ FROM
 	      WHERE trans_id_expire = -1
 	      ORDER BY sort_sequence
 	 ) f
-  ) AS usage_status	
+  ) AS usage_status,
+  (
+	  SELECT * 
+      FROM 
+      (
+          SELECT distinct trim(unnest(string_to_array(duplication_desc,','))) municipality 
+          FROM linear_name_evw 
+          WHERE duplication_desc is not null
+	   ) t
+	   ORDER BY 1
+  ) AS municipality
 ) row
  ;
 $BODY$;
@@ -96,7 +106,7 @@ ALTER FUNCTION code_src.get_predefined_lfn()
 
 GRANT EXECUTE ON FUNCTION code_src.get_predefined_lfn() TO anchorto_run;
 
-GRANT EXECUTE ON FUNCTION code_src.get_predefined_lfn() TO PUBLIC;
+REVOKE EXECUTE ON FUNCTION code_src.get_predefined_lfn() FROM PUBLIC;
 
 GRANT EXECUTE ON FUNCTION code_src.get_predefined_lfn() TO network;
 
