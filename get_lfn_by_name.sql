@@ -17,7 +17,7 @@ AS $BODY$
   Testing:
     SELECT get_lfn_by_name('dyas')
 */
-   SELECT row_to_json(c) 
+   SELECT json_agg(row_to_json(c)) 
    FROM
    (	 
 	   SELECT * 
