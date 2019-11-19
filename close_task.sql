@@ -11,8 +11,7 @@ CREATE OR REPLACE FUNCTION code_src.close_task(
     LANGUAGE 'plpgsql'
 
     COST 100
-    VOLATILE 
-	SECURITY DEFINER 
+    VOLATILE SECURITY DEFINER 
 AS $BODY$
 DECLARE    
 /*
@@ -67,12 +66,13 @@ BEGIN
       and trans_id_expire = -1;
 	/*-- Beginning of updating Oracle
 	IF get_configuration_bool('anchorTO', 'ANCHORTO', 'sync_with_oracle') THEN
-		UPDATE imaint_oracle.ige_transaction
+	    -- disable ige_transaction update for now
+		/*UPDATE imaint_anchor.ige_transaction
 		  SET trans_status = $4,
 			  date_end = NOW()
 		WHERE (trans_status = 'OPEN' OR trans_status IS NULL)
-		  AND trans_name = vVersion;
-		UPDATE imaint_oracle.ige_task
+		  AND trans_name = vVersion;*/
+		UPDATE imaint_anchor.ige_task
 		  SET task_status = $4
 		  where task_id = taskid
 		  and trans_id_expire = -1;
@@ -110,5 +110,11 @@ EXCEPTION
 END;  
 $BODY$;
 
-ALTER FUNCTION code_src.close_task(text, text, text, text) OWNER TO network;
-GRANT EXECUTE ON FUNCTION code_src.close_task(text, text, text, text) TO anchorto_run
+ALTER FUNCTION code_src.close_task(text, text, text, text)
+    OWNER TO network;
+
+GRANT EXECUTE ON FUNCTION code_src.close_task(text, text, text, text) TO anchorto_run;
+
+GRANT EXECUTE ON FUNCTION code_src.close_task(text, text, text, text) TO network;
+
+REVOKE ALL ON FUNCTION code_src.close_task(text, text, text, text) FROM PUBLIC;

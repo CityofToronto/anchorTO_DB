@@ -11,8 +11,7 @@ CREATE OR REPLACE FUNCTION code_src.create_task(
     LANGUAGE 'plpgsql'
 
     COST 100
-    VOLATILE 
-	SECURITY DEFINER 
+    VOLATILE SECURITY DEFINER 
 AS $BODY$
 DECLARE 
   transid numeric(12,0);
@@ -64,7 +63,7 @@ BEGIN
 	RETURNING task_id INTO taskid;
 	/*-- Beginning of updating Oracle
 	IF get_configuration_bool('anchorTO', 'ANCHORTO', 'sync_with_oracle') THEN
-      INSERT INTO imaint_oracle.ige_task 
+      INSERT INTO imaint_anchor.ige_task 
 	                      (task_id
                           ,task_type
                           ,source_id
@@ -116,5 +115,11 @@ EXCEPTION
 END;  
 $BODY$;
 
-ALTER FUNCTION code_src.create_task(text, text, text, text) OWNER TO network;
-GRANT EXECUTE ON FUNCTION code_src.create_task(text, text, text, text) TO anchorto_run
+ALTER FUNCTION code_src.create_task(text, text, text, text)
+    OWNER TO network;
+
+GRANT EXECUTE ON FUNCTION code_src.create_task(text, text, text, text) TO anchorto_run;
+
+GRANT EXECUTE ON FUNCTION code_src.create_task(text, text, text, text) TO network;
+
+REVOKE ALL ON FUNCTION code_src.create_task(text, text, text, text) FROM PUBLIC;

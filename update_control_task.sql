@@ -14,8 +14,7 @@ CREATE OR REPLACE FUNCTION code_src.update_control_task(
     LANGUAGE 'plpgsql'
 
     COST 100
-    VOLATILE 
-	SECURITY DEFINER
+    VOLATILE SECURITY DEFINER 
 AS $BODY$
 DECLARE 
 /*
@@ -61,7 +60,7 @@ BEGIN
 			 );         
 	/* -- Beginning of updating Oracle
 	 IF get_configuration_bool('anchorTO', 'ANCHORTO', 'sync_with_oracle') THEN
-	   INSERT INTO imaint_oracle.ige_control_task
+	   INSERT INTO imaint_anchor.ige_control_task
 				 (
 					 control_task_id, 
 					 source_id, 
@@ -81,7 +80,7 @@ BEGIN
 					 -1
 				 );		   
 	 END IF;
-	 -- End of updating Oracle*/
+	 -- End of updating Oracle */
   ELSE -- Update	
     UPDATE ige_control_task        
 	  SET control_task_status = v_status, 
@@ -91,14 +90,14 @@ BEGIN
 	WHERE control_task_id = theid;
 	/* -- Beginning of updating Oracle
 	 IF get_configuration_bool('anchorTO', 'ANCHORTO', 'sync_with_oracle') THEN
-	   UPDATE imaint_oracle.ige_control_task        
+	   UPDATE imaint_anchor.ige_control_task        
 	   SET control_task_status = v_status, 
 		   control_task_comments = format_string(v_control_task_comment), 
 		   control_task_type = v_control_task_type, 				
 		   trans_id_expire = v_trans_id_expire
 	   WHERE control_task_id = theid;
 	 END IF;
-	 -- End of updating Oracle*/
+	 -- End of updating Oracle */
   END IF; 
    	
   SELECT row_to_json(c) INTO o_json
@@ -126,5 +125,11 @@ EXCEPTION
 END;  
 $BODY$;
 
-ALTER FUNCTION code_src.update_control_task(numeric, numeric, text, text, text, numeric, numeric) OWNER TO network;
-GRANT EXECUTE ON FUNCTION code_src.update_control_task(numeric, numeric, text, text, text, numeric, numeric) TO anchorto_run
+ALTER FUNCTION code_src.update_control_task(numeric, numeric, text, text, text, numeric, numeric)
+    OWNER TO network;
+
+GRANT EXECUTE ON FUNCTION code_src.update_control_task(numeric, numeric, text, text, text, numeric, numeric) TO anchorto_run;
+
+GRANT EXECUTE ON FUNCTION code_src.update_control_task(numeric, numeric, text, text, text, numeric, numeric) TO network;
+
+REVOKE ALL ON FUNCTION code_src.update_control_task(numeric, numeric, text, text, text, numeric, numeric) FROM PUBLIC;

@@ -9,9 +9,9 @@ CREATE OR REPLACE FUNCTION code_src.create_transaction(
 	uapplication text)
     RETURNS numeric
     LANGUAGE 'plpgsql'
-    SECURITY DEFINER 
+
     COST 100
-    VOLATILE 
+    VOLATILE SECURITY DEFINER 
 AS $BODY$
 DECLARE 
   transid numeric(12,0);
@@ -40,15 +40,16 @@ BEGIN
                    null,
                    $4,
 				   $3,
-                   null,                   
+                   'TRANS' || transid::text,              
                    'OPEN') 
 		 RETURNING trans_id INTO transid;
          UPDATE ige_transaction
          SET trans_name = 'TRANS' || transid::text
          WHERE trans_id = transid;
+		 -- Disable ige_transaction update it for now
 		/* -- Beginning of updating Oracle
 		 IF get_configuration_bool('anchorTO', 'ANCHORTO', 'sync_with_oracle') THEN
-           INSERT INTO imaint_oracle.ige_transaction
+           INSERT INTO imaint_anchor.ige_transaction
 		                       (trans_id,
 								task_id,
 								source_id,
@@ -61,7 +62,7 @@ BEGIN
 								trans_status)
            VALUES (transid,
                    $1,
-                   null, --BATCH_SOURCE_ID,
+                   (SELECT source_id FROM ige_task WHERE task_id = taskid), --null, --BATCH_SOURCE_ID,
                    $2,
                    now(),
                    null,
@@ -70,7 +71,7 @@ BEGIN
                    'TRANS' || transid::text,
                    'OPEN'); 	
          END IF;
-		 -- End of updating Oracle*/
+		 -- End of updating Oracle */
     RETURN transid;
 EXCEPTION 
   WHEN OTHERS THEN
@@ -79,5 +80,11 @@ EXCEPTION
 END;  
 $BODY$;
 
-ALTER FUNCTION code_src.create_transaction(numeric, text, text, text) OWNER TO network;
-GRANT EXECUTE ON FUNCTION code_src.create_transaction(numeric, text, text, text) TO anchorto_run
+ALTER FUNCTION code_src.create_transaction(numeric, text, text, text)
+    OWNER TO network;
+
+GRANT EXECUTE ON FUNCTION code_src.create_transaction(numeric, text, text, text) TO anchorto_run;
+
+GRANT EXECUTE ON FUNCTION code_src.create_transaction(numeric, text, text, text) TO network;
+
+REVOKE ALL ON FUNCTION code_src.create_transaction(numeric, text, text, text) FROM PUBLIC;

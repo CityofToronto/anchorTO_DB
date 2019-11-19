@@ -7,9 +7,9 @@ CREATE OR REPLACE FUNCTION code_src.update_trans_status(
 	v_status text)
     RETURNS text
     LANGUAGE 'plpgsql'
-    SECURITY DEFINER 
+
     COST 100
-    VOLATILE 
+    VOLATILE SECURITY DEFINER 
 AS $BODY$
 DECLARE    
 /*
@@ -21,7 +21,7 @@ DECLARE
 	  select code_src.update_trans_status(296388, 'COMPLETED') 
 	  SELECT * FROM ige_transaction where trans_id = 296388
  */
-  userstatus text[] = '{"ABORTED","COMPLETED"}';
+  userstatus text[] = '{"ABORTED","COMPLETED", "WORK STOPPED"}';
   vfound boolean;
   taskid ige_task.task_id%TYPE;
   taskstatus ige_task.task_status%TYPE;
@@ -50,7 +50,14 @@ BEGIN
 	  SET trans_status = UPPER(v_status),
 	      date_end = NOW()
 	WHERE trans_id = v_trans_id;
-		
+	/*-- Beginning of updating Oracle
+	 IF get_configuration_bool('anchorTO', 'ANCHORTO', 'sync_with_oracle') THEN 
+       UPDATE imaint_anchor.ige_transaction
+	   SET trans_status = UPPER(v_status),
+	       date_end = NOW()
+	     WHERE trans_id = v_trans_id;
+	 END IF;
+	 -- End of updating Oracle 	*/
     SELECT row_to_json(c) INTO o_json
 	FROM
 	(
@@ -72,5 +79,11 @@ EXCEPTION
 END;  
 $BODY$;
 
-ALTER FUNCTION code_src.update_trans_status(numeric, text) OWNER TO network;
-GRANT EXECUTE ON FUNCTION code_src.update_trans_status(numeric, text) TO anchorto_run
+ALTER FUNCTION code_src.update_trans_status(numeric, text)
+    OWNER TO network;
+
+GRANT EXECUTE ON FUNCTION code_src.update_trans_status(numeric, text) TO anchorto_run;
+
+GRANT EXECUTE ON FUNCTION code_src.update_trans_status(numeric, text) TO network;
+
+REVOKE ALL ON FUNCTION code_src.update_trans_status(numeric, text) FROM PUBLIC;

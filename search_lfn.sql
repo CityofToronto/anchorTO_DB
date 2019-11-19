@@ -4,19 +4,19 @@
 
 CREATE OR REPLACE FUNCTION code_src.search_lfn(
 	v_search_by text)
-    RETURNS SETOF json 
+    RETURNS json 
     LANGUAGE 'sql'
 
     COST 100
-    VOLATILE 
-    ROWS 1000
-	SECURITY DEFINER
+    VOLATILE SECURITY DEFINER 
+   
 AS $BODY$
 /*
   Summary: Search LFN with different search criteria
   Testing:
     SELECT search_lfn('{"lfn_type":"Street","lfn_dir":"east", "activation_status": null,  "authorized": "",  "used_by": "",  "duplication_status":"", "usage_status":"",  "logic": "and"}')
 	SELECT search_lfn('{"activation_status": "A",  "authorized": "",  "used_by": "L",  "usage_status":"",  "logic": "and"}')
+	SELECT search_lfn('{"lfn_type":"Street","activation_status": "A",  "authorized": "",  "used_by": "L",  "usage_status":"",  "logic": "or"}')
   Return all: SELECT search_lfn('{"activation_status": null,  "authorized": "",  "used_by": "",  "usage_status":"",  "logic": "and"}')
 	
 */
@@ -74,19 +74,19 @@ AS $BODY$
 		   WHERE (
 			   UPPER(v_search_by::json->>'logic') = 'OR' AND 
 			   (
-				   (is_blank_string(v_search_by::json->>'lfn_type') OR UPPER(l.type_part) = UPPER(v_search_by::json->>'lfn_type'))
+				   (NOT is_blank_string(v_search_by::json->>'lfn_type') AND UPPER(l.type_part) = UPPER(v_search_by::json->>'lfn_type'))
 				   OR
-				   (is_blank_string(v_search_by::json->>'lfn_dir') OR UPPER(l.dir_part) = UPPER(v_search_by::json->>'lfn_dir'))
+				   (NOT is_blank_string(v_search_by::json->>'lfn_dir') AND UPPER(l.dir_part) = UPPER(v_search_by::json->>'lfn_dir'))
 				   OR
-				   (is_blank_string(v_search_by::json->>'activation_status') OR UPPER(l.activation_status) = UPPER(v_search_by::json->>'activation_status'))
+				   (NOT is_blank_string(v_search_by::json->>'activation_status') AND UPPER(l.activation_status) = UPPER(v_search_by::json->>'activation_status'))
 				   OR 
-				   (is_blank_string(v_search_by::json->>'duplication_status') OR UPPER(l.duplication_status) = UPPER(v_search_by::json->>'duplication_status'))
+				   (NOT is_blank_string(v_search_by::json->>'duplication_status') AND UPPER(l.duplication_status) = UPPER(v_search_by::json->>'duplication_status'))
 				   OR
-                   (is_blank_string(v_search_by::json->>'authorized') OR UPPER(l.authorized) = UPPER(v_search_by::json->>'authorized'))
+                   (NOT is_blank_string(v_search_by::json->>'authorized') AND UPPER(l.authorized) = UPPER(v_search_by::json->>'authorized'))
 				   OR
-				   (is_blank_string(v_search_by::json->>'used_by') OR UPPER(l.use_by) = UPPER(v_search_by::json->>'used_by'))
+				   (NOT is_blank_string(v_search_by::json->>'used_by') AND UPPER(l.use_by) = UPPER(v_search_by::json->>'used_by'))
 				   OR
-				   (is_blank_string(v_search_by::json->>'usage_status') OR UPPER(l.usage_status) = UPPER(v_search_by::json->>'usage_status'))				   
+				   (NOT is_blank_string(v_search_by::json->>'usage_status') AND UPPER(l.usage_status) = UPPER(v_search_by::json->>'usage_status'))				   
 			   )
 			 ) 
 	         OR 
@@ -146,5 +146,12 @@ AS $BODY$
 	;	
    $BODY$;
 
-ALTER FUNCTION code_src.search_lfn(text) OWNER TO network;
- GRANT EXECUTE ON FUNCTION code_src.search_lfn(text) TO anchorto_run
+ALTER FUNCTION code_src.search_lfn(text)
+    OWNER TO network;
+
+GRANT EXECUTE ON FUNCTION code_src.search_lfn(text) TO anchorto_run;
+
+GRANT EXECUTE ON FUNCTION code_src.search_lfn(text) TO PUBLIC;
+
+GRANT EXECUTE ON FUNCTION code_src.search_lfn(text) TO network;
+

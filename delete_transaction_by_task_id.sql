@@ -8,8 +8,7 @@ CREATE OR REPLACE FUNCTION code_src.delete_transaction_by_task_id(
     LANGUAGE 'plpgsql'
 
     COST 100
-    VOLATILE 
-	SECURITY DEFINER
+    VOLATILE SECURITY DEFINER 
 AS $BODY$
 DECLARE     
   o_status text;
@@ -27,9 +26,12 @@ BEGIN
 	
 	DELETE FROM ige_transaction
 	  WHERE task_id = $1;
+	-- disable ige_transaction sync for now
 	/*-- Beginning of updating Oracle
-    DELETE FROM imaint_oracle.ige_transaction
-	  WHERE task_id = $1;
+	IF get_configuration_bool('anchorTO', 'ANCHORTO', 'sync_with_oracle') THEN 
+		DELETE FROM imaint_anchor.ige_transaction
+		  WHERE task_id = $1;
+	END IF;	  
     -- End of updating Oracle  */
     SELECT row_to_json(c) INTO o_json
 	FROM
@@ -52,5 +54,11 @@ EXCEPTION
 END;  
 $BODY$;
 
-ALTER FUNCTION code_src.delete_transaction_by_task_id(numeric) OWNER TO network;
- GRANT EXECUTE ON FUNCTION code_src.delete_transaction_by_task_id(numeric) TO anchorto_run
+ALTER FUNCTION code_src.delete_transaction_by_task_id(numeric)
+    OWNER TO network;
+
+GRANT EXECUTE ON FUNCTION code_src.delete_transaction_by_task_id(numeric) TO anchorto_run;
+
+GRANT EXECUTE ON FUNCTION code_src.delete_transaction_by_task_id(numeric) TO network;
+
+REVOKE ALL ON FUNCTION code_src.delete_transaction_by_task_id(numeric) FROM PUBLIC;

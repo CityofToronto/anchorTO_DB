@@ -53,7 +53,13 @@ BEGIN
 	  UPDATE ige_task
 	    SET taken_by = v_user_name
 	  WHERE task_id = v_task_id;
-	  
+	/* -- Beginning of updating Oracle
+	 IF get_configuration_bool('anchorTO', 'ANCHORTO', 'sync_with_oracle') THEN 
+		 UPDATE imaint_anchor.ige_task
+			SET taken_by = v_user_name
+		  WHERE task_id = v_task_id;
+	 END IF;
+	 -- End of updating Oracle  */
 	 SELECT update_task_status(v_task_id, STATUS_STARTED) INTO ret_json;
 	  SELECT ret_json::json->>'status',
 	       ret_json::json->>'message'

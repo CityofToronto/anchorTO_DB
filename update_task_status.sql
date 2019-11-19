@@ -60,13 +60,14 @@ BEGIN
 		    VALUES (v_username, v_task_id, current_timestamp);	
 		END IF;	
 	  END IF;	
-	  /*-- Beginning of updating Oracle
+	 /* -- Beginning of updating Oracle
 	  IF get_configuration_bool('anchorTO', 'ANCHORTO', 'sync_with_oracle') THEN
-	    UPDATE imaint_oracle.ige_task
+	    UPDATE imaint_anchor.ige_task
 		  SET task_status = UPPER(v_status)
-	    WHERE task_id = v_task_id;		 
+	    WHERE task_id = v_task_id
+		  AND ( v_status <> 'WORK STARTED');
 	  END IF;
-	 -- End of updating Oracle*/
+	 -- End of updating Oracle */
 	ELSE 
 	  o_status = 'Failed';
       o_message = 'Invalid task status ' || v_status;

@@ -10,8 +10,7 @@ CREATE OR REPLACE FUNCTION code_src.close_task_by_trans_id(
     LANGUAGE 'plpgsql'
 
     COST 100
-    VOLATILE 
-	SECURITY DEFINER 
+    VOLATILE SECURITY DEFINER 
 AS $BODY$
 DECLARE    
 /*
@@ -26,7 +25,8 @@ DECLARE
 	  select * from ige_transaction where trans_id = 296388
 	  select * from ige_task where task_id = 160036
   */
-  userstatus text[] = '{"ABORTED","COMPLETED"}';
+  v_status_new text;
+  userstatus text[] = '{"ABORTED","COMPLETED", "WORK STOPPED"}';
   vfound boolean;
   taskid ige_task.task_id%TYPE;
   taskstatus ige_task.task_status%TYPE;
@@ -60,8 +60,11 @@ BEGIN
  	FROM ige_task t
 	WHERE t.task_id = taskid	 
 	  AND UPPER(t.assigned_to) = UPPER($1);*/
-	  
-	SELECT update_trans_status(v_trans_id, v_status) INTO ret_json;
+	v_status_new = v_status;  
+	IF v_status = 'WORK STOPPED' THEN
+	  v_status_new = 'COMPLETED';	  
+	END IF;
+	SELECT update_trans_status(v_trans_id, v_status_new) INTO ret_json;
 	SELECT ret_json::json->>'status',
 	       ret_json::json->>'message'
     INTO  ret_status,
@@ -78,13 +81,14 @@ BEGIN
       and trans_id_expire = -1;
 	/*-- Beginning of updating Oracle
 	IF get_configuration_bool('anchorTO', 'ANCHORTO', 'sync_with_oracle') THEN
-		UPDATE imaint_oracle.ige_transaction
+		/*UPDATE imaint_anchor.ige_transaction
 		  SET trans_status = $4,
 			  date_end = NOW()
 		WHERE (trans_status = 'OPEN' OR trans_status IS NULL)
-		  AND trans_name = vVersion;
-		UPDATE imaint_oracle.ige_task
-		  SET task_status = $4
+		  AND trans_name = vVersion;*/
+		  
+		UPDATE imaint_anchor.ige_task
+		  SET task_status = UPPER(v_status)
 		  where task_id = taskid
 		  and trans_id_expire = -1;
 	END IF;	  
@@ -121,5 +125,11 @@ EXCEPTION
 END;  
 $BODY$;
 
-ALTER FUNCTION code_src.close_task_by_trans_id(text, numeric, text) OWNER TO network;
-GRANT EXECUTE ON FUNCTION code_src.close_task_by_trans_id(text, numeric, text) TO anchorto_run
+ALTER FUNCTION code_src.close_task_by_trans_id(text, numeric, text)
+    OWNER TO network;
+
+GRANT EXECUTE ON FUNCTION code_src.close_task_by_trans_id(text, numeric, text) TO anchorto_run;
+
+GRANT EXECUTE ON FUNCTION code_src.close_task_by_trans_id(text, numeric, text) TO network;
+
+REVOKE ALL ON FUNCTION code_src.close_task_by_trans_id(text, numeric, text) FROM PUBLIC;

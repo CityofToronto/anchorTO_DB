@@ -9,8 +9,7 @@ CREATE OR REPLACE FUNCTION code_src.update_control_task_status_by_tasks(
     LANGUAGE 'plpgsql'
 
     COST 100
-    VOLATILE 
-	SECURITY DEFINER
+    VOLATILE SECURITY DEFINER 
 AS $BODY$
 /*
     Summary:
@@ -146,11 +145,11 @@ BEGIN
 		  WHERE control_task_id = v_control_task_id;
 		/*-- Beginning of updating Oracle
 	    IF get_configuration_bool('anchorTO', 'ANCHORTO', 'sync_with_oracle') THEN -- IF #6
-		  UPDATE imaint_oracle.ige_control_task 
+		  UPDATE imaint_anchor.ige_control_task 
 	      SET control_task_status = v_control_task_status
 		  WHERE control_task_id = v_control_task_id;  
 		END IF;  -- END IF #6
-	    -- End of updating Oracle  */		
+	    -- End of updating Oracle  	*/	
 	  END IF; -- END IF #5			  
 --	END IF; -- END IF #1
   raise notice 'Control_task_id: %; Total tasks #:%; Total COMPLETED #:%; Total HOLD #:%; Total Started: %; 1st Incompleted task SEQ: %; Current Status:%; New Status: %;', 
@@ -178,6 +177,11 @@ EXCEPTION
 END;  
 $BODY$;
 
-ALTER FUNCTION code_src.update_control_task_status_by_tasks(numeric, boolean) OWNER TO network;
-GRANT EXECUTE ON FUNCTION code_src.update_control_task_status_by_tasks(numeric, boolean) TO anchorto_run
+ALTER FUNCTION code_src.update_control_task_status_by_tasks(numeric, boolean)
+    OWNER TO network;
 
+GRANT EXECUTE ON FUNCTION code_src.update_control_task_status_by_tasks(numeric, boolean) TO anchorto_run;
+
+GRANT EXECUTE ON FUNCTION code_src.update_control_task_status_by_tasks(numeric, boolean) TO network;
+
+REVOKE ALL ON FUNCTION code_src.update_control_task_status_by_tasks(numeric, boolean) FROM PUBLIC;

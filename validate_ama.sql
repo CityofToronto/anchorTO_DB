@@ -39,9 +39,9 @@ BEGIN
 		              WHERE 
 					     n.linear_name_id = ($1::json->>'linear_name_id')::numeric
 						 AND coalesce(n.lo_num,-1) = coalesce(($1::json->>'lo_num')::integer,-1)
-						 AND coalesce(n.lo_num_suf, ' ') = coalesce(($1::json->>'lo_num_suf')::text,' ')
+						 AND coalesce(UPPER(n.lo_num_suf), ' ') = UPPER(coalesce((($1::json->>'lo_num_suf')::text),' '))
 						 AND coalesce(n.hi_num, -1) = coalesce(($1::json->>'hi_num')::integer,-1)	
-						 AND coalesce(n.hi_num_suf, ' ') = coalesce(($1::json->>'hi_num_suf')::text,' ')
+						 AND coalesce(UPPER(n.hi_num_suf), ' ') = UPPER(coalesce(($1::json->>'hi_num_suf')::text,' '))
 						 AND (is_blank_id(($1::json->>'address_string_id')::text)
 							 OR position((n.address_string_id::text) || ',' in ($1::json->>'address_string_id')::text || ',') = 0
 							 )						        

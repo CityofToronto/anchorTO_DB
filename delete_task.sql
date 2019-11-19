@@ -8,8 +8,7 @@ CREATE OR REPLACE FUNCTION code_src.delete_task(
     LANGUAGE 'plpgsql'
 
     COST 100
-    VOLATILE 
-	SECURITY DEFINER
+    VOLATILE SECURITY DEFINER 
 AS $BODY$
 DECLARE     
   o_status text;
@@ -27,8 +26,8 @@ BEGIN
 	
 	DELETE FROM ige_task
 	  WHERE task_id = $1;
-	/*-- Beginning of updating Oracle
-    DELETE FROM imaint_oracle.ige_task
+/*	-- Beginning of updating Oracle
+    DELETE FROM imaint_anchor.ige_task
 	  WHERE task_id = $1;
     -- End of updating Oracle  */
     SELECT row_to_json(c) INTO o_json
@@ -52,5 +51,11 @@ EXCEPTION
 END;  
 $BODY$;
 
-ALTER FUNCTION code_src.delete_task(numeric) OWNER TO network;
- GRANT EXECUTE ON FUNCTION code_src.delete_task(numeric) TO anchorto_run
+ALTER FUNCTION code_src.delete_task(numeric)
+    OWNER TO network;
+
+GRANT EXECUTE ON FUNCTION code_src.delete_task(numeric) TO anchorto_run;
+
+GRANT EXECUTE ON FUNCTION code_src.delete_task(numeric) TO network;
+
+REVOKE ALL ON FUNCTION code_src.delete_task(numeric) FROM PUBLIC;

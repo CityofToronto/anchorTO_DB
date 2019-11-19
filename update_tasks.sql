@@ -13,8 +13,7 @@ CREATE OR REPLACE FUNCTION code_src.update_tasks(
     LANGUAGE 'plpgsql'
 
     COST 100
-    VOLATILE 
-	SECURITY DEFINER
+    VOLATILE SECURITY DEFINER 
 AS $BODY$
 DECLARE 
 /*
@@ -148,8 +147,8 @@ BEGIN
 	  FROM tmp_ige_task
 	  WHERE new_task_id is not null;
 	  raise notice 'Inserted new tasks';
-	  
-	/* -- Beginning of updating Oracle
+	 /* 
+	 -- Beginning of updating Oracle
 	  IF get_configuration_bool('anchorTO', 'ANCHORTO', 'sync_with_oracle') THEN
 	      SELECT  string_agg(task_id::text, ',') INTO v_sql
 		  FROM tmp_ige_task
@@ -157,7 +156,7 @@ BEGIN
 		  raise notice 'IDs: %', v_sql;
 	      -- Expire the deleted tasks	  
 		  IF v_sql IS NOT NULL THEN
-		    v_sql = 'UPDATE imaint_oracle.ige_task 
+		    v_sql = 'UPDATE imaint_anchor.ige_task 
 		               SET trans_id_expire = $1
 			       WHERE task_id IN 
 			      ( ' || v_sql || ')';
@@ -166,7 +165,7 @@ BEGIN
 		  END IF;
 		  raise notice 'Expired tasks in Oracle';
 		  -- Update existing tasks
-		  UPDATE imaint_oracle.ige_task 
+		  UPDATE imaint_anchor.ige_task 
 			SET  task_type = tmp_ige_task.task_type, 
 				 source_id = tmp_ige_task.source_id, 
 				 assigned_to = tmp_ige_task.assigned_to, 
@@ -183,7 +182,7 @@ BEGIN
 		    AND UPPER(deleted) = 'FALSE';
 		  raise notice 'Updated existing tasks in Oracle';
 		  -- Insert new tasks	  
-		  INSERT INTO imaint_oracle.ige_task(
+		  INSERT INTO imaint_anchor.ige_task(
 							  task_id, 
 							  task_type, 
 							  source_id, 
@@ -244,3 +243,4 @@ GRANT EXECUTE ON FUNCTION code_src.update_tasks(json, numeric, numeric, text, nu
 
 GRANT EXECUTE ON FUNCTION code_src.update_tasks(json, numeric, numeric, text, numeric, numeric) TO network;
 
+REVOKE ALL ON FUNCTION code_src.update_tasks(json, numeric, numeric, text, numeric, numeric) FROM PUBLIC;

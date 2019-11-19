@@ -1,3 +1,41 @@
+----------############ Setup Oracle FDW -----------
+-- ############  Run under admin user: 
+
+-- Create two servers: imaint_anchor for tables in anchor_ige schema; imaint_anchor2 for tables in ige schema in Oracle
+CREATE SERVER imaint_anchor FOREIGN DATA WRAPPER oracle_fdw
+       OPTIONS (dbserver'//darlington.corp.toronto.ca:1521/IGEMA.CORP.TORONTO.CA');  -- QA Oracle
+CREATE SERVER imaint_anchor2 FOREIGN DATA WRAPPER oracle_fdw
+       OPTIONS (dbserver'//darlington.corp.toronto.ca:1521/IGEMA.CORP.TORONTO.CA');  -- QA Oracle	   
+GRANT USAGE ON FOREIGN SERVER imaint_anchor to network;	
+GRANT USAGE ON FOREIGN SERVER imaint_anchor2 to network;
+-- ############  Run under network user:	
+CREATE USER MAPPING FOR network SERVER imaint_anchor
+       OPTIONS (user 'anchor_ige', password 'stage');
+CREATE USER MAPPING FOR network SERVER imaint_anchor2
+       OPTIONS (user 'ige', password 'stage');
+CREATE SCHEMA imaint_anchor AUTHORIZATION network;
+  -- Link tables from Oracle from both anchor_ige & ige schema
+IMPORT FOREIGN SCHEMA "ANCHOR_IGE"
+  LIMIT TO (linear_name_evw)
+  FROM SERVER imaint_anchor INTO imaint_anchor; 
+IMPORT FOREIGN SCHEMA "ANCHOR_IGE"
+  LIMIT TO (linear_name_type_evw)
+  FROM SERVER imaint_anchor INTO imaint_anchor;  
+IMPORT FOREIGN SCHEMA "ANCHOR_IGE"
+  LIMIT TO (ige_source_evw)
+  FROM SERVER imaint_anchor INTO imaint_anchor;
+  
+IMPORT FOREIGN SCHEMA "IGE"
+  LIMIT TO (ige_control_task, ige_task, ige_transaction)
+  FROM SERVER imaint_anchor2 INTO imaint_anchor; 
+-- Test imported tables
+SELECT * FROM imaint_anchor.linear_name;  
+SELECT * FROM imaint_anchor.ige_control_task limit 100; 
+SELECT * FROM imaint_anchor.ige_source limit 100;
+SELECT * FROM imaint_anchor.ige_task limit 100;
+SELECT * FROM imaint_anchor.ige_transaction limit 100;
+--SELECT oracle_diag();
+-------------############--------------------------
 CREATE TABLE  network.ige_control_task 
 (	
 	CONTROL_TASK_ID numeric(12,0) NOT NULL, 
@@ -76,6 +114,10 @@ CREATE UNIQUE INDEX network.linear_name_objectid_uk ON network.linear_name (obje
 */
 CREATE INDEX linear_name_type_up_i ON network.linear_name(upper(type_part));
 CREATE INDEX linear_name_dir_up_i ON network.linear_name(upper(dir_part));
+CREATE INDEX linear_name_full_name_i ON network.linear_name(trim(UPPER(name_part) || ' ' || coalesce(UPPER(type_part), '') || ' ' || coalesce(UPPER(dir_part), '')));
+CREATE INDEX LINEAR_NAME_CREATE_ID_IDX ON network.LINEAR_NAME (TRANS_ID_CREATE);
+CREATE INDEX LINEAR_NAME_EXPIRED_ID_IDX ON network.LINEAR_NAME (TRANS_ID_EXPIRE);
+
 GRANT ALL ON TABLE network.linear_name TO network;
 GRANT INSERT, SELECT, UPDATE, DELETE ON TABLE network.linear_name TO sde;
 ---------------------------------------------------------------------------------------------------------------------------
@@ -158,6 +200,8 @@ CREATE UNIQUE INDEX linear_name_type_objectid_uk ON network.linear_name_type (ob
 CREATE UNIQUE INDEX linear_name_type_pk ON network.linear_name_type (linear_name_type_id);
 CREATE UNIQUE INDEX linear_name_type_type_uk ON network.linear_name_type (UPPER(type_part));
 CREATE UNIQUE INDEX linear_name_type_type_code_uk ON network.linear_name_type (UPPER(type_part_code));
+CREATE INDEX LINEAR_NAME_TYPE_CREATE_ID_IDX ON network.LINEAR_NAME_TYPE (TRANS_ID_CREATE);
+CREATE INDEX LINEAR_NAME_TYPE_EXPIRED_ID_IDX ON network.LINEAR_NAME_TYPE (TRANS_ID_EXPIRE);
 
 GRANT ALL ON TABLE network.linear_name_type TO network;
 GRANT INSERT, SELECT, UPDATE, DELETE ON TABLE network.linear_name_type TO sde;
@@ -258,6 +302,13 @@ GRANT INSERT, SELECT, UPDATE, DELETE ON TABLE network.AUTHORIZED_MUNICIPAL_ADDRE
 select * from authorized_municipal_address limit 10;
 --DROP record_id column in ArcCatalog -------------ALTER TABLE authorized_municipal_address DROP record_id CASCADE;
 --Add column usage_status in ArcCatalog ----------------------ALTER TABLE authorized_municipal_address ADD COLUMN IF NOT EXISTS USAGE_STATUS VARCHAR(1);
+--drop index AUTHORIZED_MUNICIPAL_ADDRESS_usage_status_u;
+CREATE INDEX AUTHORIZED_MUNICIPAL_ADDRESS_usage_status_u ON network.AUTHORIZED_MUNICIPAL_ADDRESS (UPPER(usage_status));
+CREATE INDEX AUTHORIZED_MUNICIPAL_ADDRESS_lo_num_i ON network.AUTHORIZED_MUNICIPAL_ADDRESS (lo_num);
+CREATE INDEX AUTHORIZED_MUNICIPAL_ADDRESS_TYPE_CREATE_ID_IDX ON network.AUTHORIZED_MUNICIPAL_ADDRESS (TRANS_ID_CREATE);
+CREATE INDEX AUTHORIZED_MUNICIPAL_ADDRESS_TYPE_EXPIRED_ID_IDX ON network.AUTHORIZED_MUNICIPAL_ADDRESS (TRANS_ID_EXPIRE);
+--drop index AUTHORIZED_MUNICIPAL_ADDRESS_lo_hi_num_i;
+
 ---------------------------------------------------------------------------------------------------------------------------
 CREATE TABLE network.ama_dm
 (
@@ -862,6 +913,8 @@ CREATE TABLE network.IGE_SOURCE
 --CREATE UNIQUE INDEX IGE_SOURCE_EXTERNAL_SOURCE_NO_UK ON NETWORK.IGE_SOURCE(EXTERNAL_SOURCE_NO);
 CREATE UNIQUE INDEX IGE_SOURCE_OBJECTID_UK ON NETWORK.IGE_SOURCE(objectid);
 CREATE INDEX IGE_SOURCE_ID_IDX ON network.IGE_SOURCE (SOURCE_ID);
+CREATE INDEX IGE_SOURCE_CREATE_ID_IDX ON network.IGE_SOURCE (TRANS_ID_CREATE);
+CREATE INDEX IGE_SOURCE_EXPIRED_ID_IDX ON network.IGE_SOURCE (TRANS_ID_EXPIRE);
 
 GRANT ALL ON TABLE network.IGE_SOURCE TO network;
 GRANT INSERT, SELECT, UPDATE, DELETE ON TABLE network.IGE_SOURCE TO sde;
@@ -2087,7 +2140,15 @@ alter table dmn_string_operator drop column if exists objectid;
 alter table dmn_task_status drop column if exists objectid;
 alter table dmn_task_type drop column if exists objectid;
 -------------------------------------------------------------------
-
+-- For generating INSERT statement:
+GRANT SELECT ON IGE_TASK TO anchorto_run;
+GRANT SELECT ON IGE_CONTROL_TASK TO anchorto_run;
+GRANT SELECT ON IGE_SOURCE_EVW TO anchorto_run;
+GRANT SELECT ON IGE_SOURCE_PRESENTATION_EVW TO anchorto_run;
+GRANT SELECT ON LINEAR_NAME_EVW TO anchorto_run;
+GRANT SELECT ON LINEAR_NAME_TYPE_EVW TO anchorto_run;
+GRANT SELECT ON AUTHORIZED_MUNICIPAL_ADDRESS_EVW TO anchorto_run;
+-------------------------------------------------------------------
 import foreign schema "IGE"
 limit to (ige_user)
 from server imaint_oracle into imaint_oracle;
