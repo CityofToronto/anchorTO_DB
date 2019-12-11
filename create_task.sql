@@ -57,7 +57,7 @@ BEGIN
                      ,'WORK STARTED'
                      ,$2
                      ,null --controlTaskId
-                     ,'STEWARD DEFINED' --'SUPERVISOR DEFINED'
+                     ,CASE WHEN upper(utasktype) = 'SOURCE' THEN 'STEWARD DEFINED' ELSE 'SUPERVISOR DEFINED' END
                      ,transid
                      ,-1) 
 	RETURNING task_id INTO taskid;
@@ -85,7 +85,7 @@ BEGIN
                      ,'WORK STARTED'
                      ,$2
                      ,null --controlTaskId
-                     ,'STEWARD DEFINED' --'SUPERVISOR DEFINED'
+                     ,CASE WHEN upper(utasktype) = 'SOURCE' THEN 'STEWARD DEFINED' ELSE 'SUPERVISOR DEFINED' END
                      ,transid
                      ,-1);
     END IF;
