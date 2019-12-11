@@ -16,8 +16,7 @@ AS $BODY$
     Get LFN by name
   Testing:
     SELECT get_lfn_by_name('dyas')
-	SELECT get_lfn_by_name('dyas ave')
-	SELECT get_lfn_by_name('sheppard east')
+	SELECT get_lfn_by_name('Highway')
 */
    SELECT json_agg(row_to_json(c)) 
    FROM
@@ -35,6 +34,7 @@ AS $BODY$
 			FROM linear_name_evw n
 			WHERE format_string(UPPER(n.name_part || coalesce(n.type_part,'') || coalesce(n.dir_part,''))) LIKE UPPER(replace(v_linear_name,' ', '%') || '%')
 			  AND n.trans_id_expire = -1
+		      AND use_by IN ('L', 'B')
 		) t
 		ORDER BY 1
     ) c	

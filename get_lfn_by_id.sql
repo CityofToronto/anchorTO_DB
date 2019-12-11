@@ -34,8 +34,9 @@ AS $BODY$
 	          m.usage_status,
 	          us.description AS usage_status_desc,	          
 	          --CASE WHEN m.usage_status IN ('C', 'H') THEN 'Y' ELSE 'N' END AS authorized,
-	          m.authorized,
-	          m.segment
+	          m.authorized
+	   /*,
+	          m.segment*/
 	   FROM 
 	   (
 		   SELECT l.objectid,
@@ -50,7 +51,8 @@ AS $BODY$
 				  l.duplication_desc,
 		          l.use_by,
 		          l.authorized,
-		          l.usage_status,
+		          l.usage_status
+		   /*,
 				  --u.description AS used_by,
 				  --CASE WHEN EXISTS (SELECT 1 FROM authorized_municipal_address_evw WHERE linear_name_id = l.linear_name_id) THEN 'Y' ELSE 'N' END AS authorized,
 				  /*CASE WHEN EXISTS (SELECT 1 FROM authorized_municipal_address_evw WHERE linear_name_id = l.linear_name_id) THEN 'C' -- Current
@@ -88,7 +90,7 @@ AS $BODY$
 						  WHERE b.linear_name_id = l.linear_name_id
 						  ORDER BY 1
 						) cc
-				  ) AS segment
+				  ) AS segment*/
 		   FROM linear_name_evw l
 		   JOIN dmn_ln_activation_status a ON l.activation_status = a.activation_status
 		   --JOIN dmn_ln_use_by u ON l.use_by = u.use_by	
@@ -106,3 +108,4 @@ GRANT EXECUTE ON FUNCTION code_src.get_lfn_by_id(numeric) TO anchorto_run;
 
 GRANT EXECUTE ON FUNCTION code_src.get_lfn_by_id(numeric) TO network;
 
+REVOKE ALL ON FUNCTION code_src.get_lfn_by_id(numeric) FROM PUBLIC;

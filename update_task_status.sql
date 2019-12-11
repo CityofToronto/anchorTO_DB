@@ -105,7 +105,7 @@ EXCEPTION
 	FROM
 	(
 	  SELECT o_status status, 
-	       o_message message		  
+	       format_string(o_message) message		  
 	) c;		
 	RETURN o_json;
 END;  

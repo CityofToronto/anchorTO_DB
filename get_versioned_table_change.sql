@@ -40,6 +40,7 @@ DECLARE
   v_pk text;
   v_input_view_name text;
   v_input_view_name_full text;
+  v_input_base_table_name text;
   v_output_view_name text;
   v_output_view_name_full text;
   v_suf_pg text;
@@ -58,10 +59,13 @@ DECLARE
   rec record;
   recary record;
   v_ret text;
+  v_sql_all_cols text;
+  v_all_col_list text;
 BEGIN
   v_suf_pg = ''; --'_evw';
   v_suf_oracle = ''; --'_gv';
   v_input_view_name = v_table_name || v_suf_pg;
+  v_input_base_table_name = replace(lower(v_table_name), '_evw', '');
   v_input_view_name_full = v_schema_input || '.' || v_input_view_name;
   v_output_view_name = v_table_name || v_suf_oracle;
   v_output_view_name_full = v_schema_output || '.' || v_output_view_name;
@@ -101,14 +105,26 @@ BEGIN
     RETURN NEXT '';
 	RETURN;
   END IF;
+  -- Get all columns concated again the input base table  
+  v_sql_all_cols = 'SELECT string_agg(column_name, '','') FROM (select * from information_schema.columns ORDER BY ordinal_position) s WHERE table_name = lower(''[ige_source_evw]'') and table_schema = lower(''[network]'') ';      
+  v_sql_all_cols = REPLACE(v_sql_all_cols, '[ige_source_evw]', v_input_base_table_name);
+  v_sql_all_cols = REPLACE(v_sql_all_cols, '[network]', v_schema_input);
+  RAISE NOTICE 'v_sql_all_cols: %', v_sql_all_cols;  
+  EXECUTE v_sql_all_cols INTO v_all_col_list;
+  RAISE NOTICE 'v_all_col_list: %', v_all_col_list;
+  v_all_col_list = REPLACE(v_all_col_list, ',', '||''@@@''||s.');
+  RAISE NOTICE 're-formatted v_all_col_list: %', v_all_col_list;
+  
   --v_sql_src = 'select case when t.[source_id] is null then ''INSERT'' when s.trans_id_create = s.trans_id_expire then ''DELETE'' ELSE ''UPDATE'' END as myaction, s.* from json_populate_recordset(null::ige_source_evw, ''[JSON]'') s' ||
   --v_sql_src = 'select case when t.[source_id] is null then ''INSERT'' ELSE ''UPDATE'' END as myaction, cast(s.[source_id] as text) from json_populate_recordset(null::ige_source_evw, ''[JSON]'') s' ||
   v_sql_src = 'select case when t.[source_id] is null then ''INSERT'' when s.trans_id_create = s.trans_id_expire then ''DELETE'' ELSE ''UPDATE'' END as myaction, cast(s.[source_id] as text) from json_populate_recordset(null::ige_source_evw, ''[JSON]'') s' ||
-  ' left join json_populate_recordset(null::ige_source_evw, ''[JSONDEFAULT]'') t on t.[source_id] = s.[source_id] ORDER BY s.[source_id]';
+  ' left join json_populate_recordset(null::ige_source_evw, ''[JSONDEFAULT]'') t on t.[source_id] = s.[source_id] and t.[T_ALL_COL_VALS]  <> s.[S_ALL_COL_VALS] ORDER BY s.[source_id]'; 
   v_sql_src = REPLACE(v_sql_src, '[source_id]', v_pk ); 
   v_sql_src = REPLACE(v_sql_src, '[JSON]', v_json); -- quote_literal(v_json));
   v_sql_src = REPLACE(v_sql_src, '[JSONDEFAULT]', v_json_default);
   v_sql_src = REPLACE(v_sql_src,'null::ige_source_evw', 'null::' || v_input_view_name_full);
+  v_sql_src = REPLACE(v_sql_src, '[S_ALL_COL_VALS]', v_all_col_list ); 
+  v_sql_src = REPLACE(v_sql_src, '[T_ALL_COL_VALS]', replace(v_all_col_list, 's.', 't.' )); 
   raise notice 'SQL_src:%', v_sql_src;  
   v_sql_tgt = 'select json_agg(row_to_json(d)) from ([NEWSQL]) d';
   v_sql_tgt = REPLACE(v_sql_tgt, '[NEWSQL]', v_sql_src );
@@ -167,7 +183,7 @@ ALTER FUNCTION code_src.get_versioned_table_change(text, text, text, numeric, te
 
 GRANT EXECUTE ON FUNCTION code_src.get_versioned_table_change(text, text, text, numeric, text) TO anchorto_run;
 
-GRANT EXECUTE ON FUNCTION code_src.get_versioned_table_change(text, text, text, numeric, text) TO PUBLIC;
+REVOKE EXECUTE ON FUNCTION code_src.get_versioned_table_change(text, text, text, numeric, text) FROM PUBLIC;
 
 GRANT EXECUTE ON FUNCTION code_src.get_versioned_table_change(text, text, text, numeric, text) TO network;
 

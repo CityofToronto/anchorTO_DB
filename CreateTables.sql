@@ -451,7 +451,7 @@ CREATE TABLE network.DMN_PLAN_TYPE
 );
 CREATE INDEX dmn_plan_type_expire_idx ON dmn_plan_type (trans_id_expire);
 ---------------------------------------------------------------------------------------------------------------------------
-CREATE TABLE network.DMN_PLAN_TYPE_EXT
+/*CREATE TABLE network.DMN_PLAN_TYPE_EXT
 (
 	EXT_NAME VARCHAR(12) NOT NULL, 
 	EXT_TYPE VARCHAR(6) NOT NULL, 
@@ -465,6 +465,7 @@ CREATE TABLE network.DMN_PLAN_TYPE_EXT
 );
 -- run under admin: alter table network.dmn_plan_type_ext disable trigger all;
 -- run under admin: alter table network.dmn_plan_type_ext enable trigger all;
+*/
 ---------------------------------------------------------------------------------------------------------------------------
 CREATE TABLE network.DMN_REPORT_TYPE
 (
@@ -537,7 +538,7 @@ CREATE TABLE network.DMN_TASK_STATUS
 	TRANS_ID_EXPIRE numeric(12,0) NOT NULL
 );
 ---------------------------------------------------------------------------------------------------------------------------
-
+/*
 CREATE TABLE network.DMN_CONTROL_TASK_TYPE
 (
 	CONTROL_TASK_TYPE VARCHAR(30) PRIMARY KEY NOT NULL, 
@@ -548,6 +549,7 @@ CREATE TABLE network.DMN_CONTROL_TASK_TYPE
 	TRANS_ID_CREATE numeric(12,0) NOT NULL, 
 	TRANS_ID_EXPIRE numeric(12,0) NOT NULL
 );
+*/
 ---------------------------------------------------------------------------------------------------------------------------
 
 CREATE TABLE network.DMN_CONTROL_TASK_STATUS
@@ -1053,6 +1055,7 @@ CREATE INDEX ige_task_default_control_task_type_idx ON ige_task_default (control
 CREATE INDEX ige_task_default_task_type_idx ON ige_task_default (task_type);
 CREATE INDEX ige_task_default_task_type_assigned_idx ON ige_task_default (task_type, assigned_to);
 ---------------------------------------------------------------------------------------------------------------------------
+/*
 CREATE TABLE network.IGE_TASK_STEWARD
 (
 	TASK_TYPE VARCHAR(30) NOT NULL, 
@@ -1062,8 +1065,9 @@ CREATE UNIQUE INDEX IGE_TASK_STEWARD_TYPE_GROUP_UK ON network.IGE_TASK_STEWARD (
 
 GRANT ALL ON TABLE network.IGE_TASK_STEWARD TO network;
 GRANT INSERT, SELECT, UPDATE, DELETE ON TABLE network.IGE_TASK_STEWARD TO sde;
+*/
 ---------------------------------------------------------------------------------------------------------------------------
-CREATE TABLE network.IGE_TASK_COMMENT
+/*CREATE TABLE network.IGE_TASK_COMMENT
 (
 	TASK_ID numeric(12,0) NOT NULL, 
 	TASK_TYPE VARCHAR(20), 
@@ -1074,6 +1078,7 @@ CREATE TABLE network.IGE_TASK_COMMENT
 CREATE INDEX IGE_TASK_COMMENT_ID ON network.IGE_TASK_COMMENT (TASK_ID);  
 GRANT ALL ON TABLE network.IGE_TASK_COMMENT TO network;
 GRANT INSERT, SELECT, UPDATE, DELETE ON TABLE network.IGE_TASK_COMMENT TO sde;
+*/
 ---------------------------------------------------------------------------------------------------------------------------
 --DROP TABLE network.IGE_SOURCE_PRESENTATION
 CREATE TABLE network.IGE_SOURCE_PRESENTATION
@@ -2297,6 +2302,60 @@ SELECT * FROM ige_source_evw
 
 
 
+-----------------------------------------------------------
+-----------------------------------------------------------
+------- Check function definition -------------------------
+select *
+from
+(
+select
+    proname as name,
+    pronamespace::pg_catalog.regnamespace,
+    pg_catalog.pg_get_functiondef(oid) as defn
+from pg_catalog.pg_proc
+where proisagg is false
+) a
+where lower(defn) like '%base_centreline%' --0
+;
+------------------------------------------------------------------
+------------------------------------------------------------------
+1. Before importing, In ige_task table, change task_comments type from text to varchar(10300000)
+  After importing, change task_comments type from varchar(10300000) to text
+2. Import ige_source_presentation to ige_source__attach
+3. IGE_Source table: Before importing, set globalid column to nullable; After importing, set it back
+----- Build ige_source__attach based on ige_source & ige_source_presentation table
+SELECT sde.sde_set_default();
+-- If needed. 
+truncate table ige_source__attach;
+-- Generate globalid for ige_source table
+update ige_source_evw
+  set globalid = sde.next_globalid();
+-- Import ige_source_presentation into ige_source__attach 
+-- Step #1:
+set statement_timeout to 60000000; --1000 min
+show statement_timeout;
+-- Step #2:
+INSERT INTO ige_source__attach (attachmentid, rel_globalid, content_type, att_name, data_size, data, globalid )
+  SELECT 
+    sde.next_rowid(current_schema()::text, 'ige_source__attach'),
+	t.globalid,
+	source_pres_type,
+	source_pres_file_name,
+	octet_length(presentation),
+	presentation,
+	sde.next_globalid()
+  FROM
+  (
+	  SELECT p.*, s.globalid
+	  FROM ige_source_presentation p
+	  JOIN ige_source_evw s ON p.source_id = s.source_id  
+  ) t;
+-- Step #3: verify  
+SELECT count(*) FROM ige_source_presentation;
+SELECT count(*) FROM ige_source__attach
+select source_id from ige_source_presentation where source_id NOT IN (select source_id from ige_source_evw)
+select * from ige_source__attach limit 100;
+select * from ige_source_evw limit 10
 
 
 

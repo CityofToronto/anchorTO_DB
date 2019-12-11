@@ -1,8 +1,9 @@
--- FUNCTION: code_src.get_lfn_type() 
+-- FUNCTION: code_src.get_lfn_type()
 
 -- DROP FUNCTION code_src.get_lfn_type();
 
-CREATE OR REPLACE FUNCTION code_src.get_lfn_type()
+CREATE OR REPLACE FUNCTION code_src.get_lfn_type(
+	)
     RETURNS SETOF json 
     LANGUAGE 'sql'
 
@@ -23,6 +24,8 @@ AS $BODY$
 	          linear_name_type_id,
 	          type_part,
 	          type_part_code,
+	          trans_id_create,
+	          trans_id_expire,
 	          CASE WHEN EXISTS (SELECT 1 FROM linear_name_evw WHERE UPPER(type_part) = UPPER(v.type_part)) THEN 'C'
 	               WHEN EXISTS (SELECT 1 FROM linear_name_dm WHERE UPPER(type_part) = UPPER(v.type_part)) THEN 'H'
 	               ELSE 'N' 
@@ -40,3 +43,4 @@ GRANT EXECUTE ON FUNCTION code_src.get_lfn_type() TO anchorto_run;
 
 GRANT EXECUTE ON FUNCTION code_src.get_lfn_type() TO network;
 
+REVOKE ALL ON FUNCTION code_src.get_lfn_type() FROM PUBLIC;

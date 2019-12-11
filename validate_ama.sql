@@ -27,7 +27,11 @@ BEGIN
   o_status = 'OK';
   o_message = ''; 
   v_duplicate_ama = false;  
-  raise notice '%', ($1::json->>'linear_name_id')::numeric;
+  raise notice 'linear_name_id:%', ($1::json->>'linear_name_id')::numeric;
+  raise notice 'lo_num:%', coalesce(($1::json->>'lo_num')::integer,-1);
+  raise notice 'lo_num_suf:%', UPPER(coalesce((($1::json->>'lo_num_suf')::text),'||'));
+  raise notice 'hi_num:%', coalesce(($1::json->>'hi_num')::integer,-1);
+  raise notice 'hi_num_suf:%', UPPER(coalesce(($1::json->>'hi_num_suf')::text,'||'));
   SELECT row_to_json(c) INTO o_json
   FROM
   (
@@ -39,9 +43,17 @@ BEGIN
 		              WHERE 
 					     n.linear_name_id = ($1::json->>'linear_name_id')::numeric
 						 AND coalesce(n.lo_num,-1) = coalesce(($1::json->>'lo_num')::integer,-1)
-						 AND coalesce(UPPER(n.lo_num_suf), ' ') = UPPER(coalesce((($1::json->>'lo_num_suf')::text),' '))
+						 AND 
+					      (
+							  (is_blank_string(n.lo_num_suf) AND is_blank_string(($1::json->>'lo_num_suf')::text)) 
+							OR coalesce(UPPER(n.lo_num_suf), '||') = UPPER(coalesce(($1::json->>'lo_num_suf')::text,'||'))
+						  )
 						 AND coalesce(n.hi_num, -1) = coalesce(($1::json->>'hi_num')::integer,-1)	
-						 AND coalesce(UPPER(n.hi_num_suf), ' ') = UPPER(coalesce(($1::json->>'hi_num_suf')::text,' '))
+						 AND 
+					      (
+							  (is_blank_string(n.lo_num_suf) AND is_blank_string(($1::json->>'lo_num_suf')::text)) 
+							 OR coalesce(UPPER(n.hi_num_suf), '||') = UPPER(coalesce(($1::json->>'hi_num_suf')::text,'||'))
+						  )    
 						 AND (is_blank_id(($1::json->>'address_string_id')::text)
 							 OR position((n.address_string_id::text) || ',' in ($1::json->>'address_string_id')::text || ',') = 0
 							 )						        

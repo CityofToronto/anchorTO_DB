@@ -51,7 +51,7 @@ BEGIN
       RETURN NEXT v_ret;
 	END IF;
   END LOOP;
-  FOR v_ret IN SELECT get_versioned_table_change(v_version_owner, v_schema_input, v_schema_output, v_trans_id_create, 'authorized_municipal_address') LOOP
+  FOR v_ret IN SELECT get_versioned_table_change(v_version_owner, v_schema_input, v_schema_output, v_trans_id_create, 'authorized_municipal_address_evw') LOOP
     --RAISE NOTICE '----------%', v_ret;   
     IF v_ret <> '' THEN 
 	  v_returned = true;
