@@ -8,8 +8,7 @@ CREATE OR REPLACE FUNCTION code_src.get_next_task_by_user_name(
     LANGUAGE 'sql'
 
     COST 100
-    VOLATILE 
-	SECURITY DEFINER
+    VOLATILE SECURITY DEFINER 
 AS $BODY$
 /*
     Summary:
@@ -60,6 +59,7 @@ FROM
 				 GROUP BY tt.control_task_id
 			 ) mc ON mc.control_task_id = c.control_task_id
 			 WHERE t.task_status IN (SELECT task_status FROM dmn_task_status WHERE task_status NOT IN ( 'HOLD', 'COMPLETED')) 
+			   AND t.task_type IN ('LINEARNAME', 'AMA') -- For phase 1 only and this should be removed in phase 2 
 			   AND (t.taken_by is null OR upper(t.taken_by) = upper(v_user_name))
 			   AND t.trans_id_expire = -1
 			   AND 
@@ -88,5 +88,11 @@ FROM
  ;
 $BODY$;
 
-ALTER FUNCTION code_src.get_next_task_by_user_name(text) OWNER TO network;
-GRANT EXECUTE ON FUNCTION code_src.get_next_task_by_user_name(text) TO anchorto_run
+ALTER FUNCTION code_src.get_next_task_by_user_name(text)
+    OWNER TO network;
+
+GRANT EXECUTE ON FUNCTION code_src.get_next_task_by_user_name(text) TO anchorto_run;
+
+GRANT EXECUTE ON FUNCTION code_src.get_next_task_by_user_name(text) TO network;
+
+REVOKE ALL ON FUNCTION code_src.get_next_task_by_user_name(text) FROM PUBLIC;

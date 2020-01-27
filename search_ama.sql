@@ -14,6 +14,8 @@ DECLARE
   o_status text;  
   o_message text;
   o_json text; 
+  v_lo_num integer;
+  v_lo_num_str text;
 BEGIN
 /*
   Summary: Search AMA with different search criteria
@@ -32,6 +34,9 @@ BEGIN
 	SELECT search_ama('{"linear_name":"dyas", "usage_status":null, "municipality":null, "lo_num_from":null, "lo_num_to":20, "logicOP":"OR"}')
 	SELECT search_ama('{"linear_name":"dyas", "usage_status":"N", "municipality":"EY", "lo_num_from":10, "lo_num_to":10, "logicOP":"OR"}')
 	
+	SELECT search_ama('{"linear_name":"dyas", "usage_status":null, "municipality":null, "lo_num_from":1, "lo_num_to":2, "logicOP":"OR"}')
+	SELECT search_ama('{"linear_name":"dyas", "usage_status":null, "municipality":null, "lo_num_from":"47%A", "lo_num_to":"48%A", "logicOP":"OR"}')
+	
 	SELECT search_ama('{"linear_name":"dyas", "usage_status":null, "municipality":null, "lo_num_from":null, "lo_num_to":null, "logicOP":"and"}')
 	SELECT search_ama('{"linear_name":null, "usage_status":null, "municipality":"EY", "lo_num_from":null, "lo_num_to":null, "logicOP":"and"}')
 	SELECT search_ama('{"linear_name":"hea", "usage_status":"c", "municipality":null, "lo_num_from":null, "lo_num_to":null, "logicOP":"and"}')
@@ -40,6 +45,15 @@ BEGIN
 	SELECT search_ama('{"linear_name":"hea", "usage_status":"c", "municipality":"EY", "lo_num_from":null, "lo_num_to":null, "logicOP":"and"}')
 	SELECT search_ama('{"linear_name":"hea", "usage_status":null, "municipality":"EY", "lo_num_from":18, "lo_num_to":null, "logicOP":"and"}')
 	SELECT search_ama('{"linear_name":"hea", "usage_status":null, "municipality":"EY", "lo_num_from":null, "lo_num_to":18, "logicOP":"and"}')
+	
+	SELECT search_ama('{"linear_name":"dyas", "usage_status":null, "municipality":null, "lo_num_from":1, "lo_num_to":2, "logicOP":"AND"}')
+	SELECT search_ama('{"linear_name":"hea", "usage_status":"c", "municipality":null, "lo_num_from":"47%A", "lo_num_to":null, "logicOP":"and"}')
+	
+	SELECT search_ama('{"linear_name":"dyas", "usage_status":"", "municipality":"", "lo_num_from":1, "lo_num_to":2, "logicOP":"AND"}')
+	SELECT search_ama('{"linear_name":"dyas", "usage_status":"null", "municipality":"null", "lo_num_from":1, "lo_num_to":2, "logicOP":"AND"}')
+	SELECT search_ama('{"linear_name":"dyas","usage_status":"null","municipality":"null","lo_num_from":null,"lo_num_to":null,"logicOP":"and"}')
+	SELECT search_ama('{"linear_name":"","usage_status":"null","municipality":"null","lo_num_from":"%A","lo_num_to":null,"logicOP":"and"}')
+	SELECT search_ama('{"linear_name":"","usage_status":"null","municipality":"null","lo_num_from":"%1/2","lo_num_to":null,"logicOP":"and"}')
 */
    o_status = 'OK';
    o_message = '';   
@@ -135,8 +149,14 @@ BEGIN
 				FROM authorized_municipal_address_evw a
 				JOIN linear_name_evw l ON a.linear_name_id = l.linear_name_id
 			    WHERE a.trans_id_expire = -1
-		          AND a.lo_num BETWEEN coalesce((v_search_by::json->>'lo_num_from')::integer, coalesce(v_search_by::json->>'lo_num_to')::integer, -1) AND coalesce((v_search_by::json->>'lo_num_to')::integer, coalesce(v_search_by::json->>'lo_num_from')::integer, -1)		          
-			   
+		          --AND a.lo_num BETWEEN coalesce((v_search_by::json->>'lo_num_from')::integer, coalesce(v_search_by::json->>'lo_num_to')::integer, -1) AND coalesce((v_search_by::json->>'lo_num_to')::integer, coalesce(v_search_by::json->>'lo_num_from')::integer, -1)		          
+			       AND NOT is_blank_string(v_search_by::json->>'lo_num_from')
+			       AND 
+			        (
+			        CASE WHEN is_numeric((v_search_by::json->>'lo_num_from')::text) THEN lpad(a.lo_num::text,10,'0') BETWEEN lpad(coalesce((v_search_by::json->>'lo_num_from')::text, coalesce(v_search_by::json->>'lo_num_to')::text, '0'),10,'0') AND lpad(coalesce((v_search_by::json->>'lo_num_to')::text, coalesce(v_search_by::json->>'lo_num_from')::text, '999999999'),10,'0') 
+						 ELSE coalesce((a.lo_num)::text, '') ||  coalesce(a.lo_num_suf, '') LIKE  (v_search_by::json->>'lo_num_from')::text
+					END
+					)
 			 ) cm
 			 ORDER BY full_name, address_string_id
 		) c;		
@@ -194,7 +214,15 @@ BEGIN
 					)
 				  )
 			      AND -- Search by lo_num range
-			        a.lo_num BETWEEN coalesce((v_search_by::json->>'lo_num_from')::integer, coalesce(v_search_by::json->>'lo_num_to')::integer, -1) AND coalesce((v_search_by::json->>'lo_num_to')::integer, coalesce(v_search_by::json->>'lo_num_from')::integer, 999999999)    
+			       (
+					   is_blank_string(v_search_by::json->>'lo_num_from')
+					OR
+						(
+						CASE WHEN is_numeric((v_search_by::json->>'lo_num_from')::text) THEN lpad(a.lo_num::text,10,'0') BETWEEN lpad(coalesce((v_search_by::json->>'lo_num_from')::text, coalesce(v_search_by::json->>'lo_num_to')::text, '0'),10,'0') AND lpad(coalesce((v_search_by::json->>'lo_num_to')::text, coalesce(v_search_by::json->>'lo_num_from')::text, '999999999'),10,'0') 
+							 ELSE coalesce((a.lo_num)::text, '') ||  coalesce(a.lo_num_suf, '') LIKE  (v_search_by::json->>'lo_num_from')::text
+						END
+						)
+				   )
 			 ) cm
 			 ORDER BY full_name, address_string_id
 		) c;	
@@ -219,7 +247,6 @@ ALTER FUNCTION code_src.search_ama(text)
 
 GRANT EXECUTE ON FUNCTION code_src.search_ama(text) TO anchorto_run;
 
-REVOKE EXECUTE ON FUNCTION code_src.search_ama(text) FROM PUBLIC;
-
 GRANT EXECUTE ON FUNCTION code_src.search_ama(text) TO network;
 
+REVOKE ALL ON FUNCTION code_src.search_ama(text) FROM PUBLIC;

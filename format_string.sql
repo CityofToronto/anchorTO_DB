@@ -8,15 +8,14 @@ CREATE OR REPLACE FUNCTION code_src.format_string(
     LANGUAGE 'plpgsql'
 
     COST 100
-    VOLATILE 
-	SECURITY DEFINER
+    VOLATILE SECURITY DEFINER 
 AS $BODY$
 DECLARE 
   retval text;   
 BEGIN  
 /*
   Summary: 
-    Format a string with trim space, replace one double-quotation mark with two singel quoation mark
+    Format a string with trim space, replace one double-quotation mark with two single quotation mark
   Testing:
     SELECT format_string('ABC"DE')
 */
@@ -31,4 +30,7 @@ $BODY$;
 
 ALTER FUNCTION code_src.format_string(text)
     OWNER TO network;
-GRANT EXECUTE ON FUNCTION format_string(text) TO anchorto_run;
+
+GRANT EXECUTE ON FUNCTION code_src.format_string(text) TO network;
+
+REVOKE ALL ON FUNCTION code_src.format_string(text) FROM PUBLIC;

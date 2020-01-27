@@ -12,6 +12,7 @@ CREATE OR REPLACE FUNCTION code_src.get_task_id_txt_by_trans_id(
 AS $BODY$
 DECLARE 
   taskid ige_task.task_id%TYPE;
+  o_username ige_transaction.username%TYPE;
   o_status text;
   o_message text;  
   o_json text; 
@@ -20,11 +21,11 @@ BEGIN
 Summary: 
     Get task id by transaction id
 Testing:
-    SELECT get_task_id_by_trans_id(1000000682)
+    SELECT get_task_id_txt_by_trans_id(2000044)
 */
   o_status = 'OK';
   o_message = '';
-  SELECT task_id INTO taskid
+  SELECT task_id,username INTO taskid, o_username
   FROM ige_transaction
   WHERE trans_id = v_trans_id 
 	LIMIT 1;
@@ -33,7 +34,8 @@ Testing:
 	(
 	  SELECT o_status status, 
 	       o_message message,
-		   taskid AS id
+		   taskid AS id,
+		   o_username AS username
 	) c;
     RETURN o_json; 
 EXCEPTION
@@ -46,7 +48,8 @@ EXCEPTION
 	(
 	  SELECT o_status status, 
 	       o_message message,
-		   -1 AS id
+		   -1 AS id,
+		   '' AS username
 	) c;
     RETURN o_json; 
 END;  
@@ -57,7 +60,6 @@ ALTER FUNCTION code_src.get_task_id_txt_by_trans_id(numeric)
 
 GRANT EXECUTE ON FUNCTION code_src.get_task_id_txt_by_trans_id(numeric) TO anchorto_run;
 
-REVOKE EXECUTE ON FUNCTION code_src.get_task_id_txt_by_trans_id(numeric) FROM PUBLIC;
-
 GRANT EXECUTE ON FUNCTION code_src.get_task_id_txt_by_trans_id(numeric) TO network;
 
+REVOKE ALL ON FUNCTION code_src.get_task_id_txt_by_trans_id(numeric) FROM PUBLIC;

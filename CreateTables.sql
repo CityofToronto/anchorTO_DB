@@ -117,6 +117,8 @@ CREATE INDEX linear_name_dir_up_i ON network.linear_name(upper(dir_part));
 CREATE INDEX linear_name_full_name_i ON network.linear_name(trim(UPPER(name_part) || ' ' || coalesce(UPPER(type_part), '') || ' ' || coalesce(UPPER(dir_part), '')));
 CREATE INDEX LINEAR_NAME_CREATE_ID_IDX ON network.LINEAR_NAME (TRANS_ID_CREATE);
 CREATE INDEX LINEAR_NAME_EXPIRED_ID_IDX ON network.LINEAR_NAME (TRANS_ID_EXPIRE);
+CREATE INDEX LINEAR_NAME_FULL_LINEAR_NAME_IDX ON network.LINEAR_NAME (REPLACE(UPPER(name_part) || ' ' || coalesce(UPPER(type_part), '') || ' ' || coalesce(UPPER(dir_part), ''), '"', '''')); 
+CREATE INDEX LINEAR_NAME_DUP_DESC_IDX ON network.LINEAR_NAME (UPPER(duplication_desc));
 
 GRANT ALL ON TABLE network.linear_name TO network;
 GRANT INSERT, SELECT, UPDATE, DELETE ON TABLE network.linear_name TO sde;
@@ -307,7 +309,8 @@ CREATE INDEX AUTHORIZED_MUNICIPAL_ADDRESS_usage_status_u ON network.AUTHORIZED_M
 CREATE INDEX AUTHORIZED_MUNICIPAL_ADDRESS_lo_num_i ON network.AUTHORIZED_MUNICIPAL_ADDRESS (lo_num);
 CREATE INDEX AUTHORIZED_MUNICIPAL_ADDRESS_TYPE_CREATE_ID_IDX ON network.AUTHORIZED_MUNICIPAL_ADDRESS (TRANS_ID_CREATE);
 CREATE INDEX AUTHORIZED_MUNICIPAL_ADDRESS_TYPE_EXPIRED_ID_IDX ON network.AUTHORIZED_MUNICIPAL_ADDRESS (TRANS_ID_EXPIRE);
---drop index AUTHORIZED_MUNICIPAL_ADDRESS_lo_hi_num_i;
+CREATE INDEX AUTHORIZED_MUNICIPAL_ADDRESS_LO_NUM_IDX ON network.AUTHORIZED_MUNICIPAL_ADDRESS (lpad(lo_num::text,10,'0'));
+CREATE INDEX AUTHORIZED_MUNICIPAL_ADDRESS_FULL_LO_NUM_IDX ON network.AUTHORIZED_MUNICIPAL_ADDRESS ((coalesce(lo_num::TEXT, '')|| coalesce(lo_num_suf, '')));
 
 ---------------------------------------------------------------------------------------------------------------------------
 CREATE TABLE network.ama_dm
@@ -1277,6 +1280,25 @@ CREATE TABLE NETWORK.DMN_CL_ADDRESS_PARITY
 GRANT ALL ON TABLE network.DMN_CL_ADDRESS_PARITY TO network;
 GRANT INSERT, SELECT, UPDATE, DELETE ON TABLE network.DMN_CL_ADDRESS_PARITY TO sde;
 ---------------------------------------------------------------------------------------------------------------------------
+CREATE TABLE  network.ige_job_log 
+(	
+	job_id numeric(12,0) NOT NULL, 
+	task_id numeric(12,0) NOT NULL, 
+	user_name character varying(30),
+	job_status character varying(30), 
+	start_time character varying(100), 
+	end_time character varying(100),
+	comments text
+);
+CREATE UNIQUE INDEX ige_job_log_pk ON ige_job_log (job_id);
+CREATE INDEX ige_job_log_task_id_idx ON ige_job_log (task_id);
+CREATE INDEX ige_job_log_user_name_idx ON ige_job_log (UPPER(user_name));
+CREATE INDEX ige_job_log_user_name_status_idx ON ige_job_log (UPPER(user_name), UPPER(job_status));
+CREATE INDEX ige_job_log_status_idx ON ige_job_log (UPPER(job_status));
+CREATE INDEX ige_job_log_start_time_idx ON ige_job_log (UPPER(start_time));
+GRANT ALL ON TABLE network.ige_job_log TO network;
+GRANT INSERT, SELECT, UPDATE, DELETE ON TABLE network.ige_job_log TO sde;
+---------------------------------------------------------------------------------------------------------------------------
 CREATE TABLE network.
 (
 	
@@ -2153,6 +2175,7 @@ GRANT SELECT ON IGE_SOURCE_PRESENTATION_EVW TO anchorto_run;
 GRANT SELECT ON LINEAR_NAME_EVW TO anchorto_run;
 GRANT SELECT ON LINEAR_NAME_TYPE_EVW TO anchorto_run;
 GRANT SELECT ON AUTHORIZED_MUNICIPAL_ADDRESS_EVW TO anchorto_run;
+GRANT SELECT ON IGE_TRANSACTION TO anchorto_run;
 -------------------------------------------------------------------
 import foreign schema "IGE"
 limit to (ige_user)
@@ -2279,7 +2302,7 @@ SELECT sde.sde_set_current_version('myedits12111');
 SELECT get_registration_id('network', 'linear_name')
 SELECT update_control_task(0,10001,null,'some "comments','STREET/ADDRESS',20000,-1);
 SELECT update_lfn('{ "objectid": null,"linear_name_id": null,"name_part": "test","type_part": "Street","dir_part": "South","description": "test test", "activation_status": "A","authorized": "Y","used_by": "L"}',123, -1);
-SELECt update_lfn_dm_h(1000000010, 128);    
+SELECT update_lfn_dm_h(1000000010, 128);    
 SELECT update_source('{"source_id":null,"class":"REPORT","type":"INHOUSE MAINTENANCE","control_task_type":"STREET/ADDRESS","status":"APPROVED","int_id":"Test Internal6","int_date":"2019-07-18","ext_id":"","ext_date":null,"plan_name":null,"maint_status":null,"comment":null,"closed":null,"task":[{"task_id":null,"task_type":"SITEAREA","task_sequence":10,"assigned_to":"emachyni","task_comments":"Create/adjust Site Area","task_status":"READY","deleted":false,"disabled":false},{"task_id":null,"task_type":"LINEARNAME","task_sequence":20,"assigned_to":"rli4","task_comments":"Add/adjust/delete Linear Name","task_status":"READY","deleted":false,"disabled":false},{"task_id":null,"task_type":"AMA","task_sequence":30,"assigned_to":"rli4","task_comments":"Add/adjust/delete AMA","task_status":"READY","deleted":false,"disabled":false},{"task_id":null,"task_type":"INTERSECTION","task_sequence":40,"assigned_to":"INTERSECTION_MAINT","task_comments":"Add/edit/delete Intersections","task_status":"READY","deleted":true,"disabled":false},{"task_id":null,"task_type":"CENTRELINE","task_sequence":50,"assigned_to":"SEGMENT_MAINT","task_comments":"Add/edit/delete Segments","task_status":"READY","deleted":true,"disabled":false},{"task_id":null,"task_type":"ADDRESSPOINT","task_sequence":60,"assigned_to":"ADDRESS_MAINT","task_comments":"Add/edit/delete Reserved Address Points","task_status":"READY","deleted":true,"disabled":false},{"task_id":null,"task_type":"SITEAREA","task_sequence":70,"assigned_to":"slee6111","task_comments":"Close Site Area - hold for now","task_status":"HOLD","deleted":false,"disabled":false}],"attachment":null,"user_id":"rli4"}'
 					 , 10000
 					 ,-1
@@ -2319,6 +2342,24 @@ where lower(defn) like '%base_centreline%' --0
 ;
 ------------------------------------------------------------------
 ------------------------------------------------------------------
+1. Before data migration:  
+         1.1 In ige_task table in PostgreSQL, change task_comments type from text to varchar(10300000)
+		     ALTER TABLE ige_task ALTER COLUMN task_comments TYPE varchar(10300000); 
+		     select * from ige_task limit 10;
+         1.2 In ige_source table, set globalid column to nullable
+		     ALTER TABLE ige_source ALTER COLUMN globalid DROP not null;
+    After data migration, roll back the changes above:
+        1.3 In ige_task table, change task_comments type from varchar(10300000) to text
+		    ALTER TABLE ige_task ALTER COLUMN task_comments TYPE text;
+		    select * from ige_task limit 10;
+        1.4 In ige_source table, set globalid column to not nullable (after loading ige_source__attach table)
+		    Run this after generating new global ids: ALTER TABLE ige_source ALTER COLUMN globalid set not null;
+2. After data migration: Check table indexes
+2. Fix object id in tables
+3. Fix sequence number in tables
+4. Load attachment data from ige_source_presentation into ige_source__attach table 
+
+----------------
 1. Before importing, In ige_task table, change task_comments type from text to varchar(10300000)
   After importing, change task_comments type from varchar(10300000) to text
 2. Import ige_source_presentation to ige_source__attach
@@ -2328,8 +2369,9 @@ SELECT sde.sde_set_default();
 -- If needed. 
 truncate table ige_source__attach;
 -- Generate globalid for ige_source table
-update ige_source_evw
+update ige_source --ige_source_evw
   set globalid = sde.next_globalid();
+ALTER TABLE ige_source ALTER COLUMN globalid set not null;  
 -- Import ige_source_presentation into ige_source__attach 
 -- Step #1:
 set statement_timeout to 60000000; --1000 min

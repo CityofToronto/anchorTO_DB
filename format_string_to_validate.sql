@@ -15,7 +15,7 @@ DECLARE
 BEGIN  
 /*
   Summary: 
-    Format a string with removing space, replace one double-quotation mark with two singel quoation mark
+    Format a string with removing space, replace one double-quotation mark with two single quotation mark
   Testing:
     SELECT format_string_to_validate('sABC"DE')
 */
@@ -30,3 +30,7 @@ $BODY$;
 
 ALTER FUNCTION code_src.format_string_to_validate(text)
     OWNER TO network;
+
+GRANT EXECUTE ON FUNCTION code_src.format_string_to_validate(text) TO network;
+
+REVOKE ALL ON FUNCTION code_src.format_string_to_validate(text) FROM PUBLIC;
