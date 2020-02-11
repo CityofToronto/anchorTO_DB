@@ -2347,57 +2347,64 @@ where lower(defn) like '%base_centreline%' --0
 		     ALTER TABLE ige_task ALTER COLUMN task_comments TYPE varchar(10300000); 
 		     select * from ige_task limit 10;
          1.2 In ige_source table, set globalid column to nullable
-		     ALTER TABLE ige_source ALTER COLUMN globalid DROP not null;
-    After data migration, roll back the changes above:
-        1.3 In ige_task table, change task_comments type from varchar(10300000) to text
+		     ALTER TABLE ige_source ALTER COLUMN globalid DROP not null;    
+2. After data migration: Check table indexes
+3. 
+	SELECT sde.sde_set_default();
+	-- Generate globalid for ige_source table
+	update ige_source --ige_source_evw
+	  set globalid = sde.next_globalid();
+	ALTER TABLE ige_source ALTER COLUMN globalid set not null; 
+4. Import ige_source_presentation to ige_source__attach
+	-- Step #1:
+	set statement_timeout to 60000000; --1000 min
+	show statement_timeout;
+	-- Step #2:
+	SELECT sde.sde_set_default();
+	-- If needed. 
+	truncate table ige_source__attach;
+	INSERT INTO ige_source__attach (attachmentid, rel_globalid, content_type, att_name, data_size, data, globalid )
+	  SELECT 
+		sde.next_rowid(current_schema()::text, 'ige_source__attach'),
+		t.globalid,
+		source_pres_type,
+		source_pres_file_name,
+		octet_length(presentation),
+		presentation,
+		sde.next_globalid()
+	  FROM
+	  (
+		  SELECT p.*, s.globalid
+		  FROM ige_source_presentation p
+		  JOIN ige_source_evw s ON p.source_id = s.source_id  
+	  ) t;
+	-- Step #3: verify  
+	SELECT count(*) FROM ige_source_presentation;
+	SELECT count(*) FROM ige_source__attach
+	select source_id from ige_source_presentation where source_id NOT IN (select source_id from ige_source_evw)
+	select * from ige_source__attach limit 100;
+	select * from ige_source_evw limit 10
+2. Fix object id in tables: 
+    SELECT fix_objectid_number()    
+3. Fix sequence number in tables:
+    SELECT network.fix_sequence_number() 
+5. After data migration, roll back the changes at step #1:
+        5.1 In ige_task table, change task_comments type from varchar(10300000) to text
 		    ALTER TABLE ige_task ALTER COLUMN task_comments TYPE text;
 		    select * from ige_task limit 10;
-        1.4 In ige_source table, set globalid column to not nullable (after loading ige_source__attach table)
-		    Run this after generating new global ids: ALTER TABLE ige_source ALTER COLUMN globalid set not null;
-2. After data migration: Check table indexes
-2. Fix object id in tables
-3. Fix sequence number in tables
-4. Load attachment data from ige_source_presentation into ige_source__attach table 
-
+        5.2 In ige_source table, set globalid column to not nullable (after loading ige_source__attach table)		    
+			ALTER TABLE ige_source ALTER COLUMN globalid set not null;
+6. Clear some tables:
+  truncate table ige_task_active;
+  select * from ige_task_active;
 ----------------
-1. Before importing, In ige_task table, change task_comments type from text to varchar(10300000)
-  After importing, change task_comments type from varchar(10300000) to text
-2. Import ige_source_presentation to ige_source__attach
-3. IGE_Source table: Before importing, set globalid column to nullable; After importing, set it back
------ Build ige_source__attach based on ige_source & ige_source_presentation table
-SELECT sde.sde_set_default();
--- If needed. 
-truncate table ige_source__attach;
--- Generate globalid for ige_source table
-update ige_source --ige_source_evw
-  set globalid = sde.next_globalid();
-ALTER TABLE ige_source ALTER COLUMN globalid set not null;  
--- Import ige_source_presentation into ige_source__attach 
--- Step #1:
-set statement_timeout to 60000000; --1000 min
-show statement_timeout;
--- Step #2:
-INSERT INTO ige_source__attach (attachmentid, rel_globalid, content_type, att_name, data_size, data, globalid )
-  SELECT 
-    sde.next_rowid(current_schema()::text, 'ige_source__attach'),
-	t.globalid,
-	source_pres_type,
-	source_pres_file_name,
-	octet_length(presentation),
-	presentation,
-	sde.next_globalid()
-  FROM
-  (
-	  SELECT p.*, s.globalid
-	  FROM ige_source_presentation p
-	  JOIN ige_source_evw s ON p.source_id = s.source_id  
-  ) t;
--- Step #3: verify  
-SELECT count(*) FROM ige_source_presentation;
-SELECT count(*) FROM ige_source__attach
-select source_id from ige_source_presentation where source_id NOT IN (select source_id from ige_source_evw)
-select * from ige_source__attach limit 100;
-select * from ige_source_evw limit 10
+
+
+
+
+ 
+
+
 
 
 
