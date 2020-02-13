@@ -2347,7 +2347,12 @@ where lower(defn) like '%base_centreline%' --0
 		     ALTER TABLE ige_task ALTER COLUMN task_comments TYPE varchar(10300000); 
 		     select * from ige_task limit 10;
          1.2 In ige_source table, set globalid column to nullable
-		     ALTER TABLE ige_source ALTER COLUMN globalid DROP not null;    
+		     ALTER TABLE ige_source ALTER COLUMN globalid DROP not null; 
+		 1.3 In ArcCatalog, login as sde user, 
+		     Disconnet all other users
+			 Remove all locks
+			 Delete all versions
+			 Compress the geodatabase 	 
 2. After data migration: Check table indexes
 3. 
 	SELECT sde.sde_set_default();
@@ -2355,14 +2360,27 @@ where lower(defn) like '%base_centreline%' --0
 	update ige_source --ige_source_evw
 	  set globalid = sde.next_globalid();
 	ALTER TABLE ige_source ALTER COLUMN globalid set not null; 
+	select * from ige_source limit 20;
 4. Import ige_source_presentation to ige_source__attach
+   -- Step #0: Check if source_id in ige_source table is unique, otherwise, there could be issue with the importing
+   select source_id, count(1) from ige_source group by source_id having count(1) > 1
+   IF there are duplicated source_id, remove it by:
+     delete from ige_source 
+	 where globalid in 
+	 (
+		 select globalid 
+		 from (
+		 select row_number() over (partition by source_id order by source_id, trans_id_create ) as idx, t.* from ige_source t
+		 ) tt where idx > 1	 
+	 )
 	-- Step #1:
 	set statement_timeout to 60000000; --1000 min
 	show statement_timeout;
 	-- Step #2:
 	SELECT sde.sde_set_default();
 	-- If needed. 
-	truncate table ige_source__attach;
+	select count(1) from ige_source;
+	truncate table ige_source__attach;	
 	INSERT INTO ige_source__attach (attachmentid, rel_globalid, content_type, att_name, data_size, data, globalid )
 	  SELECT 
 		sde.next_rowid(current_schema()::text, 'ige_source__attach'),
@@ -2379,6 +2397,13 @@ where lower(defn) like '%base_centreline%' --0
 		  JOIN ige_source_evw s ON p.source_id = s.source_id  
 	  ) t;
 	-- Step #3: verify  
+	select * from ige_source_presentation where source_id  in (select  max(source_id) from ige_source_presentation)
+   -- select count(1) from ige_source_presentation
+	select * from ige_source__attach  
+	where rel_globalid in 
+	(
+		select globalid from ige_source_evw where source_id  in (select  max(source_id) from ige_source_presentation)
+	) ;
 	SELECT count(*) FROM ige_source_presentation;
 	SELECT count(*) FROM ige_source__attach
 	select source_id from ige_source_presentation where source_id NOT IN (select source_id from ige_source_evw)
