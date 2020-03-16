@@ -17,6 +17,7 @@ AS $BODY$DECLARE
   o_status  text;
   o_message text;
   o_json text;
+  v_task_type text;
 BEGIN
 /*
   Summary: 
@@ -27,6 +28,9 @@ BEGIN
     o_status = 'OK';
     o_message = '';
 	transid = -1;
+  SELECT task_type INTO v_task_type
+  FROM ige_task 
+  WHERE task_id = taskid;
   INSERT INTO ige_transaction(trans_id,
 								task_id,
 								source_id,

@@ -24,6 +24,8 @@ BEGIN
 	  Update task taken by value
     Testing:
 	  SELECT update_task_takenby(67092,'slee5')
+	  select * from ige_task where task_id = 67092;
+	  select * from ige_task_active; 
   */
     o_status = 'OK';
     o_message = '';
