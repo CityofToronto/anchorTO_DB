@@ -8,9 +8,8 @@ CREATE OR REPLACE FUNCTION code_src.get_sources(
     LANGUAGE 'sql'
 
     COST 100
-    VOLATILE 
+    VOLATILE SECURITY DEFINER 
     ROWS 1000
-	SECURITY DEFINER
 AS $BODY$
   /*
     Summary:
@@ -36,7 +35,8 @@ FROM
 	       format_string(t.external_source_no) AS ext_id,
 	       to_char(t.external_source_date, 'YYYY-MM-DD') AS ext_date,
 	       k.control_task_status AS maint_status,
-	       format_string(t.source_comments) AS comment,
+	       --format_string(t.source_comments) AS comment,
+	       t.source_comments AS comment,
 	       t.objectid
     FROM ige_source_evw t
     JOIN ige_control_task k ON t.source_id = k.source_id
@@ -48,5 +48,11 @@ FROM
 	;	
    $BODY$;
 
-ALTER FUNCTION code_src.get_sources() OWNER TO network;
-GRANT EXECUTE ON FUNCTION code_src.get_sources() TO anchorto_run
+ALTER FUNCTION code_src.get_sources()
+    OWNER TO network;
+
+GRANT EXECUTE ON FUNCTION code_src.get_sources() TO anchorto_run;
+
+GRANT EXECUTE ON FUNCTION code_src.get_sources() TO network;
+
+REVOKE ALL ON FUNCTION code_src.get_sources() FROM PUBLIC;

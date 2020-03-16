@@ -11,8 +11,7 @@ CREATE OR REPLACE FUNCTION code_src.create_transaction2(
     LANGUAGE 'plpgsql'
 
     COST 100
-    VOLATILE 
-	SECURITY DEFINER 
+    VOLATILE SECURITY DEFINER 
 AS $BODY$DECLARE 
   transid numeric(12,0);
   o_status  text;
@@ -41,11 +40,13 @@ BEGIN
          VALUES (nextval('ige_transaction_id_seq')::numeric(12,0),
                    $1,
                    (SELECT source_id FROM ige_task WHERE task_id = taskid), --null, --BATCH_SOURCE_ID,
-                   $2,
+                   upper($2),
                    now(),
                    null,
                    $4,
-				   $3,
+				   CASE WHEN v_task_type = 'SOURCE' OR v_task_type is null THEN 'Business task transaction'
+				        ELSE $3
+				   END,
                    null,                   
                    'OPEN') 
 		 RETURNING trans_id INTO transid;
@@ -101,5 +102,11 @@ EXCEPTION
 END;  
 $BODY$;
 
-ALTER FUNCTION code_src.create_transaction2(numeric, text, text, text)  OWNER TO network;
-GRANT EXECUTE ON FUNCTION code_src.create_transaction2(numeric, text, text, text) TO anchorto_run
+ALTER FUNCTION code_src.create_transaction2(numeric, text, text, text)
+    OWNER TO network;
+
+GRANT EXECUTE ON FUNCTION code_src.create_transaction2(numeric, text, text, text) TO anchorto_run;
+
+GRANT EXECUTE ON FUNCTION code_src.create_transaction2(numeric, text, text, text) TO network;
+
+REVOKE ALL ON FUNCTION code_src.create_transaction2(numeric, text, text, text) FROM PUBLIC;

@@ -8,9 +8,8 @@ CREATE OR REPLACE FUNCTION code_src.get_user_by_name(
     LANGUAGE 'sql'
 
     COST 100
-    VOLATILE 
+    VOLATILE SECURITY DEFINER 
     ROWS 1000
-	SECURITY DEFINER
 AS $BODY$
  /*
     Summary:
@@ -32,12 +31,12 @@ from
 			   SELECT t.task_type 
 			   FROM ige_task_active ta
 			   JOIN ige_task t ON ta.task_id = t.task_id
-			   WHERE ta.username = a
+			   WHERE UPPER(ta.username) = UPPER(a)
 		   ) AS active_task_type,
 	       (
 			   SELECT ta.task_id 
 			   FROM ige_task_active ta			   
-			   WHERE ta.username = a
+			   WHERE UPPER(ta.username) = UPPER(a)
 		   ) AS active_task_id,
           (
 		    select json_agg(row_to_json(c)) 
@@ -58,5 +57,11 @@ from
 ) row;
 $BODY$;
 
-ALTER FUNCTION code_src.get_user_by_name(text) OWNER TO network;
-GRANT EXECUTE ON FUNCTION code_src.get_user_by_name(text) TO anchorto_run
+ALTER FUNCTION code_src.get_user_by_name(text)
+    OWNER TO network;
+
+GRANT EXECUTE ON FUNCTION code_src.get_user_by_name(text) TO anchorto_run;
+
+GRANT EXECUTE ON FUNCTION code_src.get_user_by_name(text) TO network;
+
+REVOKE ALL ON FUNCTION code_src.get_user_by_name(text) FROM PUBLIC;

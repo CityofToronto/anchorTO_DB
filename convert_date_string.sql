@@ -51,7 +51,7 @@ ALTER FUNCTION code_src.convert_date_string(text)
 
 GRANT EXECUTE ON FUNCTION code_src.convert_date_string(text) TO anchorto_run;
 
-GRANT EXECUTE ON FUNCTION code_src.convert_date_string(text) TO PUBLIC;
+REVOKE EXECUTE ON FUNCTION code_src.convert_date_string(text) FROM PUBLIC;
 
 GRANT EXECUTE ON FUNCTION code_src.convert_date_string(text) TO network;
 

@@ -15,6 +15,7 @@ CREATE OR REPLACE FUNCTION code_src.create_transaction(
 AS $BODY$
 DECLARE 
   transid numeric(12,0);
+  v_task_type text;
 BEGIN
 /*
   Summary: 
@@ -22,6 +23,10 @@ BEGIN
   Testing:
     SELECT create_transaction(1,'slee33', 'some comments', 'anchorTO');
 */
+  SELECT task_type INTO v_task_type
+  FROM ige_task 
+  WHERE task_id = taskid;
+  
   INSERT INTO ige_transaction(trans_id,
 								task_id,
 								source_id,
@@ -35,11 +40,13 @@ BEGIN
          VALUES (nextval('ige_transaction_id_seq')::numeric(12,0),
                    $1,
                    (SELECT source_id FROM ige_task WHERE task_id = taskid), --null, --BATCH_SOURCE_ID,
-                   $2,
+                   upper($2),
                    now(),
                    null,
                    $4,
-				   $3,
+				   CASE WHEN v_task_type = 'SOURCE' OR v_task_type is null THEN 'Business task transaction'
+				        ELSE $3
+				   END,
                    'TRANS' || transid::text,              
                    'OPEN') 
 		 RETURNING trans_id INTO transid;

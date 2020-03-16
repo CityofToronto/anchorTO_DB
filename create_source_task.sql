@@ -9,8 +9,7 @@ CREATE OR REPLACE FUNCTION code_src.create_source_task(
     LANGUAGE 'plpgsql'
 
     COST 100
-    VOLATILE 
-	SECURITY DEFINER 
+    VOLATILE SECURITY DEFINER 
 AS $BODY$
 DECLARE 
   transid numeric(12,0);
@@ -30,7 +29,7 @@ BEGIN
     o_message = '';
 	transid = -1;
 	taskid = -1;	
-	SELECT create_task($1, $2, 'anchorTO','SOURCE') INTO o_json;
+	SELECT create_task($1, $2, 'anchorTO','SOURCE') INTO o_json; 
 	SELECT o_json::json->>'status',
            o_json::json->>'message',
 		   o_json::json->>'taskid',
@@ -80,5 +79,11 @@ EXCEPTION
 END;  
 $BODY$;
 
-ALTER FUNCTION code_src.create_source_task(text, text) OWNER TO network;
-GRANT EXECUTE ON FUNCTION code_src.create_source_task(text, text) TO anchorto_run
+ALTER FUNCTION code_src.create_source_task(text, text)
+    OWNER TO network;
+
+GRANT EXECUTE ON FUNCTION code_src.create_source_task(text, text) TO anchorto_run;
+
+GRANT EXECUTE ON FUNCTION code_src.create_source_task(text, text) TO network;
+
+REVOKE ALL ON FUNCTION code_src.create_source_task(text, text) FROM PUBLIC;

@@ -51,13 +51,13 @@ BEGIN
 	      WHERE task_id = v_task_id;
 		END IF; 
 		SELECT taken_by INTO v_username FROM ige_task WHERE task_id = v_task_id;
-		IF EXISTS (SELECT * FROM ige_task_active WHERE username = v_username) THEN
+		IF EXISTS (SELECT * FROM ige_task_active WHERE UPPER(username) = UPPER(v_username)) THEN
 		  UPDATE ige_task_active 
 		    SET task_id = v_task_id
-			WHERE username = v_username;
+			WHERE UPPER(username) = UPPER(v_username);
 		ELSE
 	      INSERT INTO ige_task_active (username, task_id, date_modified)
-		    VALUES (v_username, v_task_id, current_timestamp);	
+		    VALUES (UPPER(v_username), v_task_id, current_timestamp);	
 		END IF;	
 	  END IF;	
 	 /* -- Beginning of updating Oracle

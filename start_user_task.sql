@@ -40,9 +40,9 @@ BEGIN
 		WHERE task_id = v_task_id 
 		  AND 
 		    ( UPPER(t.assigned_to) = UPPER(v_user_name) 
-			  OR t.assigned_to IN 
+			  OR UPPER(t.assigned_to) IN 
 				 (
-					 SELECT s.steward_group 
+					 SELECT UPPER(s.steward_group) 
 					 FROM ige_user_steward s 
 					 JOIN ige_user u ON u.user_id = s.user_id 
 					 WHERE UPPER(u.username) = UPPER(v_user_name)
@@ -51,7 +51,7 @@ BEGIN
 	  ) THEN
 	  -- Update task status	 
 	  UPDATE ige_task
-	    SET taken_by = v_user_name
+	    SET taken_by = UPPER(v_user_name)
 	  WHERE task_id = v_task_id;
 	/* -- Beginning of updating Oracle
 	 IF get_configuration_bool('anchorTO', 'ANCHORTO', 'sync_with_oracle') THEN 

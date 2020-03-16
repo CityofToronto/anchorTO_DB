@@ -8,15 +8,17 @@ CREATE OR REPLACE FUNCTION code_src.update_user_info(
     LANGUAGE 'plpgsql'
 
     COST 100
-    VOLATILE 
-	SECURITY DEFINER
+    VOLATILE SECURITY DEFINER 
 AS $BODY$
 DECLARE 
 /*
     Summary:
 	  Update user information
     Testing:
-	  select update_user_info('{"business_unit": "IT - SDS - GCC","email": "slee3300@toronto.ca","fullname": "Steve lee3300","status": "ACTIVE","steward_group": ["SITE_AREA_MAINT","AMA_MAINT","CENTRELINE_ADDRESS_MAINT"],"user_id": null,"username": "Slee33000"}');
+	  select update_user_info('{"business_unit": "IT - SDS - GCC","email": "slee5@toronto.ca","fullname": "Steve lee","status": "ACTIVE","steward_group": ["SITE_AREA_MAINT","AMA_MAINT","CENTRELINE_ADDRESS_MAINT"],"user_id": null,"username": "slee5"}');
+	  select update_user_info('{"business_unit": "IT - SDS - GCC","email": "slee5@toronto.ca","fullname": "Steve lee","status": "ACTIVE","steward_group": ["SITE_AREA_MAINT","AMA_MAINT","CENTRELINE_ADDRESS_MAINT"],"user_id": null,"username": "SLEE5"}');
+	  select update_user_info('{"business_unit": "IT - SDS - GCC","email": "slee5@toronto.ca","fullname": "Steve lee","status": "ACTIVE","steward_group": ["SITE_AREA_MAINT","AMA_MAINT","CENTRELINE_ADDRESS_MAINT"],"user_id": 2000002,"username": "slee5"}');
+	  select update_user_info('{"business_unit": "IT - SDS - GCC","email": "slee5@toronto.ca","fullname": "Steve lee","status": "ACTIVE","steward_group": ["SITE_AREA_MAINT","CENTRELINE_ADDRESS_MAINT"],"user_id": 2000002,"username": "slee5"}');
   */
   o_status text;
   o_userid text;
@@ -29,6 +31,7 @@ DECLARE
   i_status text;
   i_steward_group json;
   i_user_name text;
+  user_name_up text;
   o_json text;  
   isnew boolean;
 BEGIN  
@@ -51,8 +54,8 @@ BEGIN
 		 i_full_name,
 		 i_status,
 		 i_steward_group,
-		 i_user_name;
-  i_user_name = UPPER(i_user_name);
+		 i_user_name;  
+  user_name_up = i_user_name;
   IF o_userid IS null 
     OR o_userid = '0'
 	OR o_userid = ''
@@ -150,14 +153,48 @@ BEGIN
     RAISE NOTICE 'Updated Oracle ige_user_steward table: %', o_userid; 
   END IF;
   -- End of updating Oracle to sync*/
+  
+  -- If user got removed from the groups, need to reset task_id in ige_task_active table, assigned_to and taken_by in ige_task table 
+  -- Reset user's active task(s) if user's group got removed
+  UPDATE ige_task_active
+  SET task_id = null,
+      date_modified = current_timestamp
+  WHERE UPPER(username) IN 
+  (
+	SELECT UPPER(a.username) 
+	  FROM ige_task_active a
+	  JOIN ige_user iu ON UPPER(iu.username) = UPPER(a.username)
+	  JOIN ige_task t ON a.task_id = t.task_id
+	  JOIN ige_task_default td ON t.task_type = td.task_type 
+	  LEFT JOIN ige_user_steward ius ON ius.user_id = iu.user_id AND ius.steward_group = td.assigned_to
+	WHERE iu.user_id = o_userid::bigint 
+	  AND ius.user_id is null
+  );
+  -- Reset assigned_to and taken_by in ige_task table if the user lost privilege
+  UPDATE ige_task ts
+    SET taken_by = null,
+	    assigned_to = coalesce(CASE WHEN UPPER(i_user_name) = UPPER(assigned_to) 
+		                   -- Get default assigned_to
+						   THEN (SELECT UPPER(assigned_to) FROM ige_task_default WHERE task_type = (SELECT task_type FROM ige_task tt WHERE tt.task_id = ts.task_id) LIMIT 1)
+		                   ELSE assigned_to -- No change
+					  END,assigned_to)
+  WHERE task_id IN
+  (
+	  SELECT t.task_id 
+		FROM  ige_task t
+		  JOIN ige_user iu ON UPPER(iu.username) = UPPER(t.taken_by) OR UPPER(iu.username) = UPPER(t.assigned_to)	   
+		  JOIN ige_task_default td ON t.task_type = td.task_type 
+		  LEFT JOIN ige_user_steward ius ON ius.user_id = iu.user_id AND ius.steward_group = td.assigned_to
+		WHERE iu.user_id = o_userid::bigint 
+		  AND ius.user_id is null
+  );
   SELECT row_to_json(c) INTO o_json
 	FROM
 	(
 	  SELECT o_status status, 
 	       o_message message,
 		   o_userid userid
-	) c;
-	--COMMIT;
+	) c;	
 	RETURN o_json;
   EXCEPTION 
   WHEN unique_violation THEN
@@ -191,11 +228,16 @@ BEGIN
 	  SELECT o_status status, 
 	       o_message message,
 		   o_userid userid
-	) c;
-	--ROLLBACK;
+	) c;	
 	RETURN o_json;
 END;  
 $BODY$;
 
-ALTER FUNCTION code_src.update_user_info(text) OWNER TO network;
-GRANT EXECUTE ON FUNCTION code_src.update_user_info(text) TO anchorto_run
+ALTER FUNCTION code_src.update_user_info(text)
+    OWNER TO network;
+
+GRANT EXECUTE ON FUNCTION code_src.update_user_info(text) TO anchorto_run;
+
+GRANT EXECUTE ON FUNCTION code_src.update_user_info(text) TO network;
+
+REVOKE ALL ON FUNCTION code_src.update_user_info(text) FROM PUBLIC;

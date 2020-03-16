@@ -51,9 +51,9 @@ BEGIN
               VALUES (taskid
                      ,$4
                      ,null
-                     ,$1
-                     ,$1
-                     ,10
+                     ,upper($1)
+                     ,upper($1)
+                     ,null -- 10 -- Requested by Waisan on Feb. 24, 2020
                      ,'WORK STARTED'
                      ,$2
                      ,null --controlTaskId

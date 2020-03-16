@@ -21,7 +21,7 @@ BEGIN
 Summary: 
     Get task id by transaction id
 Testing:
-    SELECT get_task_id_txt_by_trans_id(2000044)
+    SELECT get_task_id_txt_by_trans_id(1000000682)
 */
   o_status = 'OK';
   o_message = '';
