@@ -87,7 +87,12 @@ BEGIN
 	SELECT search_ama('{"linear_name":"Sheppard Ave", "usage_status":"", "municipality":"", "lo_num_from":"99A%", "lo_num_to":0, "logicOP":"and"}')
 	
 	SELECT search_ama('{"linear_name":"Shep%A", "usage_status":"", "municipality":"", "lo_num_from":1, "lo_num_to":2, "logicOP":"and"}')
-	SELECT search_ama('{"linear_name":"Shepp% E", "usage_status":"", "municipality":"", "lo_num_from":1, "lo_num_to":2, "logicOP":"and"}')
+	SELECT search_ama('{"linear_name":"Shepp% E", "usage_status":"", "municipality":"", "lo_num_from":1, "lo_num_to":2, "logicOP":"and"}')	
+	SELECT search_ama('{"linear_name":"Sheppard% E", "usage_status":"", "municipality":"", "lo_num_from":1, "lo_num_to":2, "logicOP":"and"}')
+	
+	SELECT search_ama('{"linear_name":"Sheppard%E", "usage_status":"", "municipality":"", "lo_num_from":1, "lo_num_to":2, "logicOP":"and"}')
+	SELECT search_ama('{"linear_name":"Sheppard% %E", "usage_status":"", "municipality":"", "lo_num_from":1, "lo_num_to":2, "logicOP":"and"}')
+	SELECT search_ama('{"linear_name":"Sheppard AV%", "usage_status":"", "municipality":"", "lo_num_from":1, "lo_num_to":2, "logicOP":"and"}')
 	
 	SELECT search_ama('{"linear_name":"dyas rd", "usage_status":"", "municipality":"", "lo_num_from":0, "lo_num_to":0, "logicOP":"OR"}')
 	SELECT search_ama('{"linear_name":"dyas", "usage_status":"", "municipality":"", "lo_num_from":0, "lo_num_to":0, "logicOP":"OR"}')
@@ -326,7 +331,7 @@ BEGIN
 			 ) cm
 			 ORDER BY full_name, lo_num, lo_num_suf--address_string_id
 		) c;		
-   ELSE
+   ELSE  -- logicOP = 'AND'
      SELECT json_agg(row_to_json(c)) INTO o_json
 	   FROM
 	   (	 
@@ -364,8 +369,8 @@ BEGIN
 					    AND 						
 			          (
 						    UPPER(l.name_part) LIKE v_linear_name || '%'
-					    AND (is_blank_string(v_type_part) OR UPPER(l.type_part) = v_type_part)
-						AND (is_blank_string(v_dir_part) OR UPPER(l.dir_part) = v_dir_part)
+					    AND (is_blank_string(v_type_part) OR UPPER(l.type_part) = v_type_part) -- OR UPPER(l.type_part) LIKE v_type_part || '%')
+						AND (is_blank_string(v_dir_part) OR UPPER(l.dir_part) = v_dir_part) -- OR UPPER(l.dir_part) LIKE v_dir_part || '%')
 					  ) 
 			         /*  (
 						   format_string(UPPER(l.name_part) || ' ' || coalesce(UPPER(l.type_part), '') || ' ' || coalesce(UPPER(l.dir_part), '')) LIKE UPPER(v_search_by::json->>'linear_name') || '%'

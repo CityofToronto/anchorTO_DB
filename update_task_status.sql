@@ -20,23 +20,46 @@ DECLARE
   ret_status text;
   v_control_task_id numeric;
   v_username text;
+  v_currentstatus text;
+  v_transid numeric;
+  
 BEGIN
 /*
     Summary:
 	  Update task status
     Testing:
-	  SELECT update_task_status(67092,'completed')
+	  SELECT update_task_status(67092,'COMPLETED')
   */
     o_status = 'OK';
     o_message = '';
     -- Validate status 
-	IF validate_task_status(v_status) THEN
-	  
-	  UPDATE ige_task
-		SET task_status = UPPER(v_status)
-	  WHERE task_id = v_task_id
-	    AND ( v_status <> 'WORK STARTED'); -- OR taken_by IS NULL);
-	   
+	
+	o_message = validate_task_status(v_status, v_task_id);
+	IF o_message  = '' THEN
+	  IF UPPER(v_status) = 'COMPLETED' THEN
+	    SELECT task_status INTO v_currentstatus FROM ige_task WHERE task_id = v_task_id;
+		IF v_currentstatus <> 'POSTED' THEN		   
+		   RAISE EXCEPTION USING
+		     errcode = '50001',
+			 message = 'Status must be POSTED before set to COMPLETED';
+		END IF;
+		SELECT taken_by INTO v_username FROM ige_task WHERE task_id = v_task_id;
+		SELECT create_transaction(v_task_id,v_username, 'Complete task', 'anchorTO') into v_transid;
+		UPDATE ige_transaction
+         SET trans_status = 'COMPLETED',
+		     username = v_username,
+			 date_end = current_timestamp
+         WHERE trans_id = v_transid;
+		raise notice 'transid: %', v_transid;
+		UPDATE ige_task
+			SET task_status = upper(v_status)
+		WHERE task_id = v_task_id;		    
+	  ELSE
+	    UPDATE ige_task
+		   SET task_status = UPPER(v_status)
+	    WHERE task_id = v_task_id
+	       ; -- commented off for release 1: AND ( v_status <> 'WORK STARTED'); -- OR taken_by IS NULL);
+	  END IF;
 	  IF UPPER(v_status) = 'COMPLETED' THEN
 	    UPDATE ige_task_active 
 		  SET task_id = null,
@@ -69,8 +92,7 @@ BEGIN
 	  END IF;
 	 -- End of updating Oracle */
 	ELSE 
-	  o_status = 'Failed';
-      o_message = 'Invalid task status ' || v_status;
+	  o_status = 'Failed';      
 	END IF;  	
 	
 	-- Sync control_task status

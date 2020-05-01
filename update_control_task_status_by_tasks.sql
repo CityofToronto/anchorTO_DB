@@ -75,6 +75,7 @@ BEGIN
 	  IF cnt_tasks = cnt_completed THEN -- IF #2
 	    v_control_task_status = STATUS_COMPLETED;
 	  ELSE -- ELSE #2
+	    v_control_task_status = STATUS_IN_PROGRESS; --wst
 	    -- Check all HOLD?
 	    -- Get count of all active HOLD tasks for the source/control task
 	    SELECT count(*) INTO cnt_hold  
@@ -110,8 +111,8 @@ BEGIN
 	        AND trans_id_expire = -1
 	        AND (task_status = STATUS_STARTED); -- OR task_status = STATUS_COMPLETED);
 		  IF cnt_started > 0 THEN -- IF #4
-		    v_control_task_status = STATUS_IN_PROGRESS;		  
-		  ELSE -- ELSE #4		    
+		     v_control_task_status = STATUS_IN_PROGRESS;		  
+		  ELSE -- ELSE #4	
 			-- Check if the 1st task is READY?		  	  
 		    IF EXISTS (
 			    SELECT 1
@@ -121,7 +122,8 @@ BEGIN
 	              AND task_status = STATUS_READY
 			      AND task_sequence = v_min_task_seq
 			    ) THEN 
-		      v_control_task_status = STATUS_READY;
+			  --v_control_task_status = STATUS_READY; wst
+		      v_control_task_status = STATUS_IN_PROGRESS;
 		    END IF; 			  
 		  END IF; -- END IF #4
 		  

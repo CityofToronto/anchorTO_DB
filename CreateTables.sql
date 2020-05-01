@@ -1,3 +1,124 @@
+----------############ Setup Job Scheduler FDW ---------
+-- In database Scheduler:
+CREATE OR REPLACE view scheduler.v_scheduler_history AS
+select t.*
+from (
+	select "ID" as id ,         
+	       "JOB_NAME" as job_name,
+	       replace(upper("JOB_NAME"), 'ANCHORTO_', '') as job_type,
+	       replace(substring("PARAMETERS" from '(TRANS[0-9]{10})'), 'TRANS', '') as trans_id, 
+	       replace(replace(substring(replace((xpath('//variable[@name="para1"]/@value',"PARAMETERS"::xml))[1]::text, '\"', '"')
+	                         from '("source_id":[0-9]+,)'), 
+	                       '"source_id":', ''),
+	               ',', '') as source_id, 
+	       /*case when "ERROR_CODE"  <> '0'--when "JOB_NAME" = 'anchorTO_CreateSource'
+	            then replace((xpath('//variable[@name="para1"]/@value',"PARAMETERS"::xml))[1]::text, '\"', '"')::json->'source_id'
+	            else null end as source_id,	 */           
+	       case when "JOB_NAME" = 'anchorTO_CreateSource' then upper(replace((xpath('//variable[@name="para1"]/@value',"PARAMETERS"::xml))[1]::text, '\', '')::json->>'user_id') 
+	            else '' 
+	       end as user_name,
+	       "START_TIME" as start_time,
+	       "END_TIME" as end_time,
+	       case when "ERROR_CODE"  <> '0' then 'FAILED' else 'SUCCESSFUL' end as status,
+	       "EXIT_CODE" as exit_code,
+	       "ERROR" as error,
+	       "ERROR_CODE" as error_code,
+	       "ERROR_TEXT" as error_text,       
+	       replace((xpath('//variable[@name="para1"]/@value',"PARAMETERS"::xml))[1]::text, '\"', '"') as info,
+	       "PARAMETERS" as parameters
+	from scheduler.scheduler.scheduler_history sh 
+	where "JOB_NAME" IN ('anchorTO_CreateSource', 'anchorTO_Post')	
+	) t
+	where length(info) > 0;
+ALTER view scheduler.v_scheduler_history
+    OWNER TO scheduler;
+grant usage on schema scheduler to network;
+grant select on scheduler.v_scheduler_history to network;
+
+-- In database anchorTO / LBM:
+  -- Under admin account:
+      CREATE EXTENSION postgres_fdw;
+	  CREATE SERVER server_scheduler FOREIGN DATA WRAPPER postgres_fdw OPTIONS (host 'banff', port '5488', dbname 'scheduler');
+      ALTER SERVER server_scheduler  OWNER TO network;
+	  GRANT USAGE ON FOREIGN SERVER server_scheduler to network;
+  -- Under network account in a new window:	  
+	  CREATE USER MAPPING FOR network SERVER server_scheduler OPTIONS (user 'network', password 'tsnine');
+	  CREATE SCHEMA scheduler AUTHORIZATION network;
+	  IMPORT FOREIGN SCHEMA scheduler LIMIT TO (v_scheduler_history) FROM SERVER server_scheduler INTO scheduler; 
+-- Test imported view:
+SELECT * FROM scheduler.v_scheduler_history;
+-- Create view in AnchorTO/LBM:
+drop view if exists network.v_job_log;
+create or replace view network.v_job_log as 
+select job_id, 
+       job_type,
+       task_id,
+       user_name,
+       taken_by,
+       job_status,
+       start_time,
+       end_time,
+       error_text
+from 
+(
+select row_number() over (partition by job_id order by job_id) idx, 
+       s.* 
+from 
+(
+	select s.id job_id,
+		   s.job_type,
+		   t.task_id,
+		   t.username user_name,
+		   t.taken_by,
+		   s.status job_status,
+		   s.start_time,
+		   s.end_time,
+		   s.error_text 
+	from (
+		select * 
+		from scheduler.v_scheduler_history
+		where job_type = 'POST'
+		) s
+	left join (
+		select t.trans_id, 
+			   t.task_id, 
+			   t.source_id,
+			   t.username,
+			   k.taken_by
+		from ige_transaction t
+		left join ige_task k on t.task_id = k.task_id
+		) t on s.trans_id::numeric = t.trans_id
+
+	UNION ALL
+
+	select s.id job_id,
+		   s.job_type,
+		   t.task_id,
+		   coalesce(s.user_name, t.username) user_name,
+		   t.taken_by,
+		   s.status job_status,
+		   s.start_time,
+		   s.end_time,
+		   s.error_text
+	from (
+		select *
+		from scheduler.v_scheduler_history
+		where job_type = 'CREATESOURCE'
+		) s
+	left join (
+		select t.trans_id, 
+			   t.task_id, 
+			   t.source_id,
+			   t.username,
+			   k.taken_by
+		from ige_transaction t
+		left join ige_task k on t.task_id = k.task_id
+		) t on s.source_id::numeric = t.source_id
+) s
+) ss
+where idx = 1
+;
+
 ----------############ Setup Oracle FDW -----------
 -- ############  Run under admin user: 
 
@@ -8,7 +129,7 @@ CREATE SERVER imaint_anchor2 FOREIGN DATA WRAPPER oracle_fdw
        OPTIONS (dbserver'//darlington.corp.toronto.ca:1521/IGEMA.CORP.TORONTO.CA');  -- QA Oracle	   
 GRANT USAGE ON FOREIGN SERVER imaint_anchor to network;	
 GRANT USAGE ON FOREIGN SERVER imaint_anchor2 to network;
--- ############  Run under network user:	
+	
 CREATE USER MAPPING FOR network SERVER imaint_anchor
        OPTIONS (user 'anchor_ige', password 'stage');
 CREATE USER MAPPING FOR network SERVER imaint_anchor2
@@ -36,6 +157,51 @@ SELECT * FROM imaint_anchor.ige_task limit 100;
 SELECT * FROM imaint_anchor.ige_transaction limit 100;
 --SELECT oracle_diag();
 -------------############--------------------------
+CREATE TABLE  network.task_status_flow 
+(	
+    flow_id serial, 
+	status_from character varying(30) NOT NULL,
+	status_to character varying(30) NOT null,
+	date_effective timestamp,
+	date_expiry timestamp
+);
+CREATE INDEX task_status_flow_status_from_to ON network.task_status_flow (upper(status_from), upper(status_to));
+insert into network.task_status_flow (status_from, status_to, date_effective)
+  values ('READY', 'TAKEN', current_timestamp);
+insert into network.task_status_flow (status_from, status_to, date_effective)
+  values ('READY', 'HOLD', current_timestamp); 
+insert into network.task_status_flow (status_from, status_to, date_effective)
+  values ('HOLD', 'READY', current_timestamp);
+insert into network.task_status_flow (status_from, status_to, date_effective)
+  values ('TAKEN', 'POSTED', current_timestamp);
+insert into network.task_status_flow (status_from, status_to, date_effective)
+  values ('TAKEN', 'POSTING', current_timestamp); 
+insert into network.task_status_flow (status_from, status_to, date_effective)
+  values ('TAKEN', 'POST FAILED', current_timestamp); 
+insert into network.task_status_flow (status_from, status_to, date_effective)
+  values ('TAKEN', 'POST SYSERR', current_timestamp); 
+insert into network.task_status_flow (status_from, status_to, date_effective)
+  values ('POSTING', 'POSTED', current_timestamp); 
+insert into network.task_status_flow (status_from, status_to, date_effective)
+  values ('POSTING', 'POST FAILED', current_timestamp); 
+insert into network.task_status_flow (status_from, status_to, date_effective)
+  values ('POSTING', 'POST SYSERR', current_timestamp); 
+insert into network.task_status_flow (status_from, status_to, date_effective)
+  values ('POSTED', 'COMPLETED', current_timestamp); 
+insert into network.task_status_flow (status_from, status_to, date_effective)
+  values ('POSTED', 'COMPLETE FAILED', current_timestamp); 
+insert into network.task_status_flow (status_from, status_to, date_effective)
+  values ('POSTED', 'TAKEN', current_timestamp); 
+
+update network.task_status_flow
+    set date_expiry = current_timestamp
+where status_from = 'POSTING';
+commit;
+
+select * from network.task_status_flow order by status_from;
+
+
+----------------------------------------------
 CREATE TABLE  network.ige_control_task 
 (	
 	CONTROL_TASK_ID numeric(12,0) NOT NULL, 
@@ -2387,7 +2553,12 @@ where lower(defn) like '%base_centreline%' --0
 		sde.next_rowid(current_schema()::text, 'ige_source__attach'),
 		t.globalid,
 		source_pres_type,
-		source_pres_file_name,
+		--source_pres_file_name,
+		regexp_replace (
+			CASE WHEN position('\' in source_pres_file_name) > 0 THEN RIGHT(source_pres_file_name,position('\' in REVERSE(source_pres_file_name))-1) 
+				 ELSE source_pres_file_name
+			END
+			, '[^a-zA-Z0-9 !@#$%&*(),./<>?:;''+=_-]', '', 'g') source_pres_file_name,
 		octet_length(presentation),
 		presentation,
 		sde.next_globalid()
@@ -2425,6 +2596,39 @@ where lower(defn) like '%base_centreline%' --0
   select * from ige_task_active;
 ----------------
 
+------------------ Generate source_presentation list with either full path of file, or special characters
+select source_id,
+       source_pres_type,
+	   source_pres_file_name,
+	   source_pres_file_name_converted,
+	   case when full_path = 1 then 'Yes' else ' ' end as Full_Path_Exists, 
+	   case when len1 <> len2 then 'Yes' else ' ' end as Special_Char_Exist 
+from (
+	select tt.*,
+		   length(source_pres_file_name) len1,
+		   length(source_pres_file_name_converted) len2
+	from (
+	SELECT  source_id,
+			source_pres_type,
+			source_pres_file_name,
+			case when position('\' in source_pres_file_name) > 0 THEN 1 else 0 end full_path,
+			regexp_replace (
+				CASE WHEN position('\' in source_pres_file_name) > 0 THEN RIGHT(source_pres_file_name,position('\' in REVERSE(source_pres_file_name))-1) 
+					 ELSE source_pres_file_name
+				END
+				, '[^a-zA-Z0-9 !@#$%&*(),./<>?:;''+=_-]', '', 'g') source_pres_file_name_converted			
+		  FROM
+		  (
+			  SELECT p.*, s.globalid
+			  FROM ige_source_presentation p
+			  JOIN ige_source_evw s ON p.source_id = s.source_id  
+		  ) t
+	) tt
+) r
+where full_path = 1 or len1 <> len2
+	;
+----------------------------------------------------------------------------------
+	  
 
 
 
