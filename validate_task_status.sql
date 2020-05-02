@@ -4,7 +4,7 @@
 
 CREATE OR REPLACE FUNCTION code_src.validate_task_status(
 	v_status text,
-    v_task_id numeric default 0)
+	v_task_id numeric DEFAULT 0)
     RETURNS text
     LANGUAGE 'plpgsql'
 
@@ -23,6 +23,8 @@ BEGIN
 	  SELECT validate_task_status('COMPLETED', 70315)  -- valid
 	  SELECT validate_task_status('HOLD', 1000002242) --valid
 	  SELECT * FROM validate_task_status('POSTED', 1000002242) --invalid
+	  SELECT * FROM validate_task_status('TAKEN', 65792) --Ignored: from POSTED to TAKEN
+	  
   */  
   IF v_task_id = 0 THEN
     IF EXISTS 
@@ -37,8 +39,16 @@ BEGIN
   ELSE 
     SELECT task_status INTO v_cur_status FROM ige_task WHERE task_id = v_task_id;
 	raise notice 'Changing from % to %:', v_cur_status, v_status;
-    IF upper(v_cur_status) = upper(v_status) 
-	  OR EXISTS 
+	-- Check if allowed but ignored request
+	IF EXISTS 
+	  (SELECT * 
+	   FROM task_status_flow 
+	   WHERE UPPER(v_cur_status) = UPPER(status_from) 
+	     AND UPPER(v_status) = UPPER(status_to)
+	     AND ignored = 1
+	     AND date_expiry is null) THEN 
+	  msg = 'IGNORED';		
+	ELSIF EXISTS 
 	  (SELECT * 
 	   FROM task_status_flow 
 	   WHERE UPPER(v_cur_status) = UPPER(status_from) 

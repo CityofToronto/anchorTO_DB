@@ -1,7 +1,7 @@
 -- FUNCTION: code_src.update_task_status(numeric, text)
 
 -- DROP FUNCTION code_src.update_task_status(numeric, text);
-
+ 
 CREATE OR REPLACE FUNCTION code_src.update_task_status(
 	v_task_id numeric,
 	v_status text)
@@ -35,6 +35,17 @@ BEGIN
     -- Validate status 
 	
 	o_message = validate_task_status(v_status, v_task_id);
+	-- Valid request, but ignore status update
+	IF upper(o_message) = 'IGNORED' THEN
+	  o_message = '';
+	  SELECT row_to_json(c) INTO o_json
+	  FROM
+	  (
+	    SELECT o_status status, 
+		   o_message message		    
+	  ) c;	
+	  RETURN o_json;
+	END IF;
 	IF o_message  = '' THEN
 	  IF UPPER(v_status) = 'COMPLETED' THEN
 	    SELECT task_status INTO v_currentstatus FROM ige_task WHERE task_id = v_task_id;
@@ -54,12 +65,12 @@ BEGIN
 		UPDATE ige_task
 			SET task_status = upper(v_status)
 		WHERE task_id = v_task_id;		    
-	  ELSE
+	  ELSE  -- IF UPPER(v_status) = 'COMPLETED' THEN
 	    UPDATE ige_task
 		   SET task_status = UPPER(v_status)
 	    WHERE task_id = v_task_id
 	       ; -- commented off for release 1: AND ( v_status <> 'WORK STARTED'); -- OR taken_by IS NULL);
-	  END IF;
+	  END IF; -- END of IF UPPER(v_status) = 'COMPLETED' THEN
 	  IF UPPER(v_status) = 'COMPLETED' THEN
 	    UPDATE ige_task_active 
 		  SET task_id = null,
@@ -93,7 +104,7 @@ BEGIN
 	 -- End of updating Oracle */
 	ELSE 
 	  o_status = 'Failed';      
-	END IF;  	
+	END IF;  	-- End of IF o_message  = '' THEN
 	
 	-- Sync control_task status
 	SELECT control_task_id INTO v_control_task_id

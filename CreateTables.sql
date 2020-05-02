@@ -157,15 +157,18 @@ SELECT * FROM imaint_anchor.ige_task limit 100;
 SELECT * FROM imaint_anchor.ige_transaction limit 100;
 --SELECT oracle_diag();
 -------------############--------------------------
+drop table if exists network.task_status_flow;
 CREATE TABLE  network.task_status_flow 
 (	
     flow_id serial, 
 	status_from character varying(30) NOT NULL,
 	status_to character varying(30) NOT null,
+	ignored integer,
 	date_effective timestamp,
 	date_expiry timestamp
 );
 CREATE INDEX task_status_flow_status_from_to ON network.task_status_flow (upper(status_from), upper(status_to));
+
 insert into network.task_status_flow (status_from, status_to, date_effective)
   values ('READY', 'TAKEN', current_timestamp);
 insert into network.task_status_flow (status_from, status_to, date_effective)
@@ -193,9 +196,28 @@ insert into network.task_status_flow (status_from, status_to, date_effective)
 insert into network.task_status_flow (status_from, status_to, date_effective)
   values ('POSTED', 'TAKEN', current_timestamp); 
 
+insert into network.task_status_flow (status_from, status_to, date_effective, ignored)
+  values ('POSTED', 'POSTED', current_timestamp,1);
+insert into network.task_status_flow (status_from, status_to, date_effective)
+  values ('POSTED', 'POST FAILED', current_timestamp); 
+insert into network.task_status_flow (status_from, status_to, date_effective)
+  values ('POSTED', 'POST SYSERR', current_timestamp); 
+insert into network.task_status_flow (status_from, status_to, date_effective)
+  values ('POST FAILED', 'POSTED', current_timestamp);
+insert into network.task_status_flow (status_from, status_to, date_effective, ignored)
+  values ('POST FAILED', 'POST FAILED', current_timestamp, 1); 
+insert into network.task_status_flow (status_from, status_to, date_effective)
+  values ('POST FAILED', 'POST SYSERR', current_timestamp); 
+insert into network.task_status_flow (status_from, status_to, date_effective, ignored)
+  values ('TAKEN', 'TAKEN', current_timestamp,1);
+  
 update network.task_status_flow
     set date_expiry = current_timestamp
 where status_from = 'POSTING';
+
+update network.task_status_flow
+  set ignored = 1
+where status_from = 'POSTED' and status_to = 'TAKEN';
 commit;
 
 select * from network.task_status_flow order by status_from;

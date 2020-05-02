@@ -26,7 +26,7 @@ DECLARE
   ret_msg text;	
   ret_json text;
   v_sql text;  
-  STATUS_STARTED text = 'WORK STARTED';  
+  STATUS_STARTED text = 'TAKEN'; --WORK STARTED';  
   v_version_num text;
   v_active_task_type text;
 BEGIN 
