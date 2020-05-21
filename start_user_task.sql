@@ -50,9 +50,19 @@ BEGIN
 			 )
 	  ) THEN
 	  -- Update task status	 
-	  UPDATE ige_task
+	 /* UPDATE ige_task
 	    SET taken_by = UPPER(v_user_name)
-	  WHERE task_id = v_task_id;
+	  WHERE task_id = v_task_id;*/
+	SELECT update_task_takenby(v_task_id, UPPER(v_user_name)) INTO ret_json; 
+	SELECT ret_json::json->>'status',
+	       ret_json::json->>'message'
+      INTO  ret_status,
+	        ret_msg;		  
+	  IF ret_status <> 'OK' THEN
+		  RAISE EXCEPTION USING
+				errcode= ret_status,
+				message= ret_msg;
+	  END IF;
 	/* -- Beginning of updating Oracle
 	 IF get_configuration_bool('anchorTO', 'ANCHORTO', 'sync_with_oracle') THEN 
 		 UPDATE imaint_anchor.ige_task

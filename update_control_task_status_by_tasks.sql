@@ -122,8 +122,8 @@ BEGIN
 	              AND task_status = STATUS_READY
 			      AND task_sequence = v_min_task_seq
 			    ) THEN 
-			  --v_control_task_status = STATUS_READY; wst
-		      v_control_task_status = STATUS_IN_PROGRESS;
+			  v_control_task_status = STATUS_READY;  
+		      --v_control_task_status = STATUS_IN_PROGRESS;
 		    END IF; 			  
 		  END IF; -- END IF #4
 		  

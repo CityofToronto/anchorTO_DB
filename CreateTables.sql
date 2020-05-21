@@ -211,9 +211,11 @@ insert into network.task_status_flow (status_from, status_to, date_effective)
 insert into network.task_status_flow (status_from, status_to, date_effective, ignored)
   values ('TAKEN', 'TAKEN', current_timestamp,1);
   
+/*
 update network.task_status_flow
     set date_expiry = current_timestamp
 where status_from = 'POSTING';
+*/
 
 update network.task_status_flow
   set ignored = 1
@@ -1486,6 +1488,7 @@ CREATE INDEX ige_job_log_user_name_status_idx ON ige_job_log (UPPER(user_name), 
 CREATE INDEX ige_job_log_status_idx ON ige_job_log (UPPER(job_status));
 CREATE INDEX ige_job_log_start_time_idx ON ige_job_log (UPPER(start_time));
 GRANT ALL ON TABLE network.ige_job_log TO network;
+GRANT SELECT ON TABLE network.ige_job_log TO anchorto_run;
 GRANT INSERT, SELECT, UPDATE, DELETE ON TABLE network.ige_job_log TO sde;
 ---------------------------------------------------------------------------------------------------------------------------
 CREATE TABLE network.
@@ -2530,7 +2533,20 @@ where proisagg is false
 where lower(defn) like '%base_centreline%' --0
 ;
 ------------------------------------------------------------------
+
 ------------------------------------------------------------------
+/*
+0. Assign default value to linear_name_evw fields:
+  -- Add default value
+  ALTER VIEW linear_name_evw ALTER COLUMN record_type SET DEFAULT 'P';
+  ALTER VIEW linear_name_evw ALTER COLUMN approval_status SET DEFAULT 'A';
+  -- Drop default value
+  ALTER VIEW linear_name_evw ALTER COLUMN record_type DROP DEFAULT;
+  ALTER VIEW linear_name_evw ALTER COLUMN approval_status DROP DEFAULT;
+  
+  ALTER TABLE linear_name ALTER COLUMN record_type DROP DEFAULT;
+  ALTER TABLE linear_name ALTER COLUMN approval_status DROP DEFAULT;
+*/  
 1. Before data migration:  
          1.1 In ige_task table in PostgreSQL, change task_comments type from text to varchar(10300000)
 		     ALTER TABLE ige_task ALTER COLUMN task_comments TYPE varchar(10300000); 
@@ -2541,7 +2557,7 @@ where lower(defn) like '%base_centreline%' --0
 		     Disconnet all other users
 			 Remove all locks
 			 Delete all versions
-			 Compress the geodatabase 	 
+			 Compress the geodatabase 			
 2. After data migration: Check table indexes
 3. 
 	SELECT sde.sde_set_default();
@@ -2613,6 +2629,7 @@ where lower(defn) like '%base_centreline%' --0
 		    select * from ige_task limit 10;
         5.2 In ige_source table, set globalid column to not nullable (after loading ige_source__attach table)		    
 			ALTER TABLE ige_source ALTER COLUMN globalid set not null;
+			
 6. Clear some tables:
   truncate table ige_task_active;
   select * from ige_task_active;

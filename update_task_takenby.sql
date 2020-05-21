@@ -18,6 +18,7 @@ DECLARE
   ret_json text;
   ret_msg text;  
   v_old_user_name text;
+  v_need_update_active integer;
 BEGIN
 /*
     Summary:
@@ -27,9 +28,22 @@ BEGIN
   */
     o_status = 'OK';
     o_message = '';
+	
+	v_need_update_active = 1;
+	IF EXISTS 
+	    (
+			SELECT * 
+			FROM ige_task 
+			WHERE task_id = v_task_id 
+			  AND task_type IN ('LINEARNAME', 'AMA') -- For phase 1 only and this should be removed in phase 2
+		) THEN	
+		v_need_update_active = 1;
+	ELSE 
+	    v_need_update_active = 0;
+	END IF;
     SELECT taken_by INTO v_old_user_name FROM ige_task WHERE task_id = v_task_id;
 	-- Remove active task from old user
-	IF NOT is_blank_string(v_old_user_name) AND UPPER(v_old_user_name) <> UPPER(v_user_name) THEN 	    
+	IF v_need_update_active = 1 AND NOT is_blank_string(v_old_user_name) AND UPPER(v_old_user_name) <> UPPER(v_user_name) THEN 	    
 		UPDATE ige_task_active 
 		SET task_id = null,
 		    date_modified = current_timestamp
@@ -40,21 +54,15 @@ BEGIN
 	SET taken_by = UPPER(v_user_name)
 	WHERE task_id = v_task_id;	 
 	-- Update active task for new taken_by user	
-	IF EXISTS (SELECT * FROM ige_task_active WHERE UPPER(username) = UPPER(v_user_name)) THEN
-	  UPDATE ige_task_active 
-	  SET task_id = v_task_id
-	  WHERE UPPER(username) = UPPER(v_user_name);
-	ELSE
-	  IF EXISTS 
-	    (
-			SELECT * 
-			FROM ige_task 
-			WHERE task_id = v_task_id 
-			  AND task_type IN ('LINEARNAME', 'AMA') -- For phase 1 only and this should be removed in phase 2
-		) THEN	  
-	    INSERT INTO ige_task_active (username, task_id, date_modified)
-	      VALUES (UPPER(v_user_name), v_task_id, current_timestamp);
-	  END IF;	  
+	IF v_need_update_active = 1 THEN 
+	   IF EXISTS (SELECT * FROM ige_task_active WHERE UPPER(username) = UPPER(v_user_name)) THEN
+		   UPDATE ige_task_active 
+			  SET task_id = v_task_id
+			  WHERE UPPER(username) = UPPER(v_user_name);	    
+	   ELSE		     
+			INSERT INTO ige_task_active (username, task_id, date_modified)
+			  VALUES (UPPER(v_user_name), v_task_id, current_timestamp);
+		  END IF;	  
 	END IF;	
 	
     SELECT row_to_json(c) INTO o_json

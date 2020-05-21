@@ -11,8 +11,7 @@ CREATE OR REPLACE FUNCTION code_src.update_source(
     LANGUAGE 'plpgsql'
 
     COST 100
-    VOLATILE  
-	SECURITY DEFINER
+    VOLATILE SECURITY DEFINER 
 AS $BODY$
 DECLARE 
 /*
@@ -155,7 +154,8 @@ BEGIN
 		    SELECT count(*) INTO cnt_plan_name FROM ige_source_evw WHERE plan_name = v_plan_name and source_id <> sourceid;
 		  END IF;
 	    END IF;
-	    IF cnt_int_id + cnt_ext_id + cnt_plan_name > 0 THEN		 
+	    IF cnt_plan_name > 0 THEN		
+		--IF cnt_int_id + cnt_ext_id + cnt_plan_name > 0 THEN		 
 		  o_status = 'Failed';
 		  IF cnt_int_id > 0 THEN 
 		    o_message = get_message(50680,'ERR','SURCTSK', '0', v_inter_id);
@@ -287,5 +287,11 @@ EXCEPTION
 END;  
 $BODY$;
 
-ALTER FUNCTION code_src.update_source(text, numeric, numeric, text) OWNER TO network;
-GRANT EXECUTE ON FUNCTION code_src.update_source(text, numeric, numeric, text) TO anchorto_run
+ALTER FUNCTION code_src.update_source(text, numeric, numeric, text)
+    OWNER TO network;
+
+GRANT EXECUTE ON FUNCTION code_src.update_source(text, numeric, numeric, text) TO anchorto_run;
+
+GRANT EXECUTE ON FUNCTION code_src.update_source(text, numeric, numeric, text) TO network;
+
+REVOKE ALL ON FUNCTION code_src.update_source(text, numeric, numeric, text) FROM PUBLIC;

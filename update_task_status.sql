@@ -1,7 +1,7 @@
 -- FUNCTION: code_src.update_task_status(numeric, text)
 
 -- DROP FUNCTION code_src.update_task_status(numeric, text);
- 
+
 CREATE OR REPLACE FUNCTION code_src.update_task_status(
 	v_task_id numeric,
 	v_status text)
@@ -21,8 +21,9 @@ DECLARE
   v_control_task_id numeric;
   v_username text;
   v_currentstatus text;
+  v_old_status text;
   v_transid numeric;
-  
+  v_need_update_active integer;
 BEGIN
 /*
     Summary:
@@ -35,6 +36,19 @@ BEGIN
     -- Validate status 
 	
 	o_message = validate_task_status(v_status, v_task_id);
+	
+	v_need_update_active = 1;
+	IF EXISTS 
+	    (
+			SELECT * 
+			FROM ige_task 
+			WHERE task_id = v_task_id 
+			  AND task_type IN ('LINEARNAME', 'AMA') -- For phase 1 only and this should be removed in phase 2
+		) THEN	
+		v_need_update_active = 1;
+	ELSE 
+	    v_need_update_active = 0;
+	END IF;
 	-- Valid request, but ignore status update
 	IF upper(o_message) = 'IGNORED' THEN
 	  o_message = '';
@@ -46,6 +60,7 @@ BEGIN
 	  ) c;	
 	  RETURN o_json;
 	END IF;
+	SELECT task_status INTO v_old_status FROM ige_task WHERE task_id = v_task_id;
 	IF o_message  = '' THEN
 	  IF UPPER(v_status) = 'COMPLETED' THEN
 	    SELECT task_status INTO v_currentstatus FROM ige_task WHERE task_id = v_task_id;
@@ -72,12 +87,15 @@ BEGIN
 	       ; -- commented off for release 1: AND ( v_status <> 'WORK STARTED'); -- OR taken_by IS NULL);
 	  END IF; -- END of IF UPPER(v_status) = 'COMPLETED' THEN
 	  IF UPPER(v_status) = 'COMPLETED' THEN
-	    UPDATE ige_task_active 
-		  SET task_id = null,
-		      date_modified = current_timestamp
-	    WHERE task_id = v_task_id;
+	    IF v_need_update_active = 1 THEN 
+			UPDATE ige_task_active 
+			  SET task_id = null,
+				  date_modified = current_timestamp
+			WHERE task_id = v_task_id;
+		END IF;
 	  ELSE 
-	    IF EXISTS (SELECT * FROM ige_task_active WHERE task_id = v_task_id) THEN
+	    IF v_need_update_active = 1 AND 
+		  EXISTS (SELECT * FROM ige_task_active WHERE task_id = v_task_id) THEN
 		  -- Remove flag from old user
 		  UPDATE ige_task_active 
 		  SET task_id = null,
@@ -85,13 +103,15 @@ BEGIN
 	      WHERE task_id = v_task_id;
 		END IF; 
 		SELECT taken_by INTO v_username FROM ige_task WHERE task_id = v_task_id;
-		IF EXISTS (SELECT * FROM ige_task_active WHERE UPPER(username) = UPPER(v_username)) THEN
-		  UPDATE ige_task_active 
-		    SET task_id = v_task_id
-			WHERE UPPER(username) = UPPER(v_username);
-		ELSE
-	      INSERT INTO ige_task_active (username, task_id, date_modified)
-		    VALUES (UPPER(v_username), v_task_id, current_timestamp);	
+		IF v_need_update_active = 1 THEN 
+		  IF EXISTS (SELECT * FROM ige_task_active WHERE UPPER(username) = UPPER(v_username)) THEN
+			  UPDATE ige_task_active 
+				SET task_id = v_task_id
+				WHERE UPPER(username) = UPPER(v_username);
+			ELSE
+			  INSERT INTO ige_task_active (username, task_id, date_modified)
+				VALUES (UPPER(v_username), v_task_id, current_timestamp);	
+			END IF;
 		END IF;	
 	  END IF;	
 	 /* -- Beginning of updating Oracle
@@ -120,6 +140,21 @@ BEGIN
 	  RAISE EXCEPTION USING
             errcode= ret_status,
             message= ret_msg;
+	ELSE 
+	  IF v_old_status <> v_status and 
+	   v_status in ('TAKEN', 'POSTED', 'COMPLETED') THEN
+	      SELECT taken_by INTO v_username FROM ige_task WHERE task_id = v_task_id; 
+	      SELECT update_task_comments(v_task_id,v_username, v_status) INTO ret_json;  
+		  SELECT ret_json::json->>'status',
+	             ret_json::json->>'message'
+		  INTO  ret_status,
+		 	    ret_msg;	
+		  IF ret_status <> 'OK' THEN
+	        RAISE EXCEPTION USING
+                errcode= ret_status,
+                message= ret_msg;
+			END IF;
+	  END IF;
 	END IF;
 	
     SELECT row_to_json(c) INTO o_json
