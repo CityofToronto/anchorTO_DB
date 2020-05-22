@@ -21,6 +21,42 @@ Summary:
   Solution: Increase the next sequence manually to a bigger number		
 Testing:
   SELECT fix_sequence_number()
+  
+Get all sequences value:  
+ -- Generate scripts:
+select sequence_name, replace('SELECT ''[SEQ]'', last_value FROM ', '[SEQ]',sequence_name) || sequence_name || ' UNION ALL ' as scripts
+from information_schema.sequences t
+where sequence_schema = 'network'
+order by 1;
+
+SELECT 'address_class_id_seq', last_value FROM address_class_id_seq UNION ALL 
+SELECT 'address_id_seq', last_value FROM address_id_seq UNION ALL 
+SELECT 'address_name_id_seq', last_value FROM address_name_id_seq UNION ALL 
+SELECT 'address_point_id_seq', last_value FROM address_point_id_seq UNION ALL 
+SELECT 'address_string_id_seq', last_value FROM address_string_id_seq UNION ALL 
+SELECT 'ama_id_seq', last_value FROM ama_id_seq UNION ALL 
+SELECT 'base_centreline_id_seq', last_value FROM base_centreline_id_seq UNION ALL 
+SELECT 'base_connectivity_id_seq', last_value FROM base_connectivity_id_seq UNION ALL 
+SELECT 'base_intersection_elevation_id_seq', last_value FROM base_intersection_elevation_id_seq UNION ALL 
+SELECT 'base_intersection_id_seq', last_value FROM base_intersection_id_seq UNION ALL 
+SELECT 'base_turn_id_seq', last_value FROM base_turn_id_seq UNION ALL 
+SELECT 'centreline_geometry_lineage_id_seq', last_value FROM centreline_geometry_lineage_id_seq UNION ALL 
+SELECT 'centreline_lineage_id_seq', last_value FROM centreline_lineage_id_seq UNION ALL 
+SELECT 'elevation_id_seq', last_value FROM elevation_id_seq UNION ALL 
+SELECT 'ige_control_task_id_seq', last_value FROM ige_control_task_id_seq UNION ALL 
+SELECT 'ige_source_id_seq', last_value FROM ige_source_id_seq UNION ALL 
+SELECT 'ige_source_presentation_id_seq', last_value FROM ige_source_presentation_id_seq UNION ALL 
+SELECT 'ige_task_id_seq', last_value FROM ige_task_id_seq UNION ALL 
+SELECT 'ige_transaction_id_seq', last_value FROM ige_transaction_id_seq UNION ALL 
+SELECT 'ige_user_id_seq', last_value FROM ige_user_id_seq UNION ALL 
+SELECT 'linear_name_direction_id_seq', last_value FROM linear_name_direction_id_seq UNION ALL 
+SELECT 'linear_name_group_id_seq', last_value FROM linear_name_group_id_seq UNION ALL 
+SELECT 'linear_name_id_seq', last_value FROM linear_name_id_seq UNION ALL 
+SELECT 'linear_name_type_id_seq', last_value FROM linear_name_type_id_seq UNION ALL 
+SELECT 'linear_name_xref_id_seq', last_value FROM linear_name_xref_id_seq UNION ALL 
+SELECT 'site_area_id_seq', last_value FROM site_area_id_seq UNION ALL 
+SELECT 'task_status_flow_flow_id_seq', last_value FROM task_status_flow_flow_id_seq 
+  
 */    
     v_sql =
 	 'CREATE SEQUENCE IF NOT EXISTS network.address_class_id_seq;
