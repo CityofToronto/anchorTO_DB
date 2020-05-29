@@ -44,7 +44,7 @@ BEGIN
                    now(),
                    null,
                    $4,
-				   CASE WHEN v_task_type = 'SOURCE' OR v_task_type is null THEN 'Business task transaction'
+				   CASE WHEN v_task_type = 'SOURCE' OR is_blank_string(v_task_type) THEN 'Business task transaction'
 				        ELSE $3
 				   END,
                    'TRANS' || transid::text,              

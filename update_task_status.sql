@@ -30,6 +30,9 @@ BEGIN
 	  Update task status
     Testing:
 	  SELECT update_task_status(67092,'COMPLETED')
+	  SELECT update_task_status(50000026,'COMPLETED')
+	  select * from ige_task where task_id = 50000026
+	  update ige_task set task_status = 'POSTING' where task_id = 50000026
   */
     o_status = 'OK';
     o_message = '';
@@ -52,6 +55,9 @@ BEGIN
 	-- Valid request, but ignore status update
 	IF upper(o_message) = 'IGNORED' THEN
 	  o_message = '';
+	  SELECT taken_by INTO v_username FROM ige_task WHERE task_id = v_task_id;
+	  raise notice '% % %', v_task_id,v_username, v_status;
+	  SELECT update_task_comments(v_task_id,v_username, v_status) into o_json;
 	  SELECT row_to_json(c) INTO o_json
 	  FROM
 	  (
@@ -64,11 +70,12 @@ BEGIN
 	IF o_message  = '' THEN
 	  IF UPPER(v_status) = 'COMPLETED' THEN
 	    SELECT task_status INTO v_currentstatus FROM ige_task WHERE task_id = v_task_id;
-		IF v_currentstatus <> 'POSTED' THEN		   
+		/*IF v_currentstatus <> 'POSTED' THEN		   
 		   RAISE EXCEPTION USING
 		     errcode = '50001',
 			 message = 'Status must be POSTED before set to COMPLETED';
 		END IF;
+		*/
 		SELECT taken_by INTO v_username FROM ige_task WHERE task_id = v_task_id;
 		SELECT create_transaction(v_task_id,v_username, 'Complete task', 'anchorTO') into v_transid;
 		UPDATE ige_transaction

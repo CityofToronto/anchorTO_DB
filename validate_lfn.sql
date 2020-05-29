@@ -42,6 +42,8 @@ BEGIN
 	  
 	  SELECT validate_lfn('{"linear_name_id":null,"name_part":"dyas road","dir_part":"","type_part":""}') --duplicated lfn
 	  SELECT validate_lfn('{"linear_name_id":null,"name_part":"dyas rd","dir_part":"","type_part":""}') --duplicated lfn
+	  SELECT validate_lfn('{"linear_name_id":4986,"name_part":"Bluehaven","dir_part":null,"type_part":"Crescent"}') -- Not duplicated lfn
+	  SELECT validate_lfn('{"linear_name_id":4986,"name_part":"Blue haven","dir_part":null,"type_part":"Crescent"}') -- duplicated lfn
   */
   o_status = 'OK';
   o_message = ''; 
@@ -55,7 +57,7 @@ BEGIN
 	       CASE WHEN EXISTS 
 	                 (SELECT 1
 		              FROM linear_name_evw 
-		              WHERE UPPER(name_part) = UPPER($1::json->>'name_part')
+		              WHERE trim(UPPER(name_part)) = trim(UPPER($1::json->>'name_part'))
 					    AND coalesce(($1::json->>'linear_name_id')::numeric,0) <> linear_name_id
 		        ) THEN true ELSE false END duplicate_name,
 	       CASE WHEN EXISTS 
@@ -65,20 +67,20 @@ BEGIN
 					  LEFT JOIN linear_name_direction_evw nd ON n.dir_part = nd.dir_part
 		              WHERE 
 					    (
-					        format_string_to_validate(UPPER(n.name_part || coalesce(n.type_part,'') || coalesce(n.dir_part,''))) = 
-					        format_string_to_validate(UPPER($1::json->>'name_part' || coalesce($1::json->>'type_part','') || coalesce($1::json->>'dir_part','')))
+					        format_string(UPPER(n.name_part || coalesce(n.type_part,'') || coalesce(n.dir_part,''))) = 
+					        format_string(UPPER(trim($1::json->>'name_part') || trim(coalesce($1::json->>'type_part','')) || trim(coalesce($1::json->>'dir_part',''))))
 						 OR 
-							format_string_to_validate(UPPER(n.name_part || coalesce(nt.type_part_code,'') || coalesce(n.dir_part,''))) = 
-					        format_string_to_validate(UPPER($1::json->>'name_part' || coalesce($1::json->>'type_part','') || coalesce($1::json->>'dir_part','')))
+							format_string(UPPER(n.name_part || coalesce(nt.type_part_code,'') || coalesce(n.dir_part,''))) = 
+					        format_string(UPPER(trim($1::json->>'name_part') || trim(coalesce($1::json->>'type_part','')) || trim(coalesce($1::json->>'dir_part',''))))
 						 OR
-							format_string_to_validate(UPPER(n.name_part || coalesce(nt.type_part_code,'') || coalesce(nd.dir_part_code,''))) = 
-					        format_string_to_validate(UPPER($1::json->>'name_part' || coalesce($1::json->>'type_part','') || coalesce($1::json->>'dir_part','')))
+							format_string(UPPER(n.name_part || coalesce(nt.type_part_code,'') || coalesce(nd.dir_part_code,''))) = 
+					        format_string(UPPER(trim($1::json->>'name_part') || trim(coalesce($1::json->>'type_part','')) || trim(coalesce($1::json->>'dir_part',''))))
 						 OR 
-							format_string_to_validate(UPPER(n.name_part || coalesce(n.type_part,'') || coalesce(nd.dir_part_code,''))) = 
-					        format_string_to_validate(UPPER($1::json->>'name_part' || coalesce($1::json->>'type_part','') || coalesce($1::json->>'dir_part','')))
+							format_string(UPPER(n.name_part || coalesce(n.type_part,'') || coalesce(nd.dir_part_code,''))) = 
+					        format_string(UPPER(trim($1::json->>'name_part') || trim(coalesce($1::json->>'type_part','')) || trim(coalesce($1::json->>'dir_part',''))))
 						 OR 
-							format_string_to_validate(UPPER(n.name_part || coalesce(nt.type_part_code,'') || coalesce(n.dir_part,''))) = 
-					        format_string_to_validate(UPPER($1::json->>'name_part' || coalesce($1::json->>'type_part','') || coalesce($1::json->>'dir_part','')))
+							format_string(UPPER(n.name_part || coalesce(nt.type_part_code,'') || coalesce(n.dir_part,''))) = 
+					        format_string(UPPER(trim($1::json->>'name_part') || trim(coalesce($1::json->>'type_part','')) || trim(coalesce($1::json->>'dir_part',''))))
 						)  
 					    AND coalesce(($1::json->>'linear_name_id')::numeric,0) <> linear_name_id
 		        ) THEN true ELSE false END duplicate_lfn
