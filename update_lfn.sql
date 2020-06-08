@@ -207,7 +207,8 @@ Testing:
 				 activation_status = v_activation_status, --CASE WHEN v_activation_status = 'X' THEN activation_status ELSE v_activation_status END, 
 				 use_by = v_use_by,
 				 trans_id_create = v_trans_id_create
-			WHERE linear_name_id = v_linear_name_id;	
+			WHERE linear_name_id = v_linear_name_id
+			    and trans_id_expire = -1;	
 			-- Expire LFN
 			IF v_activation_status = 'X' THEN 
 			  DELETE FROM linear_name_evw

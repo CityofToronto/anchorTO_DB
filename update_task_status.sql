@@ -31,6 +31,7 @@ BEGIN
     Testing:
 	  SELECT update_task_status(67092,'COMPLETED')
 	  SELECT update_task_status(50000026,'COMPLETED')
+	  SELECT update_task_status(1000002575, 'TAKEN')
 	  select * from ige_task where task_id = 50000026
 	  update ige_task set task_status = 'POSTING' where task_id = 50000026
   */
@@ -55,9 +56,11 @@ BEGIN
 	-- Valid request, but ignore status update
 	IF upper(o_message) = 'IGNORED' THEN
 	  o_message = '';
-	  SELECT taken_by INTO v_username FROM ige_task WHERE task_id = v_task_id;
-	  raise notice '% % %', v_task_id,v_username, v_status;
-	  SELECT update_task_comments(v_task_id,v_username, v_status) into o_json;
+	  IF v_status = 'POSTED' THEN 
+		  SELECT taken_by INTO v_username FROM ige_task WHERE task_id = v_task_id;
+		  raise notice '% % %', v_task_id,v_username, v_status;
+		  SELECT update_task_comments(v_task_id,v_username, v_status) into o_json;
+	  END IF;
 	  SELECT row_to_json(c) INTO o_json
 	  FROM
 	  (

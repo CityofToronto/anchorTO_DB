@@ -1,8 +1,8 @@
--- FUNCTION: code_src.get_tasks_by_source_id(numeric, text)
+-- FUNCTION: code_src.get_control_task_by_source_id(numeric, text)
 
--- DROP FUNCTION code_src.get_tasks_by_source_id(numeric, text);
+-- DROP FUNCTION code_src.get_control_task_by_source_id(numeric, text);
 
-CREATE OR REPLACE FUNCTION code_src.get_tasks_by_source_id(
+CREATE OR REPLACE FUNCTION code_src.get_control_task_by_source_id(
 	v_source_id numeric,
 	v_filter text DEFAULT NULL::text)
     RETURNS text
@@ -21,8 +21,8 @@ BEGIN
 Summary: 
     Get tasks by source id
 Testing:
-    SELECT get_tasks_by_source_id(2070);
-    SELECT get_tasks_by_source_id(2070, 'task_id = 70310');
+    SELECT get_control_task_by_source_id(2070);
+    SELECT get_control_task_by_source_id(2070, 'control_task_id = 70310');
 */
   IF position(';' in v_filter) > 0 THEN
     RAISE 'Invalid filter clause: %', v_filter USING ERRCODE = '20001';
@@ -31,15 +31,14 @@ Testing:
   SELECT json_agg(row_to_json(c)) 
   FROM
   (
-	  SELECT task_id,
-			 control_task_id,
-			 trans_id_create,
-			 source_id 
-	  FROM ige_task 
-	  WHERE source_id = [SOURCEID]  
-		--AND trans_id_expire = -1
-		[FILTER]
-	  ORDER BY task_id
+      SELECT 
+			control_task_id,
+			trans_id_create,
+			source_id 
+	  FROM ige_control_task 
+	  WHERE source_id = [SOURCEID] 
+	  [FILTER]
+	  ORDER BY control_task_id	  
   ) c';
   
   v_sql = replace(v_sql, '[SOURCEID]', v_source_id::text);
@@ -66,11 +65,11 @@ Testing:
 END;
 $BODY$;
 
-ALTER FUNCTION code_src.get_tasks_by_source_id(numeric, text)
+ALTER FUNCTION code_src.get_control_task_by_source_id(numeric, text)
     OWNER TO network;
 
-GRANT EXECUTE ON FUNCTION code_src.get_tasks_by_source_id(numeric, text) TO anchorto_run;
+GRANT EXECUTE ON FUNCTION code_src.get_control_task_by_source_id(numeric, text) TO anchorto_run;
 
-GRANT EXECUTE ON FUNCTION code_src.get_tasks_by_source_id(numeric, text) TO network;
+GRANT EXECUTE ON FUNCTION code_src.get_control_task_by_source_id(numeric, text) TO network;
 
-REVOKE ALL ON FUNCTION code_src.get_tasks_by_source_id(numeric, text) FROM PUBLIC;
+REVOKE ALL ON FUNCTION code_src.get_control_task_by_source_id(numeric, text) FROM PUBLIC;

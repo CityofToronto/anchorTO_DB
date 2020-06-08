@@ -2561,6 +2561,40 @@ where lower(defn) like '%base_centreline%' --0
 2. After data migration: Check table indexes
 3. 
 	SELECT sde.sde_set_default();
+	-- Insert entires for ige_source, ige_transaction, ige_task
+	INSERT INTO network.ige_transaction(
+	trans_id, task_id, source_id, username, date_start, date_end, application_code, trans_desc, trans_name, trans_status)
+	VALUES 
+	(60000000, 
+	 60000000, 
+	 60000000, 
+	 'anchorTO', 
+	 to_date('2020-06-05', 'YYYY-MM-DD'), 
+	 to_date('2020-06-05', 'YYYY-MM-DD'), 
+	 'anchorTO', 
+	 'Release1 Migration', 
+	 'Release1 Migration', 
+	 'COMPLETED');
+  select * from ige_transaction where trans_id = 60000000;
+
+  INSERT INTO network.ige_task(
+	task_id, task_type, source_id, assigned_to, taken_by, task_sequence, task_status, 
+	task_comments, 
+	control_task_id, task_category,	trans_id_create, trans_id_expire)
+	VALUES (60000000, 'iMaint', 60000000, 'anchorTO', 'anchorTO', 1, 'COMPLETED', 
+			'Carry over iMaint transactions, one task for all', 
+			null, null, 60000000, -1);
+  select * from ige_task where task_id = 60000000;
+  
+  INSERT INTO network.ige_source(
+	source_id, source_class, source_type, internal_source_no, internal_source_date, external_source_no, external_source_date, 
+	plan_name, source_comments, source_status, parent_source_id, trans_id_create, trans_id_expire, 
+	objectid, globalid)
+	VALUES (60000000, 'MIGRATION', 'MIGRATION1', null, null, null, null, 
+			null, 'Release1 Migration', 'Approved', null, 60000000, 60000000, 
+			sde.next_rowid(current_schema()::text, 'IGE_SOURCE'), sde.next_globalid());	
+	
+  select * from ige_source_evw where source_id = 60000000;
 	-- Generate globalid for ige_source table
 	update ige_source --ige_source_evw
 	  set globalid = sde.next_globalid();
@@ -2619,21 +2653,21 @@ where lower(defn) like '%base_centreline%' --0
 	select source_id from ige_source_presentation where source_id NOT IN (select source_id from ige_source_evw)
 	select * from ige_source__attach limit 100;
 	select * from ige_source_evw limit 10
-2. Fix object id in tables: 
+5. Fix object id in tables: 
     SELECT fix_objectid_number()    
-3. Fix sequence number in tables:
+6. Fix sequence number in tables:
     SELECT network.fix_sequence_number() 
-5. After data migration, roll back the changes at step #1:
-        5.1 In ige_task table, change task_comments type from varchar(10300000) to text
+7. After data migration, roll back the changes at step #1:
+        7.1 In ige_task table, change task_comments type from varchar(10300000) to text
 		    ALTER TABLE ige_task ALTER COLUMN task_comments TYPE text;
 		    select * from ige_task limit 10;
-        5.2 In ige_source table, set globalid column to not nullable (after loading ige_source__attach table)		    
+        7.2 In ige_source table, set globalid column to not nullable (after loading ige_source__attach table)		    
 			ALTER TABLE ige_source ALTER COLUMN globalid set not null;
 			
-6. Clear some tables:
+8. Clear some tables:
   truncate table ige_task_active;
   select * from ige_task_active;
-----------------
+---------------- End. ----------------------------
 
 ------------------ Generate source_presentation list with either full path of file, or special characters
 select source_id,

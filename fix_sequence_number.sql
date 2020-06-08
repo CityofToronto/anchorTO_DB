@@ -11,7 +11,7 @@ CREATE OR REPLACE FUNCTION network.fix_sequence_number(
     VOLATILE 
 AS $BODY$	
 DECLARE
-  start_id integer = 50000000; --1,000,000,000; 2,000,000
+  start_id integer = 60000000; --1,000,000,000; 2,000,000
   v_sql text;
 BEGIN 
 /*
