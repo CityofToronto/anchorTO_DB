@@ -16,6 +16,7 @@ AS $BODY$
     Testing:
 	  select get_next_task_by_user_name('sarzand');
 	  select get_next_task_by_user_name('slee5');
+	  select get_next_task_by_user_name('rli4');
   */
 SELECT to_json(row)
 FROM
@@ -54,12 +55,12 @@ FROM
 				 SELECT tt.control_task_id, min(tt.task_sequence) min_seq
 				 FROM ige_task tt
 				 WHERE tt.task_status IN (SELECT task_status FROM dmn_task_status WHERE task_status NOT IN ( 'HOLD', 'COMPLETED')) 				   
-				   AND (is_blank_string(tt.taken_by) OR upper(tt.taken_by) = upper(v_user_name))
+				   --AND (is_blank_string(tt.taken_by) OR upper(tt.taken_by) = upper(v_user_name))
 				   AND tt.trans_id_expire = -1
 				 GROUP BY tt.control_task_id
 			 ) mc ON mc.control_task_id = c.control_task_id
 			 WHERE t.task_status IN (SELECT task_status FROM dmn_task_status WHERE task_status NOT IN ( 'HOLD', 'COMPLETED')) 
-			   AND t.task_type IN ('LINEARNAME', 'AMA') -- For phase 1 only and this should be removed in phase 2 
+			   AND t.task_type IN ('LINEARNAME', 'AMA') -- , 'ADDRESSPOINT'-- For phase 1 only and this should be removed in phase 2 
 			   AND (is_blank_string(t.taken_by) OR upper(t.taken_by) = upper(v_user_name))
 			   AND t.trans_id_expire = -1
 			   AND 

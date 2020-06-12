@@ -34,40 +34,42 @@ Testing:
 	WHERE address_string_id = v_address_string_id 
 	    and trans_id_expire = -1
 	LIMIT 1;
+	raise notice 'Old status:%', v_old_status;
 	IF v_old_status <> upper(v_status) THEN
 		-- Expired the old one	
 		UPDATE authorized_municipal_address_evw 
 		SET  trans_id_expire = v_trans_id
 		WHERE address_string_id = v_address_string_id 
 			and trans_id_expire = -1;	
-	  -- Insert new LFN	   
-	  INSERT INTO authorized_municipal_address_evw
-			   (
-				   objectid, 
-				   address_string_id,
-				   linear_name_id, 
-				   trans_id_create, 
-				   trans_id_expire, 
-				   lo_num,
-				   lo_num_suf,
-				   hi_num,
-				   hi_num_suf,				   
-				   usage_status
-			   )
-	   SELECT 	
-				sde.next_rowid(current_schema()::text, 'authorized_municipal_address'),
-				v_address_string_id,
-				linear_name_id,
-				v_trans_id,
-				-1,
-				lo_num,
-				lo_num_suf,
-				hi_num,
-				hi_num_suf,
-				upper(v_status)
-	   FROM authorized_municipal_address_evw
-	   WHERE address_string_id = v_address_string_id 
-		 and trans_id_expire = v_trans_id;	
+	  -- Insert new AMA	   
+	  SELECT sde.next_rowid(current_schema()::text, 'authorized_municipal_address')
+	  INTO v_objectid;	
+	  
+	  INSERT INTO network.authorized_municipal_address_evw(
+	              address_string_id, 
+		          trans_id_create, 
+		          trans_id_expire, 
+		          linear_name_id, 
+		          lo_num, 
+		          lo_num_suf, 
+		          hi_num, 
+		          hi_num_suf, 
+		          objectid, 
+		          usage_status)
+		SELECT address_string_id,
+		       v_trans_id,
+			   -1,
+			   linear_name_id,
+			   lo_num, 
+		       lo_num_suf, 
+		       hi_num, 
+		       hi_num_suf,
+			   v_objectid,
+			   upper(v_status)
+		FROM  network.authorized_municipal_address_evw
+		 WHERE address_string_id = v_address_string_id 
+		 and trans_id_expire = v_trans_id;	 
+     
 	END IF;	  
 	
     SELECT row_to_json(c) INTO o_json

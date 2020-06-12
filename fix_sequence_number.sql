@@ -29,18 +29,18 @@ from information_schema.sequences t
 where sequence_schema = 'network'
 order by 1;
 
-SELECT 'address_class_id_seq', last_value FROM address_class_id_seq UNION ALL 
+SELECT 'address_id_seq', last_value FROM address_id_seq UNION ALL 
 SELECT 'address_id_seq', last_value FROM address_id_seq UNION ALL 
 SELECT 'address_name_id_seq', last_value FROM address_name_id_seq UNION ALL 
 SELECT 'address_point_id_seq', last_value FROM address_point_id_seq UNION ALL 
 SELECT 'address_string_id_seq', last_value FROM address_string_id_seq UNION ALL 
-SELECT 'ama_id_seq', last_value FROM ama_id_seq UNION ALL 
+SELECT 'address_string_id_seq', last_value FROM address_string_id_seq UNION ALL 
 SELECT 'base_centreline_id_seq', last_value FROM base_centreline_id_seq UNION ALL 
 SELECT 'base_connectivity_id_seq', last_value FROM base_connectivity_id_seq UNION ALL 
-SELECT 'base_intersection_elevation_id_seq', last_value FROM base_intersection_elevation_id_seq UNION ALL 
+SELECT 'elevation_id_seq', last_value FROM elevation_id_seq UNION ALL 
 SELECT 'base_intersection_id_seq', last_value FROM base_intersection_id_seq UNION ALL 
 SELECT 'base_turn_id_seq', last_value FROM base_turn_id_seq UNION ALL 
-SELECT 'centreline_geometry_lineage_id_seq', last_value FROM centreline_geometry_lineage_id_seq UNION ALL 
+SELECT 'centreline_lineage_id_seq', last_value FROM centreline_lineage_id_seq UNION ALL 
 SELECT 'centreline_lineage_id_seq', last_value FROM centreline_lineage_id_seq UNION ALL 
 SELECT 'elevation_id_seq', last_value FROM elevation_id_seq UNION ALL 
 SELECT 'ige_control_task_id_seq', last_value FROM ige_control_task_id_seq UNION ALL 
@@ -59,11 +59,11 @@ SELECT 'task_status_flow_flow_id_seq', last_value FROM task_status_flow_flow_id_
   
 */    
     v_sql =
-	 'CREATE SEQUENCE IF NOT EXISTS network.address_class_id_seq;
+	 'CREATE SEQUENCE IF NOT EXISTS network.address_id_seq;
 	ALTER TABLE network.address_class      
-	   ALTER COLUMN address_id SET DEFAULT nextval(''address_class_id_seq'')::numeric(12,0);  
-	SELECT setval(''network.address_class_id_seq''::regclass, GREATEST(1000000000, max(address_id))::bigint, true) FROM address_class_evw;
-	ALTER SEQUENCE network.address_class_id_seq OWNED BY network.address_class.address_id;
+	   ALTER COLUMN address_id SET DEFAULT nextval(''address_id_seq'')::numeric(12,0);  
+	SELECT setval(''network.address_id_seq''::regclass, GREATEST(1000000000, max(address_id))::bigint, true) FROM address_class_evw;
+	ALTER SEQUENCE network.address_id_seq OWNED BY network.address_class.address_id;
 	-- for table address_name
 	CREATE SEQUENCE IF NOT EXISTS network.address_name_id_seq;
 	ALTER TABLE network.address_name      
@@ -79,11 +79,11 @@ SELECT 'task_status_flow_flow_id_seq', last_value FROM task_status_flow_flow_id_
 	ALTER SEQUENCE network.address_point_id_seq OWNED BY network.address_point.address_point_id;
 
 	-- for table authorized_municipal_address
-	CREATE SEQUENCE IF NOT EXISTS network.ama_id_seq;
+	CREATE SEQUENCE IF NOT EXISTS network.address_string_id_seq;
 	ALTER TABLE network.authorized_municipal_address      
-	  ALTER COLUMN address_string_id SET DEFAULT nextval(''ama_id_seq'')::numeric(12,0);
-	SELECT setval(''network.ama_id_seq'', GREATEST(1000000000, max(address_string_id))::bigint, true) FROM authorized_municipal_address;
-	ALTER SEQUENCE network.ama_id_seq OWNED BY network.authorized_municipal_address.address_string_id;
+	  ALTER COLUMN address_string_id SET DEFAULT nextval(''address_string_id_seq'')::numeric(12,0);
+	SELECT setval(''network.address_string_id_seq'', GREATEST(1000000000, max(address_string_id))::bigint, true) FROM authorized_municipal_address;
+	ALTER SEQUENCE network.address_string_id_seq OWNED BY network.authorized_municipal_address.address_string_id;
 
 	-- for table base_centreline
 	CREATE SEQUENCE IF NOT EXISTS network.base_centreline_id_seq;
@@ -107,11 +107,11 @@ SELECT 'task_status_flow_flow_id_seq', last_value FROM task_status_flow_flow_id_
 	ALTER SEQUENCE network.base_intersection_id_seq OWNED BY network.base_intersection.intersection_id;
 
 	-- for table base_intersection_elevation
-	CREATE SEQUENCE IF NOT EXISTS network.base_intersection_elevation_id_seq;
+	CREATE SEQUENCE IF NOT EXISTS network.elevation_id_seq;
 	ALTER TABLE network.base_intersection_elevation      
-	  ALTER COLUMN elevation_id SET DEFAULT nextval(''base_intersection_elevation_id_seq'')::numeric(12,0);
-	SELECT setval(''network.base_intersection_elevation_id_seq'', GREATEST(1000000000, max(elevation_id))::bigint, true) FROM base_intersection_elevation_evw;
-	ALTER SEQUENCE network.base_intersection_elevation_id_seq OWNED BY network.base_intersection_elevation.elevation_id;
+	  ALTER COLUMN elevation_id SET DEFAULT nextval(''elevation_id_seq'')::numeric(12,0);
+	SELECT setval(''network.elevation_id_seq'', GREATEST(1000000000, max(elevation_id))::bigint, true) FROM base_intersection_elevation_evw;
+	ALTER SEQUENCE network.elevation_id_seq OWNED BY network.base_intersection_elevation.elevation_id;
 
 	-- for table base_turn
 	CREATE SEQUENCE IF NOT EXISTS network.base_turn_id_seq;
@@ -121,11 +121,11 @@ SELECT 'task_status_flow_flow_id_seq', last_value FROM task_status_flow_flow_id_
 	ALTER SEQUENCE network.base_turn_id_seq OWNED BY network.base_turn.turn_id;
 
 	-- for table centreline_geometry_lineage
-	CREATE SEQUENCE IF NOT EXISTS network.centreline_geometry_lineage_id_seq;
+	CREATE SEQUENCE IF NOT EXISTS network.centreline_lineage_id_seq;
 	ALTER TABLE network.centreline_geometry_lineage      
-	  ALTER COLUMN centreline_lineage_id SET DEFAULT nextval(''centreline_geometry_lineage_id_seq'')::numeric(12,0);
-	SELECT setval(''network.centreline_geometry_lineage_id_seq'', GREATEST(1000000000, max(centreline_lineage_id))::bigint, true) FROM centreline_geometry_lineage_evw;
-	ALTER SEQUENCE network.centreline_geometry_lineage_id_seq OWNED BY network.centreline_geometry_lineage.centreline_lineage_id;
+	  ALTER COLUMN centreline_lineage_id SET DEFAULT nextval(''centreline_lineage_id_seq'')::numeric(12,0);
+	SELECT setval(''network.centreline_lineage_id_seq'', GREATEST(1000000000, max(centreline_lineage_id))::bigint, true) FROM centreline_geometry_lineage_evw;
+	ALTER SEQUENCE network.centreline_lineage_id_seq OWNED BY network.centreline_geometry_lineage.centreline_lineage_id;
 
 	-- for table linear_name
 	CREATE SEQUENCE IF NOT EXISTS network.linear_name_id_seq;
