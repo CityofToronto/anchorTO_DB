@@ -34,6 +34,12 @@ Testing:
 	WHERE linear_name_id = v_linear_name_id 
 	    and trans_id_expire = -1;
 	IF v_old_status <> upper(v_status) THEN
+	    UPDATE linear_name_evw 
+		SET  trans_id_create = v_trans_id,
+		     usage_status = upper(v_status)
+		WHERE linear_name_id = v_linear_name_id 
+			and trans_id_expire = -1;	
+		/*
 		-- Expired the old one	
 		UPDATE linear_name_evw 
 		SET  trans_id_expire = v_trans_id
@@ -81,6 +87,7 @@ Testing:
 	   FROM linear_name_evw
 	   WHERE linear_name_id = v_linear_name_id 
 		 and trans_id_expire = v_trans_id;	
+		 */
 	END IF;	  
 	
     SELECT row_to_json(c) INTO o_json

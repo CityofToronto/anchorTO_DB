@@ -1,6 +1,6 @@
--- FUNCTION: code_src.update_tasks(json, numeric, numeric, text, numeric, numeric, text)
+-- FUNCTION: code_src.update_tasks(json, numeric, numeric, text, numeric, numeric)
 
--- DROP FUNCTION code_src.update_tasks(json, numeric, numeric, text, numeric, numeric, text);
+-- DROP FUNCTION code_src.update_tasks(json, numeric, numeric, text, numeric, numeric);
 
 CREATE OR REPLACE FUNCTION code_src.update_tasks(
 	v_task json,
@@ -8,8 +8,7 @@ CREATE OR REPLACE FUNCTION code_src.update_tasks(
 	v_control_task_id numeric,
 	v_task_category text,
 	v_trans_id_create numeric,
-	v_trans_id_expire numeric,
-    v_userid text DEFAULT ''::text)
+	v_trans_id_expire numeric)
     RETURNS text
     LANGUAGE 'plpgsql'
 
@@ -35,7 +34,6 @@ DECLARE
   o_status text;
   o_message text;
   v_sql text;
-  dmsg text;
 BEGIN 
     o_status = 'OK';
     o_message = ''; 
@@ -102,8 +100,7 @@ BEGIN
 			  FROM tmp_ige_task
 			  WHERE UPPER(deleted) = 'TRUE' 
 		  );
-	  raise notice 'Expired tasks';	 
-	  
+	  raise notice 'Expired tasks';
 	  -- Update existing tasks
 	  UPDATE ige_task 
 	    SET  task_type = tmp_ige_task.task_type, 
@@ -111,7 +108,7 @@ BEGIN
 			 assigned_to = UPPER(tmp_ige_task.assigned_to), 
 			 taken_by = UPPER(tmp_ige_task.taken_by), 
 			 task_sequence = tmp_ige_task.task_sequence, 
-			 --task_status = tmp_ige_task.task_status, 
+			 task_status = tmp_ige_task.task_status, 
 			 task_comments = tmp_ige_task.task_comments, 
 			 control_task_id = tmp_ige_task.control_task_id, 
 			 task_category = tmp_ige_task.task_category, 
@@ -121,10 +118,6 @@ BEGIN
 	  WHERE ige_task.task_id = tmp_ige_task.task_id
 	    AND UPPER(deleted) = 'FALSE' ;
 	  raise notice 'Updated existing tasks';
-	   -- Update task status
-	   SELECT string_agg(update_task_status(task_id, task_status, v_userid), ',') INTO dmsg
-	   FROM tmp_ige_task 
-	   WHERE UPPER(deleted) = 'FALSE' ; 
 	  -- Insert new tasks	  
 	  INSERT INTO ige_task(
 	                      task_id, 
@@ -154,7 +147,71 @@ BEGIN
 	  FROM tmp_ige_task
 	  WHERE new_task_id is not null;
 	  raise notice 'Inserted new tasks';
-	
+	 /* 
+	 -- Beginning of updating Oracle
+	  IF get_configuration_bool('anchorTO', 'ANCHORTO', 'sync_with_oracle') THEN
+	      SELECT  string_agg(task_id::text, ',') INTO v_sql
+		  FROM tmp_ige_task
+		  WHERE UPPER(deleted) = 'TRUE';
+		  raise notice 'IDs: %', v_sql;
+	      -- Expire the deleted tasks	  
+		  IF v_sql IS NOT NULL THEN
+		    v_sql = 'UPDATE imaint_anchor.ige_task 
+		               SET trans_id_expire = $1
+			       WHERE task_id IN 
+			      ( ' || v_sql || ')';
+		    raise notice 'Update SQL: %', v_sql;		  
+		    EXECUTE v_sql USING v_trans_id_create;
+		  END IF;
+		  raise notice 'Expired tasks in Oracle';
+		  -- Update existing tasks
+		  UPDATE imaint_anchor.ige_task 
+			SET  task_type = tmp_ige_task.task_type, 
+				 source_id = tmp_ige_task.source_id, 
+				 assigned_to = tmp_ige_task.assigned_to, 
+				 taken_by = tmp_ige_task.taken_by, 
+				 task_sequence = tmp_ige_task.task_sequence, 
+				 task_status = tmp_ige_task.task_status, 
+				 task_comments = tmp_ige_task.task_comments, 
+				 control_task_id = tmp_ige_task.control_task_id, 
+				 task_category = tmp_ige_task.task_category, 
+				 trans_id_create = tmp_ige_task.trans_id_create, 
+				 trans_id_expire = tmp_ige_task.trans_id_expire
+		  FROM tmp_ige_task 
+		  WHERE ige_task.task_id = tmp_ige_task.task_id
+		    AND UPPER(deleted) = 'FALSE';
+		  raise notice 'Updated existing tasks in Oracle';
+		  -- Insert new tasks	  
+		  INSERT INTO imaint_anchor.ige_task(
+							  task_id, 
+							  task_type, 
+							  source_id, 
+							  assigned_to, 
+							  taken_by, 
+							  task_sequence, 
+							  task_status, 
+							  task_comments, 
+							  control_task_id, 
+							  task_category, 
+							  trans_id_create, 
+							  trans_id_expire)
+		  SELECT new_task_id,
+				 task_type,
+				 source_id,
+				 assigned_to,
+				 taken_by,
+				 task_sequence,
+				 task_status,
+				 task_comments,
+				 control_task_id,
+				 task_category,
+				 trans_id_create,
+				 trans_id_expire
+		  FROM tmp_ige_task
+		  WHERE new_task_id is not null; 
+	  END IF;
+	  raise notice 'Inserted new tasks in Oracle';
+	 -- End of updating Oracle  */
   DROP TABLE IF EXISTS tmp_ige_task;
   SELECT row_to_json(c) INTO o_json
 	FROM
@@ -179,11 +236,11 @@ EXCEPTION
 END;  
 $BODY$;
 
-ALTER FUNCTION code_src.update_tasks(json, numeric, numeric, text, numeric, numeric, text)
+ALTER FUNCTION code_src.update_tasks(json, numeric, numeric, text, numeric, numeric)
     OWNER TO network;
 
-GRANT EXECUTE ON FUNCTION code_src.update_tasks(json, numeric, numeric, text, numeric, numeric, text) TO anchorto_run;
+GRANT EXECUTE ON FUNCTION code_src.update_tasks(json, numeric, numeric, text, numeric, numeric) TO anchorto_run;
 
-GRANT EXECUTE ON FUNCTION code_src.update_tasks(json, numeric, numeric, text, numeric, numeric, text) TO network;
+GRANT EXECUTE ON FUNCTION code_src.update_tasks(json, numeric, numeric, text, numeric, numeric) TO network;
 
-REVOKE ALL ON FUNCTION code_src.update_tasks(json, numeric, numeric, text, numeric, numeric, text) FROM PUBLIC;
+REVOKE ALL ON FUNCTION code_src.update_tasks(json, numeric, numeric, text, numeric, numeric) FROM PUBLIC;

@@ -4,27 +4,29 @@
 
 CREATE OR REPLACE FUNCTION code_src.search_lfn(
 	v_search_by text)
-    RETURNS json 
+    RETURNS SETOF json 
     LANGUAGE 'sql'
 
     COST 100
     VOLATILE SECURITY DEFINER 
-   
+    ROWS 1000
 AS $BODY$
-/*
+/* 
   Summary: Search LFN with different search criteria
   Testing:
     SELECT search_lfn('{"lfn_type":"Street","lfn_dir":"east", "activation_status": null,  "authorized": "",  "used_by": "",  "duplication_status":"", "usage_status":"",  "logic": "and"}')
 	SELECT search_lfn('{"activation_status": "A",  "authorized": "",  "used_by": "L",  "usage_status":"",  "logic": "and"}')
 	SELECT search_lfn('{"lfn_type":"Street","activation_status": "A",  "authorized": "",  "used_by": "L",  "usage_status":"",  "logic": "or"}')
   Return all: SELECT search_lfn('{"activation_status": null,  "authorized": "",  "used_by": "",  "usage_status":"",  "logic": "and"}')
-	
+	Search by multiple values in lfn_type
+	SELECT search_lfn('{"lfn_type":"Street, Road","lfn_dir":"east", "activation_status": null,  "authorized": "",  "used_by": "",  "duplication_status":"", "usage_status":"",  "logic": "and"}')
+	SELECT search_lfn('{"lfn_type":"Street","lfn_dir":"east,south", "activation_status": null,  "authorized": "",  "used_by": "L,B",  "duplication_status":"", "usage_status":"",  "logic": "and"}')
+	SELECT search_lfn('{"lfn_type":"Street","lfn_dir":"east,south", "activation_status": null,  "authorized": "",  "used_by": "L",  "duplication_status":"", "usage_status":"",  "logic": "and"}')
+	SELECT search_lfn('{"lfn_type":"Street","lfn_dir":"east,south", "activation_status": null,  "authorized": "",  "used_by": "L,B",  "duplication_status":"", "usage_status":"N",  "logic": "and"}')
+  Update logs:
+    2020-06-23: lfn_type, lfn_dir, used_by, usage_status accept multiple values, separated by "," as above.
 */
---SELECT to_json(r)
---FROM 
---(
---  SELECT 
---  (
+
    SELECT json_agg(row_to_json(c)) 
    FROM
    (
@@ -93,9 +95,9 @@ AS $BODY$
 	         (
 			   UPPER(v_search_by::json->>'logic') = 'AND' AND 
 			   (
-				   (is_blank_string(v_search_by::json->>'lfn_type') OR UPPER(l.type_part) = UPPER(v_search_by::json->>'lfn_type'))
+				   (is_blank_string(v_search_by::json->>'lfn_type') OR UPPER(l.type_part) in (select trim(unnest(string_to_array(UPPER(v_search_by::json->>'lfn_type'), ',')))))
 				   AND
-				   (is_blank_string(v_search_by::json->>'lfn_dir') OR UPPER(l.dir_part) = UPPER(v_search_by::json->>'lfn_dir'))
+				   (is_blank_string(v_search_by::json->>'lfn_dir') OR UPPER(l.dir_part) in (select trim(unnest(string_to_array(UPPER(v_search_by::json->>'lfn_dir'), ','))))) 
 				   AND
 				   (is_blank_string(v_search_by::json->>'activation_status') OR UPPER(l.activation_status) = UPPER(v_search_by::json->>'activation_status'))
 				   AND 
@@ -103,46 +105,16 @@ AS $BODY$
 				   AND
                    (is_blank_string(v_search_by::json->>'authorized') OR UPPER(l.authorized) = UPPER(v_search_by::json->>'authorized'))
 				   AND
-				   (is_blank_string(v_search_by::json->>'used_by') OR UPPER(l.use_by) = UPPER(v_search_by::json->>'used_by'))
+				   (is_blank_string(v_search_by::json->>'used_by') OR UPPER(l.use_by) in (select trim(unnest(string_to_array(UPPER(v_search_by::json->>'used_by'), ',')))))
 				   AND
-				   (is_blank_string(v_search_by::json->>'usage_status') OR UPPER(l.usage_status) = UPPER(v_search_by::json->>'usage_status'))				   
+				   (is_blank_string(v_search_by::json->>'usage_status') OR UPPER(l.usage_status) in (select trim(unnest(string_to_array(UPPER(v_search_by::json->>'usage_status'), ','))))) 				   
 			   )
 			 )
 	   ) m
 	   LEFT JOIN dmn_ln_usage_status us ON us.usage_status = m.usage_status
-	  ) cm
-	/*  WHERE (
-			   UPPER(v_search_by::json->>'logic') = 'OR' AND 
-			   (
-				   (is_blank_string(v_search_by::json->>'activation_status') OR UPPER(activation_status) = UPPER(v_search_by::json->>'activation_status'))
-				   OR 
-				   (is_blank_string(v_search_by::json->>'duplication_status') OR UPPER(duplication_status) = UPPER(v_search_by::json->>'duplication_status'))
-				   OR
-                   (is_blank_string(v_search_by::json->>'authorized') OR UPPER(authorized) = UPPER(v_search_by::json->>'authorized'))
-				   OR
-				   (is_blank_string(v_search_by::json->>'used_by') OR UPPER(used_by) = UPPER(v_search_by::json->>'used_by'))
-				   OR
-				   (is_blank_string(v_search_by::json->>'usage_status') OR UPPER(usage_status) = UPPER(v_search_by::json->>'usage_status'))				   
-			   )
-			 ) 
-	         OR 
-	         (
-			   UPPER(v_search_by::json->>'logic') = 'AND' AND 
-			   (
-				   (is_blank_string(v_search_by::json->>'activation_status') OR UPPER(activation_status) = UPPER(v_search_by::json->>'activation_status'))
-				   AND 
-				   (is_blank_string(v_search_by::json->>'duplication_status') OR UPPER(duplication_status) = UPPER(v_search_by::json->>'duplication_status'))
-				   AND
-                   (is_blank_string(v_search_by::json->>'authorized') OR UPPER(authorized) = UPPER(v_search_by::json->>'authorized'))
-				   AND
-				   (is_blank_string(v_search_by::json->>'used_by') OR UPPER(used_by) = UPPER(v_search_by::json->>'used_by'))
-				   AND
-				   (is_blank_string(v_search_by::json->>'usage_status') OR UPPER(usage_status) = UPPER(v_search_by::json->>'usage_status'))				   
-			   )
-			 ) */
+	  ) cm	
     ) c	
---  ) AS search_result
---) r	
+
 	;	
    $BODY$;
 
@@ -151,7 +123,6 @@ ALTER FUNCTION code_src.search_lfn(text)
 
 GRANT EXECUTE ON FUNCTION code_src.search_lfn(text) TO anchorto_run;
 
-GRANT EXECUTE ON FUNCTION code_src.search_lfn(text) TO PUBLIC;
-
 GRANT EXECUTE ON FUNCTION code_src.search_lfn(text) TO network;
 
+REVOKE ALL ON FUNCTION code_src.search_lfn(text) FROM PUBLIC;

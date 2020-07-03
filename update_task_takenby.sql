@@ -35,12 +35,24 @@ BEGIN
 			SELECT * 
 			FROM ige_task 
 			WHERE task_id = v_task_id 
-			  AND task_type IN ('LINEARNAME', 'AMA') -- For phase 1 only and this should be removed in phase 2
+			  AND (task_type IN 
+					    (SELECT name FROM configuration 
+						 WHERE upper(category) = 'ANCHORTO' 
+						   AND upper(type) = 'DMN_TASK_TYPE'
+						   AND value = '1'
+						) 
+					OR 0 = (SELECT count(1) FROM configuration 
+						 WHERE upper(category) = 'ANCHORTO' 
+						   AND upper(type) = 'DMN_TASK_TYPE'
+						   AND value = '1'
+						)
+				   )
 		) THEN	
 		v_need_update_active = 1;
 	ELSE 
 	    v_need_update_active = 0;
 	END IF;
+	raise notice 'v_need_update_active: %', v_need_update_active;
     SELECT taken_by INTO v_old_user_name FROM ige_task WHERE task_id = v_task_id;
 	-- Remove active task from old user
 	IF v_need_update_active = 1 AND NOT is_blank_string(v_old_user_name) AND UPPER(v_old_user_name) <> UPPER(v_user_name) THEN 	    

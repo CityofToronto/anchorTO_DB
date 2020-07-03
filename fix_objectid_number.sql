@@ -3,8 +3,7 @@
 -- DROP FUNCTION network.fix_objectid_number(text);
 
 CREATE OR REPLACE FUNCTION network.fix_objectid_number(
-	v_schema text DEFAULT (
-	CURRENT_SCHEMA)::text)
+	v_schema text DEFAULT (CURRENT_SCHEMA)::text)
     RETURNS text
     LANGUAGE 'plpgsql'
 
@@ -26,7 +25,7 @@ DECLARE
 BEGIN 
 /*
 Summary: 
-  Issue: After registering table with ArcGIS, then importing data from other server, 
+  Issue: After registering table with ArcGIS, then importing / restoring data from other server, 
          the max(objectid) in the table might be greater than the next objectid (next_rowid), which would violate the unique object id constraint for the future
   Solution: Increase the next objectid manually to a bigger number		
 Testing:
@@ -47,6 +46,15 @@ Testing:
 				  rec.table_name, 
 				  rec.registration_id,
 				  rec.rowid_column;	   
+	  -- Check if there is a record
+	  dsql = 'SELECT count(1) FROM i' || rec.registration_id;
+	  EXECUTE dsql INTO v_cnt;	
+	   IF v_cnt = 0 THEN
+	    RAISE NOTICE 'Inserted one record into table i%', rec.registration_id;
+	    dsql = 'INSERT INTO i' || rec.registration_id || ' (id_type, base_id, num_ids, last_id) ' ||
+		       'VALUES (2, 0, -1, 0)';
+		EXECUTE dsql;		   
+	  END IF;
 	  dsql = 'SELECT LEAST(base_id, last_id) FROM i' || rec.registration_id;
 	  RAISE NOTICE 'SQL to get base_id:%', dsql;
 	  EXECUTE dsql INTO v_base_id;

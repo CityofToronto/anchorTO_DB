@@ -36,6 +36,12 @@ Testing:
 	LIMIT 1;
 	raise notice 'Old status:%', v_old_status;
 	IF v_old_status <> upper(v_status) THEN
+	    UPDATE authorized_municipal_address_evw 
+		SET  trans_id_expire = v_trans_id,
+		     usage_status =  upper(v_status)
+		WHERE address_string_id = v_address_string_id 
+			and trans_id_expire = -1;	
+	/*
 		-- Expired the old one	
 		UPDATE authorized_municipal_address_evw 
 		SET  trans_id_expire = v_trans_id
@@ -69,7 +75,7 @@ Testing:
 		FROM  network.authorized_municipal_address_evw
 		 WHERE address_string_id = v_address_string_id 
 		 and trans_id_expire = v_trans_id;	 
-     
+     */
 	END IF;	  
 	
     SELECT row_to_json(c) INTO o_json

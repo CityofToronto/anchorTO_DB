@@ -26,6 +26,25 @@ select 'AMA #', count(1) from authorized_municipal_address_evw where trans_id_cr
 union all
 select 'LFN #', count(1) from linear_name_evw where trans_id_create in (select trans_id from cte)
 ;
+
+---- Summary report since June 8.
+with cte as 
+  (
+	  select * from ige_transaction 
+      where to_char(date_start, 'YYYYMMDD') between '20200608' and to_char(current_timestamp, 'YYYYMMDD') 
+  )
+select 'Source #' as stats_type, count(1) stats_count from ige_source_evw where trans_id_create in (select trans_id from cte) 
+union all
+select 'Task #', count(1) from ige_task where trans_id_create in (select trans_id from cte)--where task_id > 60000013 
+union all
+select 'transaction #', count(1) from ( select * from cte ) t
+union all
+select 'Control task #', count(1) from ige_control_task where trans_id_create in (select trans_id from cte) 
+union all
+select 'AMA #', count(1) from authorized_municipal_address_evw where trans_id_create in (select trans_id from cte)
+union all
+select 'LFN #', count(1) from linear_name_evw where trans_id_create in (select trans_id from cte)
+;
 ----------------------------------------------------------------------------------------------------
 
 

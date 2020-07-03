@@ -99,7 +99,14 @@ BEGIN
 	SELECT search_ama('{"linear_name":"shepp% E", "usage_status":"", "municipality":"", "lo_num_from":0, "lo_num_to":0, "logicOP":"OR"}')
 	SELECT search_ama('{"linear_name":"shepp% AvE", "usage_status":"", "municipality":"", "lo_num_from":0, "lo_num_to":0, "logicOP":"OR"}')
 	SELECT search_ama('{"linear_name":"shepp% E", "usage_status":"", "municipality":"", "lo_num_from":"10A", "lo_num_to":"20B", "logicOP":"OR"}')
-	
+
+    Multiple values in usage_status, municipality:
+	  SELECT search_ama('{"linear_name":"pe", "usage_status":"n,C", "municipality":null, "lo_num_from":null, "lo_num_to":null, "logicOP":"and"}')
+	  SELECT search_ama('{"linear_name":"he", "usage_status":"n,C", "municipality":"EY,TO", "lo_num_from":null, "lo_num_to":null, "logicOP":"and"}')	 
+	  SELECT search_ama('{"linear_name":null, "usage_status":"n,c","municipality":"ET,EY","lo_num_from":null,"lo_num_to":null,"logicOP":"and"}');
+	  
+  Update logs:
+    2020-06-23: Usage_status, municipality accept multiple values, separated by ","
 */
    o_status = 'OK';
    o_message = '';   
@@ -111,6 +118,9 @@ BEGIN
    END IF;
    -- Parse search criteria: linear_name   
    v_search_txt = TRIM(UPPER(v_search_by::json->>'linear_name'));
+   IF v_search_txt is null THEN 
+     v_search_txt = '';
+   END IF;
    SELECT regexp_split_to_array(v_search_txt, ' ')
      INTO v_search_txt_list;
    SELECT array_length(v_search_txt_list,1) INTO v_search_txt_part_number;
@@ -389,7 +399,7 @@ BEGIN
 				    OR   
 					(  
 				      NOT is_blank_string(v_search_by::json->>'usage_status')		           
-		              AND UPPER(a.usage_status) = UPPER(v_search_by::json->>'usage_status')
+		              AND UPPER(a.usage_status) in (select trim(unnest(string_to_array(UPPER(v_search_by::json->>'usage_status'), ','))))
 					)
 				  )
 			      AND -- Search by municipality
@@ -398,7 +408,8 @@ BEGIN
 				    OR   
 					(  
 				      NOT is_blank_string(v_search_by::json->>'municipality')		           
-		              AND UPPER(l.duplication_desc) LIKE '%' || UPPER(v_search_by::json->>'municipality') || '%'
+		              --AND UPPER(l.duplication_desc) LIKE '%' || UPPER(v_search_by::json->>'municipality') || '%'
+					  AND string_to_array(format_string_to_validate(UPPER(duplication_desc)), ',') && string_to_array(format_string_to_validate(UPPER(v_search_by::json->>'municipality')), ',')
 					)
 				  )
 			      AND -- Search by lo_num range

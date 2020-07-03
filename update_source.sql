@@ -154,7 +154,10 @@ BEGIN
 		    SELECT count(*) INTO cnt_plan_name FROM ige_source_evw WHERE plan_name = v_plan_name and source_id <> sourceid;
 		  END IF;
 	    END IF;
-	    IF cnt_plan_name > 0 THEN		
+	    IF cnt_plan_name > 0 AND 
+		   (isnew OR 
+			sourceid > 60000000 OR 
+			(NOT isnew AND v_source_class <> 'CADAST_DOCUMENT')) THEN		
 		--IF cnt_int_id + cnt_ext_id + cnt_plan_name > 0 THEN		 
 		  o_status = 'Failed';
 		  IF cnt_int_id > 0 THEN 

@@ -1,10 +1,11 @@
--- FUNCTION: code_src.update_task_status(numeric, text)
+-- FUNCTION: code_src.update_task_status(numeric, text, text)
 
--- DROP FUNCTION code_src.update_task_status(numeric, text);
+-- DROP FUNCTION code_src.update_task_status(numeric, text, text);
 
 CREATE OR REPLACE FUNCTION code_src.update_task_status(
 	v_task_id numeric,
-	v_status text)
+	v_status text,
+	v_userid text DEFAULT ''::text)
     RETURNS text
     LANGUAGE 'plpgsql'
 
@@ -31,7 +32,6 @@ BEGIN
     Testing:
 	  SELECT update_task_status(67092,'COMPLETED')
 	  SELECT update_task_status(50000026,'COMPLETED')
-	  SELECT update_task_status(1000002575, 'TAKEN')
 	  select * from ige_task where task_id = 50000026
 	  update ige_task set task_status = 'POSTING' where task_id = 50000026
   */
@@ -47,7 +47,18 @@ BEGIN
 			SELECT * 
 			FROM ige_task 
 			WHERE task_id = v_task_id 
-			  AND task_type IN ('LINEARNAME', 'AMA') -- For phase 1 only and this should be removed in phase 2
+			  AND (task_type IN 
+					    (SELECT name FROM configuration 
+						 WHERE upper(category) = 'ANCHORTO' 
+						   AND upper(type) = 'DMN_TASK_TYPE'
+						   AND value = '1'
+						) 
+					OR 0 = (SELECT count(1) FROM configuration 
+						 WHERE upper(category) = 'ANCHORTO' 
+						   AND upper(type) = 'DMN_TASK_TYPE'
+						   AND value = '1'
+						)
+				   )
 		) THEN	
 		v_need_update_active = 1;
 	ELSE 
@@ -59,6 +70,9 @@ BEGIN
 	  IF v_status = 'POSTED' THEN 
 		  SELECT taken_by INTO v_username FROM ige_task WHERE task_id = v_task_id;
 		  raise notice '% % %', v_task_id,v_username, v_status;
+		  IF NOT is_blank_string(v_userid) THEN
+		      v_username = upper(v_userid);
+		  END IF;
 		  SELECT update_task_comments(v_task_id,v_username, v_status) into o_json;
 	  END IF;
 	  SELECT row_to_json(c) INTO o_json
@@ -80,6 +94,9 @@ BEGIN
 		END IF;
 		*/
 		SELECT taken_by INTO v_username FROM ige_task WHERE task_id = v_task_id;
+		IF NOT is_blank_string(v_userid) THEN
+		      v_username = upper(v_userid);
+		  END IF;
 		SELECT create_transaction(v_task_id,v_username, 'Complete task', 'anchorTO') into v_transid;
 		UPDATE ige_transaction
          SET trans_status = 'COMPLETED',
@@ -94,7 +111,7 @@ BEGIN
 	    UPDATE ige_task
 		   SET task_status = UPPER(v_status)
 	    WHERE task_id = v_task_id
-	       ; -- commented off for release 1: AND ( v_status <> 'WORK STARTED'); -- OR taken_by IS NULL);
+	       ; 
 	  END IF; -- END of IF UPPER(v_status) = 'COMPLETED' THEN
 	  IF UPPER(v_status) = 'COMPLETED' THEN
 	    IF v_need_update_active = 1 THEN 
@@ -113,6 +130,9 @@ BEGIN
 	      WHERE task_id = v_task_id;
 		END IF; 
 		SELECT taken_by INTO v_username FROM ige_task WHERE task_id = v_task_id;
+		IF NOT is_blank_string(v_userid) THEN
+		      v_username = upper(v_userid);
+		  END IF;
 		IF v_need_update_active = 1 THEN 
 		  IF EXISTS (SELECT * FROM ige_task_active WHERE UPPER(username) = UPPER(v_username)) THEN
 			  UPDATE ige_task_active 
@@ -123,17 +143,17 @@ BEGIN
 				VALUES (UPPER(v_username), v_task_id, current_timestamp);	
 			END IF;
 		END IF;	
-	  END IF;	
-	 /* -- Beginning of updating Oracle
-	  IF get_configuration_bool('anchorTO', 'ANCHORTO', 'sync_with_oracle') THEN
-	    UPDATE imaint_anchor.ige_task
-		  SET task_status = UPPER(v_status)
-	    WHERE task_id = v_task_id
-		  AND ( v_status <> 'WORK STARTED');
-	  END IF;
-	 -- End of updating Oracle */
+	  END IF;	 
 	ELSE 
-	  o_status = 'Failed';      
+	  o_status = 'Failed';   
+	  SELECT row_to_json(c) INTO o_json
+	  FROM
+	  (
+	    SELECT o_status status, 
+	         o_message message		    
+	  ) c;
+	
+	RETURN o_json;
 	END IF;  	-- End of IF o_message  = '' THEN
 	
 	-- Sync control_task status
@@ -151,9 +171,14 @@ BEGIN
             errcode= ret_status,
             message= ret_msg;
 	ELSE 
-	  IF v_old_status <> v_status and 
-	   v_status in ('TAKEN', 'POSTED', 'COMPLETED') THEN
+	  IF v_old_status <> v_status  
+	   -- and v_status in ('TAKEN', 'POSTED', 'COMPLETED') 
+	   THEN
 	      SELECT taken_by INTO v_username FROM ige_task WHERE task_id = v_task_id; 
+		  IF NOT is_blank_string(v_userid) THEN
+		      v_username = upper(v_userid);
+		  END IF;
+		  raise notice 'User: %', v_username;
 	      SELECT update_task_comments(v_task_id,v_username, v_status) INTO ret_json;  
 		  SELECT ret_json::json->>'status',
 	             ret_json::json->>'message'
@@ -189,11 +214,11 @@ EXCEPTION
 END;  
 $BODY$;
 
-ALTER FUNCTION code_src.update_task_status(numeric, text)
+ALTER FUNCTION code_src.update_task_status(numeric, text, text)
     OWNER TO network;
 
-GRANT EXECUTE ON FUNCTION code_src.update_task_status(numeric, text) TO anchorto_run;
+GRANT EXECUTE ON FUNCTION code_src.update_task_status(numeric, text, text) TO anchorto_run;
 
-GRANT EXECUTE ON FUNCTION code_src.update_task_status(numeric, text) TO network;
+GRANT EXECUTE ON FUNCTION code_src.update_task_status(numeric, text, text) TO network;
 
-REVOKE ALL ON FUNCTION code_src.update_task_status(numeric, text) FROM PUBLIC;
+REVOKE ALL ON FUNCTION code_src.update_task_status(numeric, text, text) FROM PUBLIC;

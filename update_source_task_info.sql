@@ -11,8 +11,7 @@ CREATE OR REPLACE FUNCTION code_src.update_source_task_info(
     LANGUAGE 'plpgsql'
 
     COST 100
-    VOLATILE 
-	SECURITY DEFINER
+    VOLATILE SECURITY DEFINER 
 AS $BODY$
 DECLARE 
 /*
@@ -95,7 +94,7 @@ BEGIN
             errcode= ret_status,
             message= ret_msg;
 	END IF;
-	SELECT update_tasks(v_task, v_source_id, v_control_task_id, 'SUPERVISOR DEFINED', v_trans_id_create, t_expire_id) INTO ret_json;
+	SELECT update_tasks(v_task, v_source_id, v_control_task_id, 'SUPERVISOR DEFINED', v_trans_id_create, t_expire_id, v_user_id) INTO ret_json;
 	raise notice 'Update tasks message: %', ret_json;
 	SELECT ret_json::json->>'status',
 	       ret_json::json->>'message'		  
@@ -149,5 +148,11 @@ EXCEPTION
 END;  
 $BODY$;
 
-ALTER FUNCTION code_src.update_source_task_info(text, numeric, numeric, numeric) OWNER TO network;
-GRANT EXECUTE ON FUNCTION code_src.update_source_task_info(text, numeric, numeric, numeric) TO anchorto_run
+ALTER FUNCTION code_src.update_source_task_info(text, numeric, numeric, numeric)
+    OWNER TO network;
+
+GRANT EXECUTE ON FUNCTION code_src.update_source_task_info(text, numeric, numeric, numeric) TO anchorto_run;
+
+GRANT EXECUTE ON FUNCTION code_src.update_source_task_info(text, numeric, numeric, numeric) TO network;
+
+REVOKE ALL ON FUNCTION code_src.update_source_task_info(text, numeric, numeric, numeric) FROM PUBLIC;

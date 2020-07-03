@@ -59,8 +59,19 @@ FROM
 				   AND tt.trans_id_expire = -1
 				 GROUP BY tt.control_task_id
 			 ) mc ON mc.control_task_id = c.control_task_id
-			 WHERE t.task_status IN (SELECT task_status FROM dmn_task_status WHERE task_status NOT IN ( 'HOLD', 'COMPLETED')) 
-			   AND t.task_type IN ('LINEARNAME', 'AMA') -- , 'ADDRESSPOINT'-- For phase 1 only and this should be removed in phase 2 
+			 WHERE t.task_status IN (SELECT task_status FROM dmn_task_status WHERE task_status NOT IN ( 'HOLD', 'COMPLETED')) 			  
+			   AND (t.task_type IN 
+					    (SELECT name FROM configuration 
+						 WHERE upper(category) = 'ANCHORTO' 
+						   AND upper(type) = 'DMN_TASK_TYPE'
+						   AND value = '1'
+						) 
+					OR 0 = (SELECT count(1) FROM configuration 
+						 WHERE upper(category) = 'ANCHORTO' 
+						   AND upper(type) = 'DMN_TASK_TYPE'
+						   AND value = '1'
+						)
+				   )
 			   AND (is_blank_string(t.taken_by) OR upper(t.taken_by) = upper(v_user_name))
 			   AND t.trans_id_expire = -1
 			   AND 
