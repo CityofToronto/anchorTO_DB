@@ -11,7 +11,7 @@ and table_name not like 'v_%'
 and table_name not like '%_bak'
 order by table_name
 -- 3. Before restoring data, truncate current tables 
-select 'truncate table network.' || table_name || ';' from information_schema.tables
+select 'truncate table network.' || table_name || ' cascade;' from information_schema.tables
 where table_schema = 'network' and table_catalog = 'anchorto'
 and length(table_name) > 4
 and table_name not like '_%evw'
@@ -28,9 +28,9 @@ and table_name not like 'i%'
 order by table_name
 -- 6.1 Import table_status_flow
   truncate table network.task_status_flow;
-  -- Import c:\task_status_flow-PROD20200615
+  -- Import data for the table from c:\task_status_flow-PROD20200615; Format: TXT 
   select * from network.task_status_flow;
--- 7.2 Import dmn_address_unit_status
+-- 7.2 Insert data into dmn_address_unit_status
   select * from network.dmn_address_unit_status
   -- Insert data:
   INSERT INTO  network.dmn_address_unit_status
@@ -59,9 +59,9 @@ and table_name not like '_%evw'
 and table_name not like 'v_%'
 and table_name not like '%_bak'
 order by table_name
--- 10. Restore user's connection:
-alter user network connection limit 2000;
-alter user anchorto_run connection limit 2000;
--- 11. Run functions
+-- 10. Run functions under "network" user
    SELECT fix_objectid_number()
    SELECT fix_sequence_number()
+-- 11. Restore user's connection:
+alter user network connection limit 2000;
+alter user anchorto_run connection limit 2000;
