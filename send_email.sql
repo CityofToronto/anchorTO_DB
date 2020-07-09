@@ -1,7 +1,7 @@
 -- FUNCTION: code_src.send_email(text, text[], text[], text[], text, text, text, text, text, text)
 
 -- DROP FUNCTION code_src.send_email(text, text[], text[], text[], text, text, text, text, text, text);
-
+ 
 CREATE OR REPLACE FUNCTION code_src.send_email(
 	from_addr text,
 	to_addr_list text[],

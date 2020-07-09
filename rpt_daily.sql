@@ -1,24 +1,21 @@
--- FUNCTION: code_src.rpt_daily(text)
+-- FUNCTION: code_src.rpt_daily()
 
--- DROP FUNCTION code_src.rpt_daily(text);
+-- DROP FUNCTION code_src.rpt_daily();
 
 CREATE OR REPLACE FUNCTION code_src.rpt_daily(
-	v_string text)
-    RETURNS text
-    LANGUAGE 'plpgsql'
+	)
+    RETURNS json
+    LANGUAGE 'sql'
 
     COST 100
     VOLATILE SECURITY DEFINER 
 AS $BODY$
-DECLARE 
-  retval text;   
-  html_base text;
-BEGIN  
+
 /*
   Summary: 
     Generate daily report
   Testing:
-    SELECT rpt_daily('')	
+    SELECT rpt_daily()	
 */
   
   with cte as 
@@ -26,35 +23,28 @@ BEGIN
 	  select * from ige_transaction 
       where to_char(date_start, 'YYYYMMDD') = to_char(current_timestamp, 'YYYYMMDD') 
   )
-  select string_agg(stats_type::text || ',' ||stats_count::text, '|') into retval
+  --select string_agg(stats_type::text || ',' ||stats_count::text, '|') into retval
+  SELECT json_agg(row_to_json(t)) 
   from (
-	select 'Source #' as stats_type, count(1) stats_count from ige_source_evw where trans_id_create in (select trans_id from cte) 
+	  -- Header includes the column alignment definition as follow: [C]: Center; [L]: Left; [R]: Right;
+	select 1 as "Index[C]", 'Source #' as "Stats Type[L]", count(1) "Stats Count[R]" from ige_source_evw where trans_id_create in (select trans_id from cte) 
 	union all
-	select 'Task #', count(1) from ige_task where trans_id_create in (select trans_id from cte)--where task_id > 60000013 
+	select 2, 'Task #', count(1) from ige_task where trans_id_create in (select trans_id from cte)--where task_id > 60000013 
 	union all
-	select 'transaction #', count(1) from ( select * from cte ) t
+	select 3, 'transaction #', count(1) from ( select * from cte ) t
 	union all
-	select 'Control task #', count(1) from ige_control_task where trans_id_create in (select trans_id from cte) 
+	select 4, 'Control task #', count(1) from ige_control_task where trans_id_create in (select trans_id from cte) 
 	union all
-	select 'AMA #', count(1) from authorized_municipal_address_evw where trans_id_create in (select trans_id from cte)
+	select 5, 'AMA #', count(1) from authorized_municipal_address_evw where trans_id_create in (select trans_id from cte)
 	union all
-	select 'LFN #', count(1) from linear_name_evw where trans_id_create in (select trans_id from cte)
+	select 6, 'LFN #', count(1) from linear_name_evw where trans_id_create in (select trans_id from cte)
 	) t;
-  /*html_base = '<html><style>table {border-collapse: collapse}</style><table border = 1><tr><td>Stats Type</td><td>Stats Count</td></tr><tr><td>[DATA]</td></tr></table></html>';	
-  retval = replace(retval, ',', '</td><td>');  
-  retval = replace(retval,'|', '</td></tr><tr><td>');
-  retval = replace(html_base,'[DATA]', retval);*/
-  RETURN retval;
-EXCEPTION 
-  WHEN OTHERS THEN
-    RAISE NOTICE '%', SQLERRM;	
-    RETURN v_string;
-END;  
+
 $BODY$;
 
-ALTER FUNCTION code_src.rpt_daily(text)
+ALTER FUNCTION code_src.rpt_daily()
     OWNER TO network;
 
-GRANT EXECUTE ON FUNCTION code_src.rpt_daily(text) TO network;
+GRANT EXECUTE ON FUNCTION code_src.rpt_daily() TO network;
 
-REVOKE ALL ON FUNCTION code_src.rpt_daily(text) FROM PUBLIC;
+REVOKE ALL ON FUNCTION code_src.rpt_daily() FROM PUBLIC;
